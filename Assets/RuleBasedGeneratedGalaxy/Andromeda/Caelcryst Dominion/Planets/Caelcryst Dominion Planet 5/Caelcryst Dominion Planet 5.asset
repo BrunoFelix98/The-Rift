@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Caelcryst Dominion Planet 5
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 982e911075e5e104ba5802c88b247e91, type: 2}
+  - {fileID: 11400000, guid: 6496f092f36ab9a4d942a7c7b1b0a8a3, type: 2}
+  - {fileID: 11400000, guid: c669138a7916064449cc01a2ddffb6ed, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 03dc5d1ee1b03d948b4e2a23a5fe992c, type: 2}
+  - {fileID: 11400000, guid: 0a79b70688748c4459a3ec3021892637, type: 2}
+  - {fileID: 11400000, guid: 596ab7007fcc3b745b92cc80d31d789f, type: 2}
+  type: 3

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Irrithal Veil Belt 3
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: 731d0fd9d1500a04fa834cdfb82181e3, type: 2}
+  - {fileID: 11400000, guid: 3b62bb336ad0ff1458d32cb2fbc25cf6, type: 2}
+  - {fileID: 11400000, guid: 2facb885afaa3bf449cb561576d64140, type: 2}
+  - {fileID: 11400000, guid: fcc159ec323968e4c8ec93197a5c6d1b, type: 2}
+  - {fileID: 11400000, guid: 5d1ecd29ef30b0d4cb41d9b54885462d, type: 2}
+  - {fileID: 11400000, guid: 10a71ed5cf14b004e9029f33e7272a49, type: 2}
+  - {fileID: 11400000, guid: 9abeb4e6adc087749add93810d4e13d7, type: 2}
+  - {fileID: 11400000, guid: 8825b1c7590a1a1469fcca0876393590, type: 2}
+  - {fileID: 11400000, guid: e719e116975018b46a0bbb3629d949b4, type: 2}
+  - {fileID: 11400000, guid: 39f5e57185faaa94c830056d9d68733a, type: 2}
+  - {fileID: 11400000, guid: a3400bf8fbda15141b342c93ce271d31, type: 2}
+  - {fileID: 11400000, guid: ae8ff29e1bdb8fc4bbc91118c21eebaf, type: 2}
+  - {fileID: 11400000, guid: 10e96a00993ad7448b6e94b3fe4e877a, type: 2}
+  - {fileID: 11400000, guid: 4c4784892f1079947922b4e8e9a071cd, type: 2}
+  type: 0

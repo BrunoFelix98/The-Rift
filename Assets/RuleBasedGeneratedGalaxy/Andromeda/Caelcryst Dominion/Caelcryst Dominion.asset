@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Caelcryst Dominion
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Caelcryst Dominion
+  stars:
+  - {fileID: 11400000, guid: 2b5367225999e214fa57134906f813b1, type: 2}
+  planets: []
+  asteroidBelts:
+  - {fileID: 11400000, guid: 79ffd237a53553249a03f4d972bbf5cb, type: 2}
+  - {fileID: 11400000, guid: 6eed3eeb0e7b0a248a491961f7b1848f, type: 2}
+  - {fileID: 11400000, guid: 441c97efeba643b47900fe42ad728125, type: 2}
+  gates:
+  - {fileID: 11400000, guid: 5c8f949797aee1a439e835a083a1818a, type: 2}
+  - {fileID: 11400000, guid: f89e573aaa9f93d4ba3306c8f99497c9, type: 2}
+  - {fileID: 11400000, guid: 461f2677c20262f4fb4053857a80a132, type: 2}
+  - {fileID: 11400000, guid: 32e2de3a4075d4c41b57ee0cc45315b5, type: 2}
+  stations: []
+  nebula: {fileID: 11400000, guid: c42c5fbaed5b19341962790199ffa638, type: 2}
+  allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

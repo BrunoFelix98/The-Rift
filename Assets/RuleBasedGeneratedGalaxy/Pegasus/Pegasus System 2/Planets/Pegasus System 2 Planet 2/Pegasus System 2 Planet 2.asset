@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Pegasus System 2 Planet 2
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: b9472d885c91e0b4089235a9726ebd6e, type: 2}
+  - {fileID: 11400000, guid: 190f71e05328861498f909aace2ae198, type: 2}
+  - {fileID: 11400000, guid: 17677138659034847878ec5b4aee85d2, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 38981b9887d01734f8325138133738b1, type: 2}
+  - {fileID: 11400000, guid: 919de674c4e130b4f828dd52685b62c9, type: 2}
+  type: 2

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210886e4abdad6d43906dc89f6002dc0, type: 3}
+  m_Name: Aldewhara Kinship
+  m_EditorClassIdentifier: 
+  conceptName: Aldewhara Kinship
+  description: 'The Aldewhara are one of the oldest species in the universe. Originating
+    on the ancient planet Jorewa with bountiful resources, the Aldewhara people thrived
+    for generations in a time before space travel and focused only on taking the
+    resources they needed for their people, being careful not to disturb the peace
+    on their land. '
+  allegiance: {fileID: 0}
+  leader: {fileID: 11400000, guid: ee831c6d0ba846948a6d83483669377c, type: 2}
+  memberCorporations:
+  - {fileID: 11400000, guid: 561c036e335027e44ab3438204c71215, type: 2}
+  members:
+  - {fileID: 11400000, guid: ee831c6d0ba846948a6d83483669377c, type: 2}

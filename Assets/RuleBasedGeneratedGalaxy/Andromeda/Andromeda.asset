@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0670217138150514b9d426de3d5c87d9, type: 3}
+  m_Name: Andromeda
+  m_EditorClassIdentifier: Assembly-CSharp::GalaxySO
+  galaxyName: Andromeda
+  systems:
+  - {fileID: 11400000, guid: 65b6363ca8e58b449be8a3cb7904bc0b, type: 2}
+  - {fileID: 11400000, guid: 9866c6f036a587042b8962cbdc80726d, type: 2}
+  - {fileID: 11400000, guid: 7932f5b4445055f4fa8849b0618cd76b, type: 2}
+  - {fileID: 11400000, guid: 980d09d7f50f1b44582d0cdb4bc06324, type: 2}
+  - {fileID: 11400000, guid: b2074219b56694d4dabce73f22395294, type: 2}
+  - {fileID: 11400000, guid: 9f5c7c2d6d63a5f4dacfb6937843196d, type: 2}
+  - {fileID: 11400000, guid: dcfcdc83901298f419809844ee2056c1, type: 2}
+  - {fileID: 11400000, guid: 1f155d91e969ec543a708d64324c84b8, type: 2}
+  - {fileID: 11400000, guid: 836d3b962ab31d445940f075da5fd527, type: 2}

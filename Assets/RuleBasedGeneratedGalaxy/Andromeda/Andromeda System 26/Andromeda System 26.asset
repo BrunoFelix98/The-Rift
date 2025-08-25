@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Andromeda System 26
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Andromeda System 26
+  stars:
+  - {fileID: 11400000, guid: cfab387084496b042882cf10ab6277da, type: 2}
+  planets:
+  - {fileID: 11400000, guid: 48634ab1b0c45d541a2375dc803a725f, type: 2}
+  - {fileID: 11400000, guid: 1e5e790c84964d546a88fa07507938d9, type: 2}
+  - {fileID: 11400000, guid: c325a75a71d78bc44bb43eed6039e31c, type: 2}
+  - {fileID: 11400000, guid: 5811a70af622e08439f1e2265c986d5e, type: 2}
+  - {fileID: 11400000, guid: 6ad19569939d5de429b0e6c38b8c5530, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: f7249168f9e6f1e4e84a75152ab3198a, type: 2}
+  - {fileID: 11400000, guid: deb57f7d40794f6458789f61de5c197b, type: 2}
+  - {fileID: 11400000, guid: a6f53ae0557b3b64eac9d3125eaf512f, type: 2}
+  gates:
+  - {fileID: 11400000, guid: dc76ecec6e7085a48bdcdb2622cf8add, type: 2}
+  - {fileID: 11400000, guid: 59ca0790539309947a0419455fe73bcc, type: 2}
+  - {fileID: 11400000, guid: 49db7e8bb6199134cbfe9af5bd4b42b6, type: 2}
+  stations: []
+  nebula: {fileID: 0}
+  allegiance: {fileID: 0}

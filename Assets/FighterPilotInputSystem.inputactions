@@ -1,0 +1,213 @@
+{
+    "version": 1,
+    "name": "FighterPilotInputSystem",
+    "maps": [
+        {
+            "name": "InputRollFighterPilot",
+            "id": "6b9b387b-96a8-4ec2-90ed-028b8f8e5b4f",
+            "actions": [
+                {
+                    "name": "Roll",
+                    "type": "Button",
+                    "id": "927c0981-8437-4f6a-8838-1206bf1948ef",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "1D Axis",
+                    "id": "ea8e76ec-04c2-47f7-97ac-c18bf8695a8d",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Positive",
+                    "id": "089efec7-fffa-4b2e-b5b6-92145448851b",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Negative",
+                    "id": "0d37fcda-17aa-474e-89ba-2a3ea40851c2",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        },
+        {
+            "name": "InputStrafeFighterPilot",
+            "id": "ab9e77b9-78bb-4b21-9529-f8b8cb8a42e1",
+            "actions": [
+                {
+                    "name": "Yaw",
+                    "type": "Button",
+                    "id": "4815c1b9-fe18-459a-a82c-153660e1226b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "1D Axis",
+                    "id": "80d6e142-5ff1-472c-bf8a-8bae5f57601e",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Yaw",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "1a45d976-98e4-45b0-bb97-77874426a221",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Yaw",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "718c8f0f-7646-48e1-98f8-1574d94a4e60",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Yaw",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        },
+        {
+            "name": "InputAccelerateFighterPilot",
+            "id": "ad58cae7-22fd-4988-9613-02c0888b20f7",
+            "actions": [
+                {
+                    "name": "Accelerate",
+                    "type": "Button",
+                    "id": "21f373bd-56ad-4d48-a255-85f0e6fa86ae",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ee6decc4-29cd-4340-8b5b-1088ada4b51c",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Accelerate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "InputDecelerateFighterPilot",
+            "id": "6a30e341-77f8-4a5a-ab38-82cd7d6c4479",
+            "actions": [
+                {
+                    "name": "Decelerate",
+                    "type": "Button",
+                    "id": "42f982da-4bc2-48e0-845c-2f36ba6b5d1b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ef6d3f21-a81b-4098-895d-84107ae1c868",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Decelerate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "InputStrafeVertical",
+            "id": "6a314e1b-3c89-48ae-9918-cd093b68b9c1",
+            "actions": [
+                {
+                    "name": "VerticalStrafe",
+                    "type": "Button",
+                    "id": "d79997ea-b4b7-4c98-8ca8-4476c3295732",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "1D Axis",
+                    "id": "302e4a96-a0a5-4c27-9518-695eb9e624ad",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "VerticalStrafe",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "cfd8d7c0-95a3-4f7d-b778-8c5816f1d4b3",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "VerticalStrafe",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "36e98f63-faf5-4f8c-b1fd-b00d877d79c0",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "VerticalStrafe",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

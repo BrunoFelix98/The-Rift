@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Milky Way System 30 Belt 3
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: db48b4e39c31065479f837f4d2a1b76d, type: 2}
+  - {fileID: 11400000, guid: aa2f79c5d8c601f42b75461d0416c65d, type: 2}
+  - {fileID: 11400000, guid: dc70a83b9ee225c40a3fd2cbb83bfeeb, type: 2}
+  - {fileID: 11400000, guid: fecf942033a7c914b8b24c43b79957bd, type: 2}
+  - {fileID: 11400000, guid: 0191aee37c0090b49a04934360852b8b, type: 2}
+  - {fileID: 11400000, guid: 032dbb25d5124ed4ab73f2872fc3d0a3, type: 2}
+  type: 3

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Milky Way System 26
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Milky Way System 26
+  stars:
+  - {fileID: 11400000, guid: 573afc255305a664e91936b7f6b2c6b5, type: 2}
+  planets:
+  - {fileID: 11400000, guid: ae5ab3236efcb724ca8cd868dd7e33b4, type: 2}
+  - {fileID: 11400000, guid: 7ec8a3aaaf92d7f4cb5c0261fcaf4dd6, type: 2}
+  - {fileID: 11400000, guid: 4acb83b1241fa844bb910a7f7c6208fb, type: 2}
+  - {fileID: 11400000, guid: 3c438876b033f4243ac16b48e67da818, type: 2}
+  - {fileID: 11400000, guid: 0e6c97c9fe2b9804e88d2288edce47c9, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 9d8c8e73e55f6b0429b7cf2e01b14c44, type: 2}
+  - {fileID: 11400000, guid: 88b0bf98c7bfea6419b36bff2165b207, type: 2}
+  - {fileID: 11400000, guid: b053758dc2685014fbc667c8ca20b659, type: 2}
+  gates:
+  - {fileID: 11400000, guid: db27e9ce759247648828e2d3bd4cf64f, type: 2}
+  - {fileID: 11400000, guid: 43051c1034aab0748a9413efe2580d0a, type: 2}
+  - {fileID: 11400000, guid: d5067ea3d0439874eaacf1a0400d3187, type: 2}
+  - {fileID: 11400000, guid: 28adee6f9bc628a458d73af2ee208539, type: 2}
+  - {fileID: 11400000, guid: 2e89d287c166a444785ed202efb80ef4, type: 2}
+  - {fileID: 11400000, guid: c30c420b4431f1b4b882cd82bc6fece0, type: 2}
+  stations: []
+  nebula: {fileID: 0}
+  allegiance: {fileID: 0}

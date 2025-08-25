@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Xyrenthal Abyss Planet 3
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 878b5621fa67aec4e9b961f7a7a38c13, type: 2}
+  - {fileID: 11400000, guid: c62be7332c9774f45bab40ed8ffbaaf9, type: 2}
+  - {fileID: 11400000, guid: fd20491d8de3c7442bddb5a41858ade7, type: 2}
+  resources:
+  - {fileID: 11400000, guid: ab423e4896778034dadb8da8201a18b5, type: 2}
+  type: 1

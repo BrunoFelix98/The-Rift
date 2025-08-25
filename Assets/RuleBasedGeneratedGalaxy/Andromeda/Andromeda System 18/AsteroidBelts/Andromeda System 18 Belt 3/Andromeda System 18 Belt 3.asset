@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Andromeda System 18 Belt 3
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: ba9f9c8c0f82f0046bc119dc5c2c51e4, type: 2}
+  - {fileID: 11400000, guid: 6ae3fab29b8d20444b93ffad06cc4e58, type: 2}
+  - {fileID: 11400000, guid: d96475272446c98408ca819337e1b0d1, type: 2}
+  - {fileID: 11400000, guid: 1eb57d8258170f6429c7e657cce5f66f, type: 2}
+  - {fileID: 11400000, guid: 53318ccddef70e24a9e225a759bfff30, type: 2}
+  - {fileID: 11400000, guid: 3c2d39dc6e347424db226d45223f7f3e, type: 2}
+  - {fileID: 11400000, guid: 5736a73159e2ac24e88651e9cddad606, type: 2}
+  - {fileID: 11400000, guid: 37910941e4b5d7a4aa28bd57dd7518f6, type: 2}
+  type: 2

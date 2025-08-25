@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6e96960221005e4b9904094db5b6de4, type: 3}
+  m_Name: Water_405ab26f-2900-4009-a747-309d90d20c1d
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceSO
+  resourceName: Water
+  resourceDescription: The essence of life.
+  minQuantity: 50
+  maxQuantity: 100
+  resourceWeight: 20
+  resourceCategory: 0
+  celestialType:
+  - TEMPERATE
+  - ICE
+  allowedFactions:
+  - Universal

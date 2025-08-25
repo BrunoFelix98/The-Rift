@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Milky Way System 24 Planet 4
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 18676d2e1e9fabe4ea3b939e5a42823e, type: 2}
+  - {fileID: 11400000, guid: 1edf2d87d238b9445aedd15cd6e6a3f1, type: 2}
+  - {fileID: 11400000, guid: 411aba51c88ee7c4789f832527d17dd4, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 6c8b6a7d1b71b584499e9db014215287, type: 2}
+  type: 0

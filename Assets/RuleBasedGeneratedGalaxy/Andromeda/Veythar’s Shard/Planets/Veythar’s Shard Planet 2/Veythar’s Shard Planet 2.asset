@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: "Veythar\u2019s Shard Planet 2"
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 1b631170b5aeeb24693a501c000f7e11, type: 2}
+  - {fileID: 11400000, guid: e66c32427002d014d932896391c1cace, type: 2}
+  - {fileID: 11400000, guid: 8044c7637fe8e5942801fa7e644a3c19, type: 2}
+  resources:
+  - {fileID: 11400000, guid: b3580b6325c8f6b4093248289df6f6f9, type: 2}
+  - {fileID: 11400000, guid: 5681357473d5fda42a2613b947592a5d, type: 2}
+  - {fileID: 11400000, guid: 407c912482df66a468e3f3bf56e84c67, type: 2}
+  type: 3

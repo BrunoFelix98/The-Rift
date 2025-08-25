@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Nyxhalor Rift Planet 5
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 384379d38deddef4a9f1fd6ab81e0c95, type: 2}
+  - {fileID: 11400000, guid: 7338e9763ebae144bba44e1a84528430, type: 2}
+  - {fileID: 11400000, guid: c5a2216e56b104e4996632a4906f21d4, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 51c43d1b00d85ef4cbde21b31311faf9, type: 2}
+  type: 0

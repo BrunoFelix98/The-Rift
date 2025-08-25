@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Milky Way System 37 Planet 5
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: d5b4e9467fe2da145bbf2002e64f6101, type: 2}
+  - {fileID: 11400000, guid: 5beccee647eea5a4694bed566e3c3420, type: 2}
+  - {fileID: 11400000, guid: d4df4f3228af21f4388b62f04dea3d97, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 6a1dce6566be3214aa354c4cd79e1b6d, type: 2}
+  type: 0

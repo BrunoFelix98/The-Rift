@@ -1,0 +1,28 @@
+{
+  "factions": [
+    {
+      "factionName": "Aldewhara Kinship",
+      "homeGalaxy": "Sombrero",
+      "corporations": [ "Aldewhara" ],
+      "leaderNames": [ "ADD LATER" ],
+      "starNames": [ "Jorewa" ],
+      "requiresNebulas": false
+    },
+    {
+      "factionName": "Zypheri Dominion",
+      "homeGalaxy": "Andromeda",
+      "corporations": [ "Zypheri Dominion", "Choir of Silence", "Choir of Thunder", "Choir of Echoes", "Choir of Crystal Hymns" ],
+      "leaderNames": [ "Irrythis Veyloche", "Xyrenthal S.", "Veythar T.", "Chorvane E.", "Caelcryst C." ],
+      "starNames": [ "Lorynth", "Auralis Prime", "Veythar’s Shard", "Chorvane Echo", "Irrithal Veil", "Thryssaline", "Nyxhalor Rift", "Caelcryst Dominion", "Xyrenthal Abyss" ],
+      "requiresNebulas": true
+    },
+    {
+      "factionName": "Xirn",
+      "homeGalaxy": "Sombrero",
+      "corporations": [ "Xirn", "Iron Calculus", "SpliceBrood", "Shroud Assembly", "Overkill Creed", "Weldborn" ],
+      "leaderNames": [ "ADD LATER" ],
+      "starNames": [ "Cyberstan" ],
+      "requiresNebulas": false
+    }
+  ]
+}

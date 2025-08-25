@@ -1,0 +1,104 @@
+{
+	"resources": [
+		{
+			"resourceName": "Iron",
+			"resourceDescription": "Common ore.",
+			"minQuantity": 25,
+			"maxQuantity": 120,
+			"resourceWeight": 1.0,
+			"category": "Asteroid",
+			"celestialType": [ "ROCKY" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Gold",
+			"resourceDescription": "Rare ore.",
+			"minQuantity": 25,
+			"maxQuantity": 50,
+			"resourceWeight": 10,
+			"category": "Moon",
+			"celestialType": [ "ROCKY" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Platinum",
+			"resourceDescription": "Very Rare ore.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Planet",
+			"celestialType": [ "ROCKY" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Microorganisms",
+			"resourceDescription": "Organic matter.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Planet",
+			"celestialType": [ "TEMPERATE", "ICE" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Water",
+			"resourceDescription": "The essence of life.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Asteroid",
+			"celestialType": [ "TEMPERATE", "ICE" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Blue ICE",
+			"resourceDescription": "Extremely cold ICE.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Moon",
+			"celestialType": [ "ICE" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Oxygen",
+			"resourceDescription": "What most organisms breathe.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Planet",
+			"celestialType": [ "TEMPERATE", "GAS" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Hydrogen",
+			"resourceDescription": "The most common element in the universe.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Asteroid",
+			"celestialType": [ "TEMPERATE", "GAS" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Hydrogen",
+			"resourceDescription": "The most common element in the universe.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Moon",
+			"celestialType": [ "TEMPERATE", "GAS" ],
+			"allowedFactions": [ "Universal" ]
+		},
+		{
+			"resourceName": "Hydrogen",
+			"resourceDescription": "The most common element in the universe.",
+			"minQuantity": 50,
+			"maxQuantity": 100,
+			"resourceWeight": 20,
+			"category": "Planet",
+			"celestialType": [ "TEMPERATE", "GAS" ],
+			"allowedFactions": [ "Universal" ]
+		}
+	]
+}

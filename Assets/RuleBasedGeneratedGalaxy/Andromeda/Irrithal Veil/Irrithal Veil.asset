@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Irrithal Veil
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Irrithal Veil
+  stars:
+  - {fileID: 11400000, guid: 2e5d53abc7d70d948bb598db619c7188, type: 2}
+  planets: []
+  asteroidBelts:
+  - {fileID: 11400000, guid: 7f88aaa0f23acba4181edd0eac1d51cf, type: 2}
+  - {fileID: 11400000, guid: 30284af689d9516439a6b28945362415, type: 2}
+  gates:
+  - {fileID: 11400000, guid: 08b7392e0fd5306418476d14d9a5ff9c, type: 2}
+  stations: []
+  nebula: {fileID: 11400000, guid: 4267dbd240afb2a46a974ace49e52022, type: 2}
+  allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

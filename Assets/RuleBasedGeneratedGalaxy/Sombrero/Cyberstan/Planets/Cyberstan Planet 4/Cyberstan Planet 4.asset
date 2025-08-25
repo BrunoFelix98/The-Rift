@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Cyberstan Planet 4
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 368865fa77579ea4a8deb5818dfb7a42, type: 2}
+  - {fileID: 11400000, guid: b9985127f1e1c5446b6be14ac79506f8, type: 2}
+  - {fileID: 11400000, guid: 0d026e8f453a05a4494e8ef44a4ac541, type: 2}
+  resources:
+  - {fileID: 11400000, guid: de15e3faeca16a647a4cd1c40fdc4574, type: 2}
+  type: 1

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Sombrero System 40 Belt 1
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: ad8819a5f170db84db72de433c22978f, type: 2}
+  - {fileID: 11400000, guid: 98b38cee7c2cfdf47bfdf4c1facb183a, type: 2}
+  - {fileID: 11400000, guid: 17ba45248087a764da946de4231b75d8, type: 2}
+  - {fileID: 11400000, guid: e56abe4a52d273140a0d7460f0eb38ea, type: 2}
+  - {fileID: 11400000, guid: 002bdd5a868433f499db56efe729fbe9, type: 2}
+  - {fileID: 11400000, guid: 73f57c4675f3a3f4da1a55a21714406f, type: 2}
+  type: 3

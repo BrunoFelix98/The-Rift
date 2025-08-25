@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Chorvane Echo Planet 4
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 258ffdc0202240840b8b3bf927b6f367, type: 2}
+  - {fileID: 11400000, guid: ad84c1fa09c2fd04b9deb80d7ac81d5c, type: 2}
+  - {fileID: 11400000, guid: 642e8b8fd266af94896a045e322381f0, type: 2}
+  resources:
+  - {fileID: 11400000, guid: ab4eef025224ecb4f9320ffb0eb6e87d, type: 2}
+  - {fileID: 11400000, guid: 95fd39ab88d823a498a6675289774310, type: 2}
+  - {fileID: 11400000, guid: 9019862de89e70042950862d22886aa7, type: 2}
+  type: 3

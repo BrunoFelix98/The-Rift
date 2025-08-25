@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Appolid NJ440
+  m_EditorClassIdentifier: 
+  systemName: NJ440
+  planets:
+  - {fileID: 11400000, guid: 3aa6e54b0ce24ff4cbb58ca6e56b8178, type: 2}
+  stars:
+  - {fileID: 11400000, guid: 0579bda863c258649b1fa7e63547d1a5, type: 2}
+  stations: []
+  gates:
+  - {fileID: 11400000, guid: d2eea6e54d3568848adf944eeaf4e3c2, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 4630f982be4e8b848a8c85cfbed12fe4, type: 2}

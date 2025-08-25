@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Andromeda System 23 Belt 3
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: 8c90212f86eb83448b6373c42209199a, type: 2}
+  - {fileID: 11400000, guid: f879c1b894650f04084ae62c4f2463ab, type: 2}
+  - {fileID: 11400000, guid: 44b6508831f3b2242a0708b2a278f9c1, type: 2}
+  - {fileID: 11400000, guid: 7608096729c075e41bae3820292ebcb3, type: 2}
+  - {fileID: 11400000, guid: 6c5de87c10ef91b4f84f6eb8a2fbb856, type: 2}
+  - {fileID: 11400000, guid: 4f23af247d227b441b945146a5d460ae, type: 2}
+  - {fileID: 11400000, guid: a914e397340f84b4bb17223052948f44, type: 2}
+  - {fileID: 11400000, guid: 6eec38cda53126d4e8764adbb9984a3b, type: 2}
+  - {fileID: 11400000, guid: 5ebbde8bb8091bd4db76bbc359140fc0, type: 2}
+  - {fileID: 11400000, guid: cbb123c2d5da3d449b5a29faec4d701e, type: 2}
+  - {fileID: 11400000, guid: 23ca4376376816b4f83022ad8b0c58b8, type: 2}
+  - {fileID: 11400000, guid: 07ddc21f612652745826af57c9ee7f21, type: 2}
+  type: 3

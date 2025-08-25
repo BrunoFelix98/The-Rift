@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Sombrero System 15 Belt 1
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: c01903ce0b6e1c045ac4bb6f930c7f96, type: 2}
+  - {fileID: 11400000, guid: b5dc6632af08f7b46932220e9931383d, type: 2}
+  - {fileID: 11400000, guid: 19c86d696741b75419d27014b8c7c335, type: 2}
+  - {fileID: 11400000, guid: 0374e81ea40b23b4d9a9ee0b729fb2b5, type: 2}
+  - {fileID: 11400000, guid: a53f2296f9733e347907881c3fbd4068, type: 2}
+  - {fileID: 11400000, guid: 6390ce73f59972e488d72618e4cd4b89, type: 2}
+  - {fileID: 11400000, guid: 44093762bba37b4498986103a25a4442, type: 2}
+  - {fileID: 11400000, guid: 6eb54e50960675e40818442827d381ae, type: 2}
+  - {fileID: 11400000, guid: 151d4c11c4e6e75469555fda385159f0, type: 2}
+  - {fileID: 11400000, guid: ef82ef770d004a0418eca74ad41dac53, type: 2}
+  - {fileID: 11400000, guid: 842668bea2a43ee48b4659915ed921f5, type: 2}
+  - {fileID: 11400000, guid: 7266503be5867fb4d9343075c3b247ab, type: 2}
+  - {fileID: 11400000, guid: 2046e94f050f503499ee3dfddf29202e, type: 2}
+  - {fileID: 11400000, guid: 967dbe37f45bb5b418e3bc6943adb204, type: 2}
+  type: 2

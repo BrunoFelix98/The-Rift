@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Chorvane Echo
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Chorvane Echo
+  stars:
+  - {fileID: 11400000, guid: c9e4f600f9de6b24ab10974774180703, type: 2}
+  - {fileID: 11400000, guid: c5fa5545b07ee9a45ab8849b31b0dd1c, type: 2}
+  planets: []
+  asteroidBelts:
+  - {fileID: 11400000, guid: b3bfdf1277188e84f960cd5b1c73a596, type: 2}
+  - {fileID: 11400000, guid: 0e320dcd32396d64fa47d69f6ea7c978, type: 2}
+  gates:
+  - {fileID: 11400000, guid: f26cafadc96b94e4ea4d7302e44f0012, type: 2}
+  - {fileID: 11400000, guid: e8c2e01e0b3e5b644954c56b16ce3009, type: 2}
+  - {fileID: 11400000, guid: 0b3e6180038a2484db4ff52efb15537b, type: 2}
+  - {fileID: 11400000, guid: 8f739796d820e6b429842c70c28971a7, type: 2}
+  stations: []
+  nebula: {fileID: 11400000, guid: 464517502e0818444834709f13d18d19, type: 2}
+  allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

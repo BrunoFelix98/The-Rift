@@ -1,0 +1,8 @@
+{
+  "galaxies": [
+    { "name": "Milky Way" },
+    { "name": "Andromeda" },
+    { "name": "Pegasus" },
+    { "name": "Sombrero" }
+  ]
+}

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Pegasus System 13
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Pegasus System 13
+  stars:
+  - {fileID: 11400000, guid: 39a9e5ebba5e9264b9fd15582d59ccc1, type: 2}
+  planets:
+  - {fileID: 11400000, guid: 15d3d492bb1f28a4d9c8534753c5872a, type: 2}
+  - {fileID: 11400000, guid: f559c70b1db8ac8418d3a2da8b3ea1b7, type: 2}
+  - {fileID: 11400000, guid: 1418c3f03b24ca44f9e7cae0b4ecd4a6, type: 2}
+  - {fileID: 11400000, guid: 72bccb711c8f49f4085c9d26e0f83407, type: 2}
+  - {fileID: 11400000, guid: 595fa065990eb5b47ace6c5630a4f753, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 363f73abf27267649b6e6a850a0404f7, type: 2}
+  - {fileID: 11400000, guid: d74dd4ae37978a14e8922084a5d153e6, type: 2}
+  - {fileID: 11400000, guid: 586f3064138c0e84c84fd070819e1b59, type: 2}
+  gates:
+  - {fileID: 11400000, guid: cfc9cb90dff670f4e9a6b8ee087fbee6, type: 2}
+  - {fileID: 11400000, guid: f657c64c7d743ce43b4f2184f75dabc1, type: 2}
+  - {fileID: 11400000, guid: 90f1a19b15c96324087a7da4201dcf50, type: 2}
+  stations: []
+  nebula: {fileID: 0}
+  allegiance: {fileID: 0}

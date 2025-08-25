@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Sombrero System 14
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Sombrero System 14
+  stars:
+  - {fileID: 11400000, guid: c76d02aba81e27947950d600ea52439b, type: 2}
+  planets:
+  - {fileID: 11400000, guid: ba114b5b53ce9e6488abaea968397535, type: 2}
+  - {fileID: 11400000, guid: c75cd7e90617112449a0a9c11af859a8, type: 2}
+  - {fileID: 11400000, guid: 50ae90d0b218e0745b90d0ec4ae18d04, type: 2}
+  - {fileID: 11400000, guid: e3fd6925da263b24e8072d8e66132358, type: 2}
+  - {fileID: 11400000, guid: 2af1f96782abb604b9f717f3f5e29575, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 58ce7fe6562268b4d9eb4e00500b08aa, type: 2}
+  - {fileID: 11400000, guid: 9719d97261c6be54280f6f03e697906a, type: 2}
+  - {fileID: 11400000, guid: f128126951a268747b8cf66c4ff11947, type: 2}
+  gates:
+  - {fileID: 11400000, guid: 20299a07010630242931e34b373fc221, type: 2}
+  - {fileID: 11400000, guid: 5499c5347e0af0642afed686916abfe0, type: 2}
+  - {fileID: 11400000, guid: 4abad05df9962b043a29d0f86a7ec118, type: 2}
+  - {fileID: 11400000, guid: f2918577b47278741979f5c9857efb8c, type: 2}
+  stations: []
+  nebula: {fileID: 0}
+  allegiance: {fileID: 0}

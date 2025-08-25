@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Pegasus System 34 Belt 2
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: 01ef41462ec9d334bbde465160a1c380, type: 2}
+  - {fileID: 11400000, guid: 7b6193c16c7c97c4199b91b3e6759884, type: 2}
+  - {fileID: 11400000, guid: 276aa2410cca2f4478c79979acf2bc63, type: 2}
+  - {fileID: 11400000, guid: 718fab71e5c932f4fb6e53f69fd6aee3, type: 2}
+  - {fileID: 11400000, guid: b3e160fa1a2ad224bbe9be522b3886e4, type: 2}
+  - {fileID: 11400000, guid: 0d62fafd6787a02459f35d8119d9fd2f, type: 2}
+  - {fileID: 11400000, guid: 2aced5107674074419863dec2a767e33, type: 2}
+  - {fileID: 11400000, guid: 5ed52f9195efcd34fa8555679baaf7dd, type: 2}
+  - {fileID: 11400000, guid: 82a0e5a8ca1a9124babfe47141e21021, type: 2}
+  type: 0

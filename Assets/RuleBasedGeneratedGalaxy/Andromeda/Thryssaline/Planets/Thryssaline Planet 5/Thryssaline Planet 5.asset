@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Thryssaline Planet 5
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 5cd00e378ec8f694ab8fa6ca48fd4cfb, type: 2}
+  - {fileID: 11400000, guid: 9114f4877f6f4cc49b74e6664a07f6ce, type: 2}
+  - {fileID: 11400000, guid: 7934ec0c2e9f70c4687b141f183880ff, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 6871e946937892645a77a2ec1d684d10, type: 2}
+  - {fileID: 11400000, guid: 0a7ec0e2f099c4e48861b959614b5ee8, type: 2}
+  - {fileID: 11400000, guid: ed8126de3807f304087b41693ac1cc2e, type: 2}
+  type: 3

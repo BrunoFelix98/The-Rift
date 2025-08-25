@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Sombrero System 16 Planet 4
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 05840a86aab75fa4ebcabdb6c319b848, type: 2}
+  - {fileID: 11400000, guid: 1a25d84fde9590c4b8212e0517e7033c, type: 2}
+  - {fileID: 11400000, guid: d4ba5ab1fc9ce4f419a27004c9bed885, type: 2}
+  resources:
+  - {fileID: 11400000, guid: a6522ecebaf9bbe45816f2712e697c5d, type: 2}
+  type: 0

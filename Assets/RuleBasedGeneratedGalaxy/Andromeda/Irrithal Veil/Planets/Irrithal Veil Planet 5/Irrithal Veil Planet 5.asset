@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Irrithal Veil Planet 5
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 6a5bab74a0fd1c34ba201ce298f06c5a, type: 2}
+  - {fileID: 11400000, guid: a8f10cb3f9bab1a409c858b762526376, type: 2}
+  - {fileID: 11400000, guid: 1b6e52ac54a4ba149aa97c2b3af5316b, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 3b5d2a5377d8ce444a3efc5d984d3412, type: 2}
+  - {fileID: 11400000, guid: ca8c828be6945bd4fb7500db89464e70, type: 2}
+  type: 2

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ae7d677a5d8abd4cb416440a654bc1d, type: 3}
+  m_Name: Revenant
+  m_EditorClassIdentifier: 
+  shipName: Revenant
+  builtBy: Olm
+  currentOwner: null
+  weightClass: 0
+  shieldHP: 1500
+  shieldResistances: {fileID: 11400000, guid: 80a0fef26c7160b4fadb40660bff9ba4, type: 2}
+  armorHP: 4000
+  armorResistances: {fileID: 11400000, guid: dc94fcdf832767d4f855642dfb169ea5, type: 2}
+  speed: 150
+  tonnage: 50
+  cargoCapacity: 25
+  longAxisLength: 50
+  blueprint: {fileID: 11400000, guid: 857c4cbe3771ce34da5aaf723f60beac, type: 2}
+  highSlotModules:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  mediumSlotModules:
+  - {fileID: 0}
+  - {fileID: 0}
+  lowSlotModules:
+  - {fileID: 0}
+  - {fileID: 0}
+  rigSlotModules:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  capitalSlotModules: []

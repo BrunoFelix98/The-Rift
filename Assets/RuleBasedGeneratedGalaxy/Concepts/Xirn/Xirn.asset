@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210886e4abdad6d43906dc89f6002dc0, type: 3}
+  m_Name: Xirn
+  m_EditorClassIdentifier: Assembly-CSharp::ConceptSO
+  conceptName: Xirn
+  description: 'Created for faction: Xirn'
+  allegiance: {fileID: 0}
+  leader: {fileID: 11400000, guid: 7ea072f31f45d8842b089b53de4b3765, type: 2}
+  memberCorporations:
+  - {fileID: 11400000, guid: 11a8f26a5bf6bfb4fb0e823adf4032b9, type: 2}
+  - {fileID: 11400000, guid: b1b2631e29ba8544aba6675ee5f53bf3, type: 2}
+  - {fileID: 11400000, guid: 0379df82fef79e54bb1b097fee6defde, type: 2}
+  - {fileID: 11400000, guid: 810ae12a3c8b4ed4e97d79b691c50b9f, type: 2}
+  - {fileID: 11400000, guid: 4e67aa00e70786c4f88dc22e6a521c74, type: 2}
+  members: []

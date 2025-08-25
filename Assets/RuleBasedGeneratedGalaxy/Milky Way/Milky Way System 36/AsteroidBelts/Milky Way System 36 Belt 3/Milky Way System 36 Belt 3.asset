@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Milky Way System 36 Belt 3
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: bb349199a8028a74385aa08681b60ce8, type: 2}
+  - {fileID: 11400000, guid: 20cbe7e8f7b425d47b8c349b8db3cbbe, type: 2}
+  - {fileID: 11400000, guid: d57da2efe0121f04bbd0d30624f95645, type: 2}
+  - {fileID: 11400000, guid: 3e92897d0211c0142a1132d01c31e8f0, type: 2}
+  - {fileID: 11400000, guid: 24482229c91de874c9b73741158a164c, type: 2}
+  - {fileID: 11400000, guid: 42ed9b3c39d4cb7479d4a2909ac72510, type: 2}
+  - {fileID: 11400000, guid: 910dfc071ebc834438f18a8bfbe79715, type: 2}
+  - {fileID: 11400000, guid: d7cbbcb348ee2e74ea0f12a33f7a8d55, type: 2}
+  - {fileID: 11400000, guid: 2d6cb072d87b9bd439fa0bfb7fefb38a, type: 2}
+  - {fileID: 11400000, guid: 05098a365b696f44e8d4c64c27d31e8e, type: 2}
+  type: 3

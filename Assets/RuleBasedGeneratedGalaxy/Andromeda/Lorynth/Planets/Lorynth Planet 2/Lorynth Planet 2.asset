@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Lorynth Planet 2
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: 56664c990d41778439b2fa3fb5e09750, type: 2}
+  - {fileID: 11400000, guid: 5d87613ec6bfe3d4dbb02a2e1cb34597, type: 2}
+  - {fileID: 11400000, guid: dede03b12b6db1741a2e35588383483b, type: 2}
+  resources:
+  - {fileID: 11400000, guid: c7b1e31b628434245a0d048290e48b3c, type: 2}
+  type: 0

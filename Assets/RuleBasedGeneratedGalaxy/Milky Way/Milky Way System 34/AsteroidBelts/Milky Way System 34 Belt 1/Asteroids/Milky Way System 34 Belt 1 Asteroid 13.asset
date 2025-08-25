@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd5336e1362ab95489edbcce59ff7b71, type: 3}
+  m_Name: Milky Way System 34 Belt 1 Asteroid 13
+  m_EditorClassIdentifier: 
+  asteroidName: Red boulder
+  resources:
+  - {fileID: 11400000, guid: c6f459084f2192745920c6281319b1f2, type: 2}
+  - {fileID: 11400000, guid: 4fc66d298fd14d54db0526554c53365b, type: 2}
+  type: 0

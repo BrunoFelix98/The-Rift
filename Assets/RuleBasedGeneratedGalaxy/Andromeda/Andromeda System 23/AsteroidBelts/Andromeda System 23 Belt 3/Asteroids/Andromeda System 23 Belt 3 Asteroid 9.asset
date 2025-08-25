@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd5336e1362ab95489edbcce59ff7b71, type: 3}
+  m_Name: Andromeda System 23 Belt 3 Asteroid 9
+  m_EditorClassIdentifier: 
+  asteroidName: Red boulder
+  resources:
+  - {fileID: 11400000, guid: fe5a3d458b195de4490f1bc9c1f7a067, type: 2}
+  - {fileID: 11400000, guid: cdb686a8517ecbc439ffb79a39248bb2, type: 2}
+  type: 0

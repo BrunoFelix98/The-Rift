@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6804d8c551b3bb429979dc2104ee027, type: 3}
+  m_Name: Andromeda System 20 Planet 1
+  m_EditorClassIdentifier: 
+  planetName: Elara
+  moons:
+  - {fileID: 11400000, guid: b12d8ccd56b7e114499d3b16e0a2934c, type: 2}
+  - {fileID: 11400000, guid: a28ccf56e5f1d4640a5e9ab69de04c23, type: 2}
+  - {fileID: 11400000, guid: f2223820020a1cc4e99b59826bb15fb9, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 85cc3de86399c204bbebbd440d1f8af0, type: 2}
+  type: 1

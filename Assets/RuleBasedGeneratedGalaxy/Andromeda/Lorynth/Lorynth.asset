@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Lorynth
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Lorynth
+  stars:
+  - {fileID: 11400000, guid: d2d12249237d5824e8b3c62764960c7d, type: 2}
+  planets:
+  - {fileID: 11400000, guid: cb80ddb359e04ff40ad11d78ed98dddd, type: 2}
+  - {fileID: 11400000, guid: eef4fa776c9646142b0c8cd865dfa0dc, type: 2}
+  - {fileID: 11400000, guid: 93a68623654ca3645a46c851c70fcc06, type: 2}
+  - {fileID: 11400000, guid: bba332859c3f5814995d899ee95b6871, type: 2}
+  - {fileID: 11400000, guid: 9592916760b6aba40bac115462ee7d14, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 2e449f89ab5fb724ea2493e23cd9a356, type: 2}
+  - {fileID: 11400000, guid: 85cc2c7f2128b3b4184ba63b4802591c, type: 2}
+  - {fileID: 11400000, guid: 8536d56b12309b147bdb0e5a3027f02e, type: 2}
+  - {fileID: 11400000, guid: 304b9fa9066410f488a7b079d40aee96, type: 2}
+  gates:
+  - {fileID: 11400000, guid: 0bedaa6777095e54ba51a23a3954a928, type: 2}
+  - {fileID: 11400000, guid: 7b1ec8aaec43d6c4d88cf28fe2b0adc5, type: 2}
+  - {fileID: 11400000, guid: 56a77b3f385b8734386e04c6d7472199, type: 2}
+  - {fileID: 11400000, guid: f51d35ff1a198d744b73e9606312bc3c, type: 2}
+  stations:
+  - {fileID: 11400000, guid: ca11223f74668354987c6bf93333ee4c, type: 2}
+  nebula: {fileID: 11400000, guid: d69443ba72d561d4ea530c7d990e9379, type: 2}
+  allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

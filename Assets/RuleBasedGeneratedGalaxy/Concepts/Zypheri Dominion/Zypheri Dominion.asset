@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210886e4abdad6d43906dc89f6002dc0, type: 3}
+  m_Name: Zypheri Dominion
+  m_EditorClassIdentifier: Assembly-CSharp::ConceptSO
+  conceptName: Zypheri Dominion
+  description: 'Created for faction: Zypheri Dominion'
+  allegiance: {fileID: 0}
+  leader: {fileID: 11400000, guid: c48f0d805f5fad04bbbb17c9c957ad92, type: 2}
+  memberCorporations:
+  - {fileID: 11400000, guid: 79664fb67405801489ea4120f1a22623, type: 2}
+  - {fileID: 11400000, guid: b1a099e76c4cb014f9ae2457ef60a355, type: 2}
+  - {fileID: 11400000, guid: b75aaa5f922ac664987109e4b8e4a017, type: 2}
+  - {fileID: 11400000, guid: 546cc74ff244160409540c8760f3f4bb, type: 2}
+  members: []
