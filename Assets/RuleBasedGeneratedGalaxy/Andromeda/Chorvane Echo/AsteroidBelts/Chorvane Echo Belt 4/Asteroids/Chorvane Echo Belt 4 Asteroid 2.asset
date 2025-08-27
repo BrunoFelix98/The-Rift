@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd5336e1362ab95489edbcce59ff7b71, type: 3}
+  m_Name: Chorvane Echo Belt 4 Asteroid 2
+  m_EditorClassIdentifier: 
+  asteroidName: Red boulder
+  resources:
+  - {fileID: 11400000, guid: a864b6e2fb71af8468d47f9a80ce751d, type: 2}
+  - {fileID: 11400000, guid: b1575eff298bda649bafec493f52ea0d, type: 2}
+  - {fileID: 11400000, guid: bc37a6346381a7a439f5815f3d9caa66, type: 2}
+  type: 0

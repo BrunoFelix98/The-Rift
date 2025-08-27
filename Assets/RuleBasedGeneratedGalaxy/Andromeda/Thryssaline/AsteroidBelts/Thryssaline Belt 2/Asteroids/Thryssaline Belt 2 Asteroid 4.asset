@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Thryssaline Belt 2 Asteroid 4
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 750b34d18f2f6e3458ed508e9acaff8c, type: 2}
+  - {fileID: 11400000, guid: 91d141f6bf67d33449d880a5dc0da035, type: 2}
+  - {fileID: 11400000, guid: 4cd4bcc6dd9e0214d8f955dccab1afc4, type: 2}
   type: 0

@@ -15,16 +15,22 @@ MonoBehaviour:
   systemName: Chorvane Echo
   stars:
   - {fileID: 11400000, guid: c9e4f600f9de6b24ab10974774180703, type: 2}
-  - {fileID: 11400000, guid: c5fa5545b07ee9a45ab8849b31b0dd1c, type: 2}
-  planets: []
+  planets:
+  - {fileID: 11400000, guid: 028b5296c7ecfd148a05eb7a6d7ec7c4, type: 2}
+  - {fileID: 11400000, guid: 32fc94981001817469bb75259f7f0213, type: 2}
+  - {fileID: 11400000, guid: 518c29b5025b22b41ae46de30bdb156c, type: 2}
+  - {fileID: 11400000, guid: d9f02c1872bf99b49a02248df06fa821, type: 2}
+  - {fileID: 11400000, guid: 3cfd0332bd50ee7408660d659ee93ba0, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: b3bfdf1277188e84f960cd5b1c73a596, type: 2}
   - {fileID: 11400000, guid: 0e320dcd32396d64fa47d69f6ea7c978, type: 2}
+  - {fileID: 11400000, guid: 0f30ab7181fe113459ce6a00ca8c957b, type: 2}
+  - {fileID: 11400000, guid: fec21703e13be5f42ba79aeb6d537469, type: 2}
   gates:
-  - {fileID: 11400000, guid: f26cafadc96b94e4ea4d7302e44f0012, type: 2}
-  - {fileID: 11400000, guid: e8c2e01e0b3e5b644954c56b16ce3009, type: 2}
+  - {fileID: 11400000, guid: 3aaf4e694be44884d91a70637237246c, type: 2}
   - {fileID: 11400000, guid: 0b3e6180038a2484db4ff52efb15537b, type: 2}
-  - {fileID: 11400000, guid: 8f739796d820e6b429842c70c28971a7, type: 2}
-  stations: []
+  - {fileID: 11400000, guid: 0985fe52d97a55d458f4a48d2f5b486e, type: 2}
+  stations:
+  - {fileID: 11400000, guid: e84fa58a7980f5b4ba2d72474b9f8dd7, type: 2}
   nebula: {fileID: 11400000, guid: 464517502e0818444834709f13d18d19, type: 2}
   allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

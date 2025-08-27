@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Caelcryst Dominion Belt 1 Asteroid 4
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: ce92ddaf0ae1d8f40b970cd462c35596, type: 2}
+  - {fileID: 11400000, guid: eabeb4c54b47e2649832fcd8552659a4, type: 2}
+  - {fileID: 11400000, guid: 4d038519eeb653d468635a45c79bf2de, type: 2}
   type: 0

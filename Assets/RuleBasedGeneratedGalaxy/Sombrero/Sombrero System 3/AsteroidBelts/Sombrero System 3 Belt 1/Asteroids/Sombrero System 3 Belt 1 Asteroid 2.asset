@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Sombrero System 3 Belt 1 Asteroid 2
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: ed15075d9b725244199207efafdddbce, type: 2}
+  - {fileID: 11400000, guid: a247385f14ee60d4eb1cbec9d7d7817f, type: 2}
+  - {fileID: 11400000, guid: 169ab38241e5fe1469a3f47727fbd06d, type: 2}
   type: 0

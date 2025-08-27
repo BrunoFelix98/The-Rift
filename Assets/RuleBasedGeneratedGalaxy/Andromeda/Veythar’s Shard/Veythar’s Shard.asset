@@ -15,14 +15,22 @@ MonoBehaviour:
   systemName: "Veythar\u2019s Shard"
   stars:
   - {fileID: 11400000, guid: 0cd3153118bb568469bc2947c0e983bc, type: 2}
-  planets: []
+  planets:
+  - {fileID: 11400000, guid: 09f0a674c4aade348b633d095aa3972e, type: 2}
+  - {fileID: 11400000, guid: 5b42e5a0de306c84c91d1f1a6a6d267e, type: 2}
+  - {fileID: 11400000, guid: 4646d916e8e8e0f4dbfbc7290ad018cf, type: 2}
+  - {fileID: 11400000, guid: 5560a208d82e7bb48b92c466e4d03ae7, type: 2}
+  - {fileID: 11400000, guid: 8f1bcdbe904469b4fafb7a75495406a6, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: d97079b0c33b60b44a2f5878bd6512af, type: 2}
   - {fileID: 11400000, guid: d918f419c9ade6245afd054e80944137, type: 2}
   gates:
-  - {fileID: 11400000, guid: 834665576e2bb904bb6368462803f797, type: 2}
   - {fileID: 11400000, guid: c919a0da676cec04095b89ad7f162289, type: 2}
-  - {fileID: 11400000, guid: 179d24821aff9d84493782afa29b14bf, type: 2}
-  stations: []
+  - {fileID: 11400000, guid: 084acea8b5603d2489958a091b7e8000, type: 2}
+  - {fileID: 11400000, guid: 1427e1082b0014b4c863112b5ffbfc39, type: 2}
+  - {fileID: 11400000, guid: 11baeac62fe318d44b2b7b5542fba4a9, type: 2}
+  - {fileID: 11400000, guid: b09fa1a1e9d08b6429630fc1239f6df6, type: 2}
+  stations:
+  - {fileID: 11400000, guid: 9538f5ab8ca74b64e84b7873e4f54dc6, type: 2}
   nebula: {fileID: 11400000, guid: 50e5912c0a0627d47bd45053bd4d2ccd, type: 2}
   allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

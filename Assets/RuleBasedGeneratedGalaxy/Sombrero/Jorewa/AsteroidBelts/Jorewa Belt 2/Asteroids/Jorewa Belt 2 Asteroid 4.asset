@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Jorewa Belt 2 Asteroid 4
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources:
-  - {fileID: 11400000, guid: f26633c8b469b974b891bccbf2a5402e, type: 2}
+  resources: []
   type: 0

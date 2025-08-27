@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ public class ResourceData
     public int minQuantity;
     public int maxQuantity;
     public float resourceWeight;
-    public string category;
+    public List<string> category;
     public List<string> celestialType;
     public List<string> allowedFactions;
 }
@@ -100,36 +101,65 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
 
     void Start()
     {
-        GenerateAllGalaxies();
+        if (factionsJsonFile == null || resourcesJsonFile == null)
+        {
+            Debug.LogWarning("JSON files not assigned!");
+            return;
+        }
+
+        string factionJsonText = factionsJsonFile.text;        // Main thread read
+        string resourceJsonText = resourcesJsonFile.text;      // Main thread read
+
+        Task.Run(() =>
+        {
+            try
+            {
+                var factions = ParseFactionJson(factionJsonText);
+                var resources = ParseResourceJson(resourceJsonText);
+
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    loadedFactions = factions;
+                    Debug.Log("Factions loaded: " + (factions?.Count ?? 0));
+                    loadedResources = resources;
+                    Debug.Log("Resources loaded: " + (resources?.Count ?? 0));
+                    GenerateAllGalaxies();
+                };
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Error in Task.Run: {ex}");
+            }
+        });
     }
 
     //------------------------File loading---------------------------
 
     //Loads factions from a JSON file
-    private void LoadFactionsFromJSON()
+    private List<FactionData> ParseFactionJson(string json)
     {
-        loadedFactions.Clear();
-
-        var factionList = LoadFromJSON<FactionsListData>(factionsJsonFile, "Factions");
-        if (factionList != null && factionList.factions != null)
+        if (string.IsNullOrEmpty(json))
         {
-            loadedFactions.AddRange(factionList.factions);
+            Debug.LogWarning("Faction JSON is empty!");
+            return new List<FactionData>();
         }
+        var factionList = JsonUtility.FromJson<FactionsListData>(json);
+        return factionList?.factions ?? new List<FactionData>();
     }
 
     //Loads resources from a JSON file
-    private void LoadResourcesFromJSON()
+    private List<ResourceData> ParseResourceJson(string json)
     {
-        loadedResources.Clear();
-
-        var resourceList = LoadFromJSON<ResourceListData>(resourcesJsonFile, "Resources");
-        if (resourceList != null && resourceList.resources != null)
+        if (string.IsNullOrEmpty(json))
         {
-            loadedResources.AddRange(resourceList.resources);
+            Debug.LogWarning("Resource JSON is empty!");
+            return new List<ResourceData>();
         }
+        var resourceList = JsonUtility.FromJson<ResourceListData>(json);
+        return resourceList?.resources ?? new List<ResourceData>();
     }
 
-    private T LoadFromJSON<T>(TextAsset jsonFile, string fileType) where T : class
+    /*private T LoadFromJSON<T>(TextAsset jsonFile, string fileType) where T : class
     {
         if (jsonFile == null)
         {
@@ -150,20 +180,18 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         }
 
         return data;
-    }
+    }*/
 
     //------------------------End of file loading---------------------------
 
     //------------------------Main functions---------------------------
-
     public void GenerateAllGalaxies()
     {
+        Debug.Log("Generating Universe");
         try
         {
             // Clear previously generated systems and load necessary data
             allGeneratedSystems.Clear();
-            LoadFactionsFromJSON();
-            LoadResourcesFromJSON();
 
             // --- 1. Concept Generation ---
             var conceptGenerator = InitializeConceptGenerator();
@@ -282,7 +310,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
                     }
 
                     // Generate celestial bodies for the system
-                    dustLeft = CreateSystemBodies(systemSO, systemFolder, dustLeft, ref stationCount, factionConcept);
+                    CreateSystemBodies(systemSO, systemFolder, dustLeft, ref stationCount, factionConcept);
 
                     // Add the system to the galaxy
                     galaxySO.systems.Add(systemSO);
@@ -671,7 +699,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         var resourceList = new List<ResourceSO>();
 
         // Filter resources by category and celestial type
-        var filteredTemplates = resources.FindAll(resource =>(resource.category == category || resource.category == "Universal") && IsResourceAllowedForCelestialType(resource, bodyType));
+        var filteredTemplates = resources.FindAll(resource => resource.category != null && resource.category.Exists(c => c == category || c == "Universal") && IsResourceAllowedForCelestialType(resource, bodyType));
 
         if (filteredTemplates.Count == 0)
         {
@@ -693,15 +721,21 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
                 resourceSO.maxQuantity = template.maxQuantity;
                 resourceSO.resourceWeight = template.resourceWeight;
 
-                if (Enum.TryParse(template.category, true, out ResourceCategory resourceCategoryEnum))
+                List<ResourceCategory> categories = new List<ResourceCategory>();
+
+                foreach (var categoryItem in template.category)
                 {
-                    resourceSO.resourceCategory = resourceCategoryEnum;
-                }
-                else
-                {
-                    Debug.LogWarning($"Invalid resource category string '{template.category}' in resource template '{template.resourceName}'.");
+                    if (Enum.TryParse(categoryItem, true, out ResourceCategory resourceCategoryEnum))
+                    {
+                        categories.Add(resourceCategoryEnum);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Invalid resource category strings '{template.category}' in resource template '{template.resourceName}'.");
+                    }
                 }
 
+                resourceSO.resourceCategory = categories;
                 // Assign celestial type
                 resourceSO.celestialType = template.celestialType != null ? new List<string>(template.celestialType) : new List<string>();
 

@@ -15,7 +15,7 @@ public class ResourceSO : ScriptableObject
 
     public float resourceWeight;
 
-    public ResourceCategory resourceCategory;
+    public List<ResourceCategory> resourceCategory;
 
     // List of allowed factions by their unique IDs or names
     public List<string> celestialType = new List<string>();

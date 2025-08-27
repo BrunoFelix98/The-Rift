@@ -13,10 +13,6 @@ MonoBehaviour:
   m_Name: Pegasus System 2 Planet 1
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons:
-  - {fileID: 11400000, guid: 988585aadd1ac854f85d8cb769096f44, type: 2}
-  - {fileID: 11400000, guid: 9ab21e07fbe31634fbdf231b2357f0d4, type: 2}
-  - {fileID: 11400000, guid: 45ca9cb98db125949ad821e4ad1ae6fe, type: 2}
-  resources:
-  - {fileID: 11400000, guid: acb2a7c8272b4c949885d159dd6a4b38, type: 2}
+  moons: []
+  resources: []
   type: 0

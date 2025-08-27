@@ -27,8 +27,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 18635f5209064ab46af23f2e05d78383, type: 2}
   gates:
   - {fileID: 11400000, guid: ef5f8b1adf46004428a91d1e6aaf6913, type: 2}
-  - {fileID: 11400000, guid: bafed694506cdca4ab3fef30e5075179, type: 2}
-  - {fileID: 11400000, guid: 1e23d615d9bfb144786ffd0402e4aaf7, type: 2}
+  - {fileID: 11400000, guid: d046184d27f994945a03c1acc3607297, type: 2}
   stations: []
   nebula: {fileID: 0}
   allegiance: {fileID: 0}

@@ -15,7 +15,6 @@ MonoBehaviour:
   systemName: Andromeda System 10
   stars:
   - {fileID: 11400000, guid: 309dee5bf8b0764488c077c7789c42ce, type: 2}
-  - {fileID: 11400000, guid: 6941fda81912b7b4ba226ea0a76833f3, type: 2}
   planets:
   - {fileID: 11400000, guid: d3f5674c1bc96bf47b553fc3c671cb86, type: 2}
   - {fileID: 11400000, guid: 8402af35ab48e4641a682f0576bf4315, type: 2}
@@ -27,8 +26,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c5fc63b68a4e4be49abf9c9bd51a7358, type: 2}
   - {fileID: 11400000, guid: cee90a02c15c6b34f91cada27890d4d9, type: 2}
   gates:
-  - {fileID: 11400000, guid: dea840293f000ee43b102af467bab1ae, type: 2}
-  - {fileID: 11400000, guid: e836ab74b566dca46abdf678cd6f31e2, type: 2}
+  - {fileID: 11400000, guid: 54e409ec362a1e84d864ed975b9eb628, type: 2}
+  - {fileID: 11400000, guid: 1ab2741c2cc2db34ba8adcab28240db1, type: 2}
+  - {fileID: 11400000, guid: 3dc4535aa6e4d4d4e9f86171ef4a9ba1, type: 2}
   stations: []
   nebula: {fileID: 0}
   allegiance: {fileID: 0}

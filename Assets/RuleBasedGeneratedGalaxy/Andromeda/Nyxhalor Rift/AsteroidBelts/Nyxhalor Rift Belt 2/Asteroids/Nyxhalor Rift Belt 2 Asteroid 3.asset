@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Nyxhalor Rift Belt 2 Asteroid 3
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 875ac6fe5fc1b0e4ab0f45900cb4c056, type: 2}
   type: 0

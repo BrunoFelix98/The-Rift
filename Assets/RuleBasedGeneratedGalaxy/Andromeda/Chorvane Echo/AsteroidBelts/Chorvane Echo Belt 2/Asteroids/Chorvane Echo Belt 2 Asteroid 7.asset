@@ -13,5 +13,10 @@ MonoBehaviour:
   m_Name: Chorvane Echo Belt 2 Asteroid 7
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 9b753ab46e7fefa4db9788b735796ad3, type: 2}
+  - {fileID: 11400000, guid: e58a68660a3faf64ab37647888010546, type: 2}
+  - {fileID: 11400000, guid: a84d6fb9d1fba7348b548335b7f9ef80, type: 2}
+  - {fileID: 11400000, guid: eafa90f17659e0e4ca21bc904edd471b, type: 2}
+  - {fileID: 11400000, guid: 5a36b090b1b31d644bbccfa2462d982c, type: 2}
   type: 0

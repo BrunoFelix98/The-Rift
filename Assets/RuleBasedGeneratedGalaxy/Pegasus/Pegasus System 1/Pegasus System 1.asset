@@ -15,6 +15,7 @@ MonoBehaviour:
   systemName: Pegasus System 1
   stars:
   - {fileID: 11400000, guid: d953c9b9bfdbcf24785213a629242ad9, type: 2}
+  - {fileID: 11400000, guid: 3b150a701ab18c742bdcff3ca5f1e74d, type: 2}
   planets:
   - {fileID: 11400000, guid: 9d7c4fa376afc2748959ef0b1c7a1034, type: 2}
   - {fileID: 11400000, guid: a7c04f148aa275648871f25444427a21, type: 2}
@@ -26,8 +27,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3ecbde9ab793ba24394a832530add65e, type: 2}
   - {fileID: 11400000, guid: 289716dacfd3c8d40beab0b5e6c51f8b, type: 2}
   gates:
-  - {fileID: 11400000, guid: d060982e87408a642870d6ac5b7138d4, type: 2}
   - {fileID: 11400000, guid: b00fac6ceb77d3f469b0a5ea643122db, type: 2}
+  - {fileID: 11400000, guid: d060982e87408a642870d6ac5b7138d4, type: 2}
   stations: []
   nebula: {fileID: 0}
   allegiance: {fileID: 0}

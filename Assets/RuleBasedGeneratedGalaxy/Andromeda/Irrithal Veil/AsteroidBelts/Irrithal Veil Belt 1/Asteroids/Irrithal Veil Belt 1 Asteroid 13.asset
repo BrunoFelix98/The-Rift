@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd5336e1362ab95489edbcce59ff7b71, type: 3}
+  m_Name: Irrithal Veil Belt 1 Asteroid 13
+  m_EditorClassIdentifier: 
+  asteroidName: Red boulder
+  resources:
+  - {fileID: 11400000, guid: 9ae7543be4ee51549a5b6e58988ba488, type: 2}
+  - {fileID: 11400000, guid: d84a81d50e63f9841a65fc39a56986b3, type: 2}
+  - {fileID: 11400000, guid: 12d22e7cf45a8c74494f84300438be9e, type: 2}
+  - {fileID: 11400000, guid: 8f8a871512c5c5d4ead7023ce394d662, type: 2}
+  - {fileID: 11400000, guid: 5f9a5088d7c9e914f97b6c4e5001fe18, type: 2}
+  type: 0

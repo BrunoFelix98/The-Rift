@@ -13,14 +13,5 @@ MonoBehaviour:
   m_Name: Pegasus System 1 Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids:
-  - {fileID: 11400000, guid: b0eb5b2f41bc8f94e9a7a6a49b996d78, type: 2}
-  - {fileID: 11400000, guid: 248d98b69d4915045be5ec653e0a0d13, type: 2}
-  - {fileID: 11400000, guid: 6f6d70603adec824984cb547da61b97e, type: 2}
-  - {fileID: 11400000, guid: cd4b2ccef00f0574e80e3ccd383d3810, type: 2}
-  - {fileID: 11400000, guid: ae3c06b0d5495414a9a4f468145b9017, type: 2}
-  - {fileID: 11400000, guid: afaa217bb8bac5644bc12151c49d04e4, type: 2}
-  - {fileID: 11400000, guid: ae89abfab9aa1a54d94d428402952bfa, type: 2}
-  - {fileID: 11400000, guid: ad86ee56937b84f47be98832c37b88a8, type: 2}
-  - {fileID: 11400000, guid: bd4b4b4131d245147a6107576dab238d, type: 2}
-  type: 2
+  asteroids: []
+  type: 0

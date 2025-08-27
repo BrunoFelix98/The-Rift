@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Auralis Prime Belt 2 Asteroid 8
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: c53ca2026917a8a4f94d5a837abf7eb6, type: 2}
+  - {fileID: 11400000, guid: a6aade148ded22742a72eacbd9ef0103, type: 2}
+  - {fileID: 11400000, guid: f61b5d8864c110d44b550796ff8e0010, type: 2}
   type: 0

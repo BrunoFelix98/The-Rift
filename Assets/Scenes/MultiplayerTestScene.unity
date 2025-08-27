@@ -482,6 +482,7 @@ GameObject:
   - component: {fileID: 2076912497}
   - component: {fileID: 2076912494}
   - component: {fileID: 2076912495}
+  - component: {fileID: 2076912498}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -526,9 +527,9 @@ MonoBehaviour:
   m_MaxConnectAttempts: 60
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
-    Address: YOUR PUBLIC IP HERE
+    Address: 176.78.37.117
     Port: 30000
-    ServerListenAddress: YOUR LOCAL IP HERE
+    ServerListenAddress: 192.168.1.209
   DebugSimulator:
     PacketDelayMS: 0
     PacketJitterMS: 0
@@ -602,6 +603,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OnScreenConsole
   maxLines: 20
+--- !u!114 &2076912498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2076912491}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be1ef7a641d95d4f8b5175a92df5b12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SocketMessage
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

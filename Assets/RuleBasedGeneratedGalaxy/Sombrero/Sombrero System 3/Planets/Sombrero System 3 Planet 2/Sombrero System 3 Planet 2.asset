@@ -13,6 +13,18 @@ MonoBehaviour:
   m_Name: Sombrero System 3 Planet 2
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons: []
-  resources: []
-  type: 0
+  moons:
+  - {fileID: 11400000, guid: e2d8452b8ed37c34f9636353f966621c, type: 2}
+  - {fileID: 11400000, guid: 76ecafb951c18c4488b3cb0f977d1da3, type: 2}
+  - {fileID: 11400000, guid: 76547482f15754d4abea0033e98bb8f0, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 84b9c47ecb88ea04d954b0213f3f3d2f, type: 2}
+  - {fileID: 11400000, guid: 59bf9e20ea947ed4bbc45135d75ac24b, type: 2}
+  - {fileID: 11400000, guid: 6a198e6ab0b935a44ba9725955660e8a, type: 2}
+  - {fileID: 11400000, guid: 74357062b16c36f49acf1b73a887c2c6, type: 2}
+  - {fileID: 11400000, guid: 1253e9159d655694aa1a6239e4001c39, type: 2}
+  - {fileID: 11400000, guid: c198aa9f069b336458eb0fc0de8990c6, type: 2}
+  - {fileID: 11400000, guid: ae491f816f2ede942961c88a56c4d1fc, type: 2}
+  - {fileID: 11400000, guid: 74cace57b9abd2347b1e6eae298e9827, type: 2}
+  - {fileID: 11400000, guid: 5ff9cbd52f914bf40bde90ccfe6d14d3, type: 2}
+  type: 3

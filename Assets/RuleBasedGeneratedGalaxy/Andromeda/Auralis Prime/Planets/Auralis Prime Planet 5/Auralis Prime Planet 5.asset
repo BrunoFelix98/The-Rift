@@ -13,8 +13,12 @@ MonoBehaviour:
   m_Name: Auralis Prime Planet 5
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons: []
+  moons:
+  - {fileID: 11400000, guid: 6f2de58da710c7948b83db9062ec31d1, type: 2}
+  - {fileID: 11400000, guid: 9adc8c035b23f83479fa8e59019d1e4d, type: 2}
+  - {fileID: 11400000, guid: 382960aac894ef7449e64fd64f52aa74, type: 2}
   resources:
-  - {fileID: 11400000, guid: 710b7b718fb5e3f499129626f013ebe2, type: 2}
-  - {fileID: 11400000, guid: fa96d209964dc844d80cc1dd0242198a, type: 2}
+  - {fileID: 11400000, guid: ef37a0bac32362641a582917df4c709f, type: 2}
+  - {fileID: 11400000, guid: 89902eba05ed7c646900044865984564, type: 2}
+  - {fileID: 11400000, guid: 293f471112fc63e4caab20d67b53e46b, type: 2}
   type: 2

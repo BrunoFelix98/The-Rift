@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b206db215b07ff347aefaa518ed28164, type: 3}
+  m_Name: Throne World
+  m_EditorClassIdentifier: Assembly-CSharp::SystemSO
+  systemName: Throne World
+  stars:
+  - {fileID: 11400000, guid: 08466078fd7e7f942b71f7d1620ee640, type: 2}
+  planets:
+  - {fileID: 11400000, guid: 550aab787f336824aa568748ee42dbd4, type: 2}
+  - {fileID: 11400000, guid: 068cf1dc0e79d8b4487158358701db83, type: 2}
+  - {fileID: 11400000, guid: d95f4809267c42344801af79525561cc, type: 2}
+  - {fileID: 11400000, guid: 7a446f169806f6642a8078cca9fb7d31, type: 2}
+  - {fileID: 11400000, guid: 44a71826b36fef04196d6f15ed8d231f, type: 2}
+  asteroidBelts:
+  - {fileID: 11400000, guid: 32838b93c6a578d45953c4bdf68a079b, type: 2}
+  - {fileID: 11400000, guid: 9a155baa278c3a043b9baed1e9b6601d, type: 2}
+  - {fileID: 11400000, guid: 00d046ddbaeda0c41b9228454a0b510f, type: 2}
+  - {fileID: 11400000, guid: 5ea875705ff955746990716a1e63e20d, type: 2}
+  gates:
+  - {fileID: 11400000, guid: 71519dd2e18152a4492ae4274f1fc04a, type: 2}
+  - {fileID: 11400000, guid: 8a13463605217fa4fa7be17d06dc6572, type: 2}
+  stations:
+  - {fileID: 11400000, guid: d1716afe85a2b04459daec75698fb358, type: 2}
+  nebula: {fileID: 0}
+  allegiance: {fileID: 11400000, guid: bb253e300deb8bb45a8315d13b602e6b, type: 2}

@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Xyrenthal Abyss Belt 1 Asteroid 7
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: b1220da6940491b4993ff9ea8ce05019, type: 2}
   type: 0

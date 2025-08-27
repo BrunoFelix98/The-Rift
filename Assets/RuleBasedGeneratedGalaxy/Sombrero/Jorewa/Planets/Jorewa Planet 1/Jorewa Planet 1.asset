@@ -13,10 +13,6 @@ MonoBehaviour:
   m_Name: Jorewa Planet 1
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons:
-  - {fileID: 11400000, guid: 6e6d7ad32b145064b9fdb9067816d193, type: 2}
-  - {fileID: 11400000, guid: edb81b37524f06244b0d87b3cbd59b20, type: 2}
-  - {fileID: 11400000, guid: 87c03ed392f1965489eea05737aad826, type: 2}
-  resources:
-  - {fileID: 11400000, guid: 14f6781532947bb4fadb525e9af12bc2, type: 2}
-  type: 1
+  moons: []
+  resources: []
+  type: 0

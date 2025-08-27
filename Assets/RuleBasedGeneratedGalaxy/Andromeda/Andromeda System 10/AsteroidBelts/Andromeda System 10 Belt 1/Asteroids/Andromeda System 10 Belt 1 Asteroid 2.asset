@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Andromeda System 10 Belt 1 Asteroid 2
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 4b3dc88ad592a534eaafbf63b1a6d0a1, type: 2}
+  - {fileID: 11400000, guid: ae9eae272e95a47489f4ed54c5dea179, type: 2}
+  - {fileID: 11400000, guid: bf800979a3b7cc149a2847854cc229ad, type: 2}
   type: 0

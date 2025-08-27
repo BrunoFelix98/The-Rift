@@ -13,5 +13,12 @@ MonoBehaviour:
   m_Name: Andromeda System 10 Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids: []
-  type: 0
+  asteroids:
+  - {fileID: 11400000, guid: df67776e5beec0e46b3e151c14311ab1, type: 2}
+  - {fileID: 11400000, guid: 1fda20fb13c0eaf44bf10475991d0c5a, type: 2}
+  - {fileID: 11400000, guid: 9c0a2613f998952418d3eb08f71fd19c, type: 2}
+  - {fileID: 11400000, guid: dee3c0a3d2dd5304e8a1f48df3e09d11, type: 2}
+  - {fileID: 11400000, guid: 81ea44248f22b0543b54e2ca505aefec, type: 2}
+  - {fileID: 11400000, guid: 81e9f20d4b0c8ed44b7560eeb2c572e9, type: 2}
+  - {fileID: 11400000, guid: cec4e22c31e21274ebdfbe65c1249c7b, type: 2}
+  type: 1

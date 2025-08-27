@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConceptSO
   conceptName: Weldborn
   description: 'Created for faction: Xirn'
-  allegiance: {fileID: 11400000, guid: d5d731d2767bd484d9a80936904f2952, type: 2}
+  allegiance: {fileID: 0}
   leader: {fileID: 0}
   memberCorporations: []
   members: []

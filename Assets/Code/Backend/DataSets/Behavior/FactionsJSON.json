@@ -23,6 +23,14 @@
       "leaderNames": [ "ADD LATER" ],
       "starNames": [ "Cyberstan" ],
       "requiresNebulas": false
+    },
+    {
+      "factionName": "Sanctum Ferrum",
+      "homeGalaxy": "Milky Way",
+      "corporations": [ "Sanctum Ferrum", "Rock of Iron", "Rock of Diamond", "Rock of Amethyst", "Rock of Ruby" ],
+      "leaderNames": [ "Gorath", "Zarnok Voidhammer I.", "Thragan Moonstone D.", "Thorin Brine A.", "Fendril Nebulash R." ],
+      "starNames": [ "Throne World" ],
+      "requiresNebulas": false
     }
   ]
 }

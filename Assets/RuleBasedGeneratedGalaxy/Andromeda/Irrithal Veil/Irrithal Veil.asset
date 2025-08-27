@@ -15,12 +15,22 @@ MonoBehaviour:
   systemName: Irrithal Veil
   stars:
   - {fileID: 11400000, guid: 2e5d53abc7d70d948bb598db619c7188, type: 2}
-  planets: []
+  - {fileID: 11400000, guid: 3ce450693403e124d8bc942bc1302adf, type: 2}
+  planets:
+  - {fileID: 11400000, guid: 04305d297f7ea31438e4de909543b005, type: 2}
+  - {fileID: 11400000, guid: aa8c9eecc5f97524993f63193ffe1d27, type: 2}
+  - {fileID: 11400000, guid: abcf118585fd894478216e184175f7a1, type: 2}
+  - {fileID: 11400000, guid: 7a26956f9e0020f45945869f47d3825a, type: 2}
+  - {fileID: 11400000, guid: 95c4487a94bde0b4896fea2e2fbf6bb0, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: 7f88aaa0f23acba4181edd0eac1d51cf, type: 2}
   - {fileID: 11400000, guid: 30284af689d9516439a6b28945362415, type: 2}
+  - {fileID: 11400000, guid: 022770370b37f3b4bb12aa763707964f, type: 2}
+  - {fileID: 11400000, guid: 84929518647ecf54f9849705cf6ed572, type: 2}
   gates:
-  - {fileID: 11400000, guid: 08b7392e0fd5306418476d14d9a5ff9c, type: 2}
-  stations: []
+  - {fileID: 11400000, guid: 5873e1fb42773974baf6806aa0883f45, type: 2}
+  - {fileID: 11400000, guid: 3a847330166b82041997e4d108d81267, type: 2}
+  stations:
+  - {fileID: 11400000, guid: 60af29937906ee54c9efc2f0d9330631, type: 2}
   nebula: {fileID: 11400000, guid: 4267dbd240afb2a46a974ace49e52022, type: 2}
   allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

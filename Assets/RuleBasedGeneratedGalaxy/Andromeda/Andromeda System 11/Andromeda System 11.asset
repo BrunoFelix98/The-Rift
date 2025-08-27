@@ -15,20 +15,16 @@ MonoBehaviour:
   systemName: Andromeda System 11
   stars:
   - {fileID: 11400000, guid: 5edcf73a86b169d41af4893f17056264, type: 2}
-  - {fileID: 11400000, guid: 12c4e6647a5ad0741b3ed6d0ce375cea, type: 2}
   planets:
   - {fileID: 11400000, guid: 6f4373b5d84225540b38c671c35eb9c3, type: 2}
   - {fileID: 11400000, guid: d2d9a0afb4027704db6c0e17aab4adae, type: 2}
-  - {fileID: 11400000, guid: 2f73fc60fc41a7a489f262beeecbf824, type: 2}
-  - {fileID: 11400000, guid: 6db6bc8b601bdc5409950fe16b243795, type: 2}
-  - {fileID: 11400000, guid: b4a0d4a69b36ce649acab85639122071, type: 2}
-  asteroidBelts:
-  - {fileID: 11400000, guid: 74f15f9808e62734995c7d2a49a6f539, type: 2}
-  - {fileID: 11400000, guid: 9a0c63e9346b61345be53b2d0b247fd8, type: 2}
-  - {fileID: 11400000, guid: c0d9f5d915e6c494a90a34df2b2bb66e, type: 2}
+  asteroidBelts: []
   gates:
   - {fileID: 11400000, guid: 0503591e133860c479a72e8ddd73b3ac, type: 2}
-  - {fileID: 11400000, guid: eef579f0d43c30d45b6de459b9ef08d6, type: 2}
+  - {fileID: 11400000, guid: a762b310bba74ca48970da8682a05bf9, type: 2}
+  - {fileID: 11400000, guid: 112fc372a0abb7c469e0b9940f037244, type: 2}
+  - {fileID: 11400000, guid: 0b06a9221ce17ce4f90ba615aa6be44c, type: 2}
+  - {fileID: 11400000, guid: 1bf76e50fcf3e7d418329e9ea7aca4c7, type: 2}
   stations: []
   nebula: {fileID: 0}
   allegiance: {fileID: 0}

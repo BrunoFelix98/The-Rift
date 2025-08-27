@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
   asteroids: []
-  type: 2
+  type: 0

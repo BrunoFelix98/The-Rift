@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Sombrero System 3 Belt 1
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids: []
+  asteroids:
+  - {fileID: 11400000, guid: 20eafec108a4d954c855099afbed5bc7, type: 2}
+  - {fileID: 11400000, guid: 58f58983ebb5d4743868953973edb8e0, type: 2}
+  - {fileID: 11400000, guid: 020e2006614501d45b37836e46cdf5e6, type: 2}
   type: 0

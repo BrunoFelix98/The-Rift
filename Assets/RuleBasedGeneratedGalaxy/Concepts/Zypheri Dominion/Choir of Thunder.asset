@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConceptSO
   conceptName: Choir of Thunder
   description: 'Created for faction: Zypheri Dominion'
-  allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}
+  allegiance: {fileID: 0}
   leader: {fileID: 11400000, guid: f997caf91d3f4b34292a3b087ab39e70, type: 2}
   memberCorporations: []
   members: []

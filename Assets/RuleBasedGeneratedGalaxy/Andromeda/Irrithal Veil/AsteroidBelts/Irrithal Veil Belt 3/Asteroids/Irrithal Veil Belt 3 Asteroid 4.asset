@@ -13,5 +13,10 @@ MonoBehaviour:
   m_Name: Irrithal Veil Belt 3 Asteroid 4
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: c1d906883e53fb24b8c331db45935b7b, type: 2}
+  - {fileID: 11400000, guid: 6448aebe33107b84885dec12999591e2, type: 2}
+  - {fileID: 11400000, guid: 8ac86121f32cbec439ff5d0d629b75d8, type: 2}
+  - {fileID: 11400000, guid: d5e6f575eb183cb4b86a0c320059ce22, type: 2}
+  - {fileID: 11400000, guid: 89f278da6edcded428ccbddff9d3c673, type: 2}
   type: 0

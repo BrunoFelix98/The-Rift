@@ -14,6 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
   resources:
-  - {fileID: 11400000, guid: 3517e4372f4115a48a8b8f72b6bc9f5d, type: 2}
-  - {fileID: 11400000, guid: d42acecaad3369e438653158efaaed4c, type: 2}
+  - {fileID: 11400000, guid: 4ab27d44359511843a9b2cc548f03d13, type: 2}
   type: 0

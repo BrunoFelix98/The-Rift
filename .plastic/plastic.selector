@@ -1,4 +1,3 @@
 repository "The Rift@bcfelix98@cloud"
   path "/"
-    br "/main"
-    co "/main"
+    smartbranch "/main"

@@ -15,18 +15,13 @@ MonoBehaviour:
   systemName: Pegasus System 3
   stars:
   - {fileID: 11400000, guid: fd269871aa485dc4db96a98fa09a6fac, type: 2}
-  - {fileID: 11400000, guid: 9d9daeba0fb5a8b4282c84826fdb4eb3, type: 2}
   planets:
   - {fileID: 11400000, guid: e60f1365c36ddbe45a22c72a48ad02ba, type: 2}
   - {fileID: 11400000, guid: c618f53aafec8244c92f0cd8dfe1cda0, type: 2}
   - {fileID: 11400000, guid: cb98261c457df9944b68b50d7fc425ae, type: 2}
-  - {fileID: 11400000, guid: 0708a6500244e7b4b8929e7eb875ed77, type: 2}
-  - {fileID: 11400000, guid: 4466643709bd5fa4d9286c43f8d7799d, type: 2}
-  asteroidBelts:
-  - {fileID: 11400000, guid: 887c5fd72bf13e2438f82fb0021fecca, type: 2}
+  asteroidBelts: []
   gates:
   - {fileID: 11400000, guid: 4223d5bcdf65d814ca56cde45d6e5d00, type: 2}
-  - {fileID: 11400000, guid: 5fa3c13e023ae314e977de6deb0c2e58, type: 2}
   stations: []
   nebula: {fileID: 0}
   allegiance: {fileID: 0}

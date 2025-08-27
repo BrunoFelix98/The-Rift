@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210886e4abdad6d43906dc89f6002dc0, type: 3}
+  m_Name: Sanctum Ferrum
+  m_EditorClassIdentifier: Assembly-CSharp::ConceptSO
+  conceptName: Sanctum Ferrum
+  description: 'Created for faction: Sanctum Ferrum'
+  allegiance: {fileID: 0}
+  leader: {fileID: 11400000, guid: bea8597f4279c0b4fa42a464eb4e1e02, type: 2}
+  memberCorporations:
+  - {fileID: 11400000, guid: a8ba635d597e41549981f556e2d7712e, type: 2}
+  - {fileID: 11400000, guid: 16cd782910625034d80e84d5530fa66f, type: 2}
+  - {fileID: 11400000, guid: 7b84afacd5ca89e42a6194ce9a14d367, type: 2}
+  - {fileID: 11400000, guid: 4e86b604cde663440a392f918b5d4deb, type: 2}
+  members: []

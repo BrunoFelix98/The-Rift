@@ -13,10 +13,6 @@ MonoBehaviour:
   m_Name: Lorynth Planet 5
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons:
-  - {fileID: 11400000, guid: 8866567e7b98a604c8229e34833836d2, type: 2}
-  - {fileID: 11400000, guid: add2257bf02c6f84081eceb0e4b79b8e, type: 2}
-  - {fileID: 11400000, guid: 0d228548540e11b4e9959b9181f481f1, type: 2}
-  resources:
-  - {fileID: 11400000, guid: 5e6062c8feb6841459ed19ed400097e2, type: 2}
-  type: 1
+  moons: []
+  resources: []
+  type: 0

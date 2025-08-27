@@ -529,57 +529,9 @@ MonoBehaviour:
   baseAsteroidBeltSO: {fileID: 11400000, guid: 4630f982be4e8b848a8c85cfbed12fe4, type: 2}
   baseGateSO: {fileID: 11400000, guid: d2eea6e54d3568848adf944eeaf4e3c2, type: 2}
   baseStationSO: {fileID: 11400000, guid: 9084ce9d5ffc4f14591958e84f8b946b, type: 2}
-  planetResources:
-  - resourceName: Iron
-    resourceDescription: Iron
-    minQuantity: 100
-    maxQuantity: 1000
-    resourceWeight: 1
-    category: Planet
-    celestialType:
-    - 
-    - 
-    - 
-    - 
-    - 
-    allowedFactions:
-    - Aldewhara Kinship
-    - Zypheri Dominion
-    - Xirn
-  moonResources:
-  - resourceName: Iron
-    resourceDescription: Iron
-    minQuantity: 50
-    maxQuantity: 100
-    resourceWeight: 1
-    category: Moon
-    celestialType:
-    - 
-    - 
-    - 
-    - 
-    - 
-    allowedFactions:
-    - Aldewhara Kinship
-    - Zypheri Dominion
-    - Xirn
-  asteroidResources:
-  - resourceName: Iron
-    resourceDescription: Iron
-    minQuantity: 5
-    maxQuantity: 50
-    resourceWeight: 1
-    category: Asteroid
-    celestialType:
-    - 
-    - 
-    - 
-    - 
-    - 
-    allowedFactions:
-    - Aldewhara Kinship
-    - Zypheri Dominion
-    - Xirn
+  planetResources: []
+  moonResources: []
+  asteroidResources: []
   maxStationsPerGalaxy: 3
   generationCosts:
     system: 10

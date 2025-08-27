@@ -24,8 +24,11 @@ MonoBehaviour:
   asteroidBelts:
   - {fileID: 11400000, guid: e70fdd4f1b1500949a2e3cf2d1822ba1, type: 2}
   - {fileID: 11400000, guid: 3daf1ffa297a871499d9bfef55a1da70, type: 2}
+  - {fileID: 11400000, guid: 5f01b65500c11f6408733fea73fecd8a, type: 2}
+  - {fileID: 11400000, guid: f1d8e53d0a99807448d0e3b0034e6565, type: 2}
   gates:
   - {fileID: 11400000, guid: d9b464585857e414b8239054752fc4dc, type: 2}
+  - {fileID: 11400000, guid: 5cc13f5d544be5a44ab3e3c64529eb37, type: 2}
   stations:
   - {fileID: 11400000, guid: a614913d0938a864aa6b7339a2f3496f, type: 2}
   nebula: {fileID: 0}

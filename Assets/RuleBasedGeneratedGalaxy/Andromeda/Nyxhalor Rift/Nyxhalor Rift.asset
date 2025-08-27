@@ -15,17 +15,21 @@ MonoBehaviour:
   systemName: Nyxhalor Rift
   stars:
   - {fileID: 11400000, guid: 3c430e275b8481d4185041c2e076b756, type: 2}
-  planets: []
+  planets:
+  - {fileID: 11400000, guid: 67a6281eae931144aa9571b974ac5e03, type: 2}
+  - {fileID: 11400000, guid: be8e486435a0f894a81e7cd9a246c1cc, type: 2}
+  - {fileID: 11400000, guid: d46a5733932713942ab0027725d87d30, type: 2}
+  - {fileID: 11400000, guid: f50b2c9a431ab944ea283388c1fd4aa5, type: 2}
+  - {fileID: 11400000, guid: bd491be38c14cbe429524c73f01ee4c6, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: 16d54d0415f776b449fb57eaed6b7c6b, type: 2}
   - {fileID: 11400000, guid: ea6a325a5a4a6d148b57b58b33bd897c, type: 2}
-  - {fileID: 11400000, guid: 3a99845b004d07a41b38377d38139f5d, type: 2}
-  - {fileID: 11400000, guid: cf2d8afe7a6a4494aac922c8e84a765c, type: 2}
   gates:
   - {fileID: 11400000, guid: 5f9da698d679aad47be69848c7a84727, type: 2}
+  - {fileID: 11400000, guid: d8d65e6263e0c0146b73e549adef1562, type: 2}
+  - {fileID: 11400000, guid: b0c1aea8b24d5a14888f4bd98db78139, type: 2}
   - {fileID: 11400000, guid: 039cdeb2cb2400c49ab81c80b3bde89b, type: 2}
-  - {fileID: 11400000, guid: 459929c1c98713449811fd1e8711b5de, type: 2}
-  - {fileID: 11400000, guid: 3bc33870ba32fa54bab8809184bb708c, type: 2}
-  stations: []
+  stations:
+  - {fileID: 11400000, guid: a75be9451f1ad1546b7cbffd7ff620fb, type: 2}
   nebula: {fileID: 11400000, guid: b22ea037654bded4597738eee9d6e9dc, type: 2}
   allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}

@@ -13,5 +13,11 @@ MonoBehaviour:
   m_Name: Auralis Prime Belt 1
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids: []
+  asteroids:
+  - {fileID: 11400000, guid: 4889eac3195e547498103d2a129f369f, type: 2}
+  - {fileID: 11400000, guid: 2205b4081df60e443b293dbf06ee2bfc, type: 2}
+  - {fileID: 11400000, guid: da57ff32a93bfae40b134bdd959c72d0, type: 2}
+  - {fileID: 11400000, guid: 8b7273a27ed3a824ca96ac6b27134af7, type: 2}
+  - {fileID: 11400000, guid: 0bdd57d79caf84a49b9a1c945496ac94, type: 2}
+  - {fileID: 11400000, guid: e3319130afd29e849a031dce7a53ac2f, type: 2}
   type: 1

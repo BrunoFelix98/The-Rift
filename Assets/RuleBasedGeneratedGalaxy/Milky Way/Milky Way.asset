@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GalaxySO
   galaxyName: Milky Way
   systems:
-  - {fileID: 11400000, guid: a644a416b7ed14c43ba2794f83a357fe, type: 2}
+  - {fileID: 11400000, guid: 1a6cbbec43cc05846b8fe80ae6b94edf, type: 2}
   - {fileID: 11400000, guid: 7437daa5f8f110140a04c284768dc60b, type: 2}
+  - {fileID: 11400000, guid: bbe91f429871f0d43a3b10b4319ee99d, type: 2}

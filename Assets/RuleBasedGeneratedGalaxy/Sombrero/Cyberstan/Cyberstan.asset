@@ -15,13 +15,21 @@ MonoBehaviour:
   systemName: Cyberstan
   stars:
   - {fileID: 11400000, guid: de55f7c8bdaaf9d43ad7baf98ab4f4fe, type: 2}
-  planets: []
+  planets:
+  - {fileID: 11400000, guid: a06b8c51c5701184cb711c330c736972, type: 2}
+  - {fileID: 11400000, guid: 5898dc528f6fe8e409ab5f3147b75b95, type: 2}
+  - {fileID: 11400000, guid: aa41e773694939240ae1de45aadeadc5, type: 2}
+  - {fileID: 11400000, guid: df66b78ea729e2945a238518e169cd46, type: 2}
+  - {fileID: 11400000, guid: af008d1f4960a9249811826fdb093330, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: 9efd033606faa3047a853d8e17239b16, type: 2}
   - {fileID: 11400000, guid: e3a97a23fb9885a46b84b8739507f78f, type: 2}
   - {fileID: 11400000, guid: 70f054c73e9b11b4fb87bf3ca33e94d2, type: 2}
+  - {fileID: 11400000, guid: c81c23637bd22b44d88608e5192ca831, type: 2}
   gates:
   - {fileID: 11400000, guid: 338bfd083c7c7594baab3c6d0c87bfb9, type: 2}
-  stations: []
+  - {fileID: 11400000, guid: c9952ec93232e8e4d90c5e321b74a921, type: 2}
+  stations:
+  - {fileID: 11400000, guid: cd14d84a8ec9c6d4488be0f16aefd58e, type: 2}
   nebula: {fileID: 0}
   allegiance: {fileID: 11400000, guid: d5d731d2767bd484d9a80936904f2952, type: 2}

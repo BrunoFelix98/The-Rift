@@ -13,5 +13,15 @@ MonoBehaviour:
   m_Name: Milky Way System 3 Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids: []
+  asteroids:
+  - {fileID: 11400000, guid: 7f483c4ef2fecdf4bb79978165805d29, type: 2}
+  - {fileID: 11400000, guid: 697e85d191eab66438c3ec2a49d6aebf, type: 2}
+  - {fileID: 11400000, guid: 8ff034c1930789d449afbe43cc706218, type: 2}
+  - {fileID: 11400000, guid: 53de089c262b2804dbd28cc53ecc4987, type: 2}
+  - {fileID: 11400000, guid: 6cd82ebf8b324b8478cf8fcb737cf51e, type: 2}
+  - {fileID: 11400000, guid: 4ea333bd13f2115428cad01dfb5dae98, type: 2}
+  - {fileID: 11400000, guid: 31382e1450d7b344280885e94d35d9f9, type: 2}
+  - {fileID: 11400000, guid: 1e301912fa114b14fb58b12bb7493a4d, type: 2}
+  - {fileID: 11400000, guid: 0e50fe372adb08e448e1e7550b97272b, type: 2}
+  - {fileID: 11400000, guid: e5a72b47cd72fbe4e80f3f1ddbc502da, type: 2}
   type: 0

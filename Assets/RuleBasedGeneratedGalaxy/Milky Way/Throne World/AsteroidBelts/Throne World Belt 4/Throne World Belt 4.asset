@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02e606873ae6aa4f9b363080720dbef, type: 3}
+  m_Name: Throne World Belt 4
+  m_EditorClassIdentifier: 
+  beltName: NJ440 AB 1
+  asteroids:
+  - {fileID: 11400000, guid: b48efb0c4ff6a4e41bf71accab13bf23, type: 2}
+  - {fileID: 11400000, guid: 06e118116c2ec2d4a85b2dd0f036a394, type: 2}
+  - {fileID: 11400000, guid: 034a93bd736f2084abc083e59954f168, type: 2}
+  - {fileID: 11400000, guid: 8454acaa5d4134e47b2382574898fd4c, type: 2}
+  - {fileID: 11400000, guid: 13ca1f8512f921c4198df4ab560cda06, type: 2}
+  - {fileID: 11400000, guid: b8a311fb4216e904b83454eb4900cbda, type: 2}
+  - {fileID: 11400000, guid: 4f2fab4e637403b42b415951008c9725, type: 2}
+  - {fileID: 11400000, guid: f19b7fa1584827847862013ad7bccd79, type: 2}
+  - {fileID: 11400000, guid: cff49c5fa2dcedb489ed4ce0e30dca26, type: 2}
+  - {fileID: 11400000, guid: b9c17406c3dc36743bc5dffa67faf02d, type: 2}
+  - {fileID: 11400000, guid: 17ee0e72d4c97b442b196199b6bae552, type: 2}
+  type: 1

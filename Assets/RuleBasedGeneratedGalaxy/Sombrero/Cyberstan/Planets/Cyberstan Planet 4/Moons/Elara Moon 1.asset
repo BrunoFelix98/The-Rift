@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moonName: Elara 1
   resources:
-  - {fileID: 11400000, guid: 35cf66abeaec7e340a0d2639c538e669, type: 2}
+  - {fileID: 11400000, guid: 9cc9aa680302cc54fba71730a51abd43, type: 2}
+  - {fileID: 11400000, guid: 63c14bb1a6ff312488fb23be8b436106, type: 2}
   stations: []
-  type: 3
+  type: 2

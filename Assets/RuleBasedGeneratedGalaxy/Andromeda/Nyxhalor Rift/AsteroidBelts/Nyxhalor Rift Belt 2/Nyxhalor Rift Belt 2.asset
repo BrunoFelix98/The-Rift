@@ -13,5 +13,13 @@ MonoBehaviour:
   m_Name: Nyxhalor Rift Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids: []
-  type: 2
+  asteroids:
+  - {fileID: 11400000, guid: a07e5d15b13d2d845ad9e4fe59f87842, type: 2}
+  - {fileID: 11400000, guid: 6dd86df7b42eb39429920eee4ff6b85e, type: 2}
+  - {fileID: 11400000, guid: 3b0ca300e016f164dab79b1a065ae121, type: 2}
+  - {fileID: 11400000, guid: b85ca422ea63d0a42b8ae9be14f1445a, type: 2}
+  - {fileID: 11400000, guid: 966ef83ade255a94aafc4dee92e0a82e, type: 2}
+  - {fileID: 11400000, guid: f254f693b88459d46a8c02fad3cd9c05, type: 2}
+  - {fileID: 11400000, guid: 7e59879924df42d4c8b87c1343367214, type: 2}
+  - {fileID: 11400000, guid: a40c5a53e9f6d964eb098dde3c40d37e, type: 2}
+  type: 1

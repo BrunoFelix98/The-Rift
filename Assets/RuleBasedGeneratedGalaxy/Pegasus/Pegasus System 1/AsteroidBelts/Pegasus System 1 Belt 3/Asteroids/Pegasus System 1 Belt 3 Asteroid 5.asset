@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Pegasus System 1 Belt 3 Asteroid 5
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources:
-  - {fileID: 11400000, guid: a0194bc480bdb4c49bc5a569beb7e168, type: 2}
+  resources: []
   type: 0

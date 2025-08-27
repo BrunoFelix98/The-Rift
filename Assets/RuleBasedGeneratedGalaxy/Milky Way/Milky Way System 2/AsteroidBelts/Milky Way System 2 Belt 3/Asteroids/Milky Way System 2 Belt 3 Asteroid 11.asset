@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Milky Way System 2 Belt 3 Asteroid 11
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources:
-  - {fileID: 11400000, guid: dcca6b68e2ea284418a991a4ab9ea2bb, type: 2}
+  resources: []
   type: 0

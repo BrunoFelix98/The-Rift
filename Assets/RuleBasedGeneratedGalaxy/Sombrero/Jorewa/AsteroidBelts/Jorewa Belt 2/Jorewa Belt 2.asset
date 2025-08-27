@@ -13,9 +13,5 @@ MonoBehaviour:
   m_Name: Jorewa Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids:
-  - {fileID: 11400000, guid: ddd981759697dd54cb9a5138ee0b852c, type: 2}
-  - {fileID: 11400000, guid: b77eaf2ef357c1441827cfdba36b3605, type: 2}
-  - {fileID: 11400000, guid: 66af629a04ca1c74fab4e417f7a18b07, type: 2}
-  - {fileID: 11400000, guid: b864dd7d0328032459bcd8e120e1113d, type: 2}
-  type: 1
+  asteroids: []
+  type: 0

@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: Andromeda System 11 Planet 1
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons: []
-  resources: []
+  moons:
+  - {fileID: 11400000, guid: 9f6aa57ba7eca1149b841619308afa8f, type: 2}
+  - {fileID: 11400000, guid: 9901c0f93c2a02d43ae2567f8dc22f99, type: 2}
+  - {fileID: 11400000, guid: b1588acb63d38e543ba71212c1bc946d, type: 2}
+  resources:
+  - {fileID: 11400000, guid: f761e9383b3b60541995fc3fa5889182, type: 2}
+  - {fileID: 11400000, guid: b7a5096d4f353bf4d8436ed2050443db, type: 2}
+  - {fileID: 11400000, guid: 19b25d6c7cdc21d4e8bd260752cfd79a, type: 2}
+  - {fileID: 11400000, guid: 2417f8b7eb7f6f74f8a8075af044a9ec, type: 2}
+  - {fileID: 11400000, guid: e26b4b0dac86aa543a1235861a3a1608, type: 2}
+  - {fileID: 11400000, guid: 6553e31c5f572d6429643e5a210c0732, type: 2}
   type: 0

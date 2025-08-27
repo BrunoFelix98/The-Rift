@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: "Veythar\u2019s Shard Belt 1 Asteroid 7"
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 10dc6e7e88afe52428e4d07fc557a9da, type: 2}
   type: 0

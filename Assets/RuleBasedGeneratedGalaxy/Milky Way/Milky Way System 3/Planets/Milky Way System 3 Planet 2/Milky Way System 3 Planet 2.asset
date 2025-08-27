@@ -13,6 +13,12 @@ MonoBehaviour:
   m_Name: Milky Way System 3 Planet 2
   m_EditorClassIdentifier: 
   planetName: Elara
-  moons: []
-  resources: []
-  type: 0
+  moons:
+  - {fileID: 11400000, guid: 929aa19b99f164e449c033a718eb3a73, type: 2}
+  - {fileID: 11400000, guid: a3013811e0b5f5b41b8b3b7b4ad17014, type: 2}
+  - {fileID: 11400000, guid: 8e233b783fd6b694ba292cc4e8e3638e, type: 2}
+  resources:
+  - {fileID: 11400000, guid: 3db180d0a03d2614a8531e6b46828358, type: 2}
+  - {fileID: 11400000, guid: 99627a35621bccf41984947175512f65, type: 2}
+  - {fileID: 11400000, guid: 2fdb90654e17336408e8816e07dd9e4a, type: 2}
+  type: 2

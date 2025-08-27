@@ -13,7 +13,5 @@ MonoBehaviour:
   m_Name: Lorynth Belt 2 Asteroid 10
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources:
-  - {fileID: 11400000, guid: 17c28c7bf76e28a46aa9494f80823b5a, type: 2}
-  - {fileID: 11400000, guid: 58b56590afb521343ad8282c4b77b0bc, type: 2}
+  resources: []
   type: 0

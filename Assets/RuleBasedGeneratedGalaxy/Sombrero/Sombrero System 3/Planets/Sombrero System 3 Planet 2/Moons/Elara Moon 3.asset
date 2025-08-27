@@ -13,6 +13,12 @@ MonoBehaviour:
   m_Name: Elara Moon 3
   m_EditorClassIdentifier: 
   moonName: Elara 1
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: d2a2c107567d87a47aac94cd99db7ce2, type: 2}
+  - {fileID: 11400000, guid: 135288abb8b26884d948aa95352406b1, type: 2}
+  - {fileID: 11400000, guid: 8b209c6fd03fb76499843cfd84eda09e, type: 2}
+  - {fileID: 11400000, guid: c10827d356fb3a8418d31236840635ad, type: 2}
+  - {fileID: 11400000, guid: ae6510e7df51b934693185fa9f170de5, type: 2}
+  - {fileID: 11400000, guid: b739105651a46304c83287bfa725df9a, type: 2}
   stations: []
   type: 0

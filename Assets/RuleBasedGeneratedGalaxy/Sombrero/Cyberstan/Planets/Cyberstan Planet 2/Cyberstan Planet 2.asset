@@ -18,6 +18,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8a7bc299ea193a84286c32117b4f763b, type: 2}
   - {fileID: 11400000, guid: 50675ca25fd523e40a67474d97f94129, type: 2}
   resources:
-  - {fileID: 11400000, guid: deff023061f9a134a9f50be843126925, type: 2}
-  - {fileID: 11400000, guid: d2ffad437edef034a84b2b0d5b260747, type: 2}
-  type: 2
+  - {fileID: 11400000, guid: 98fca27a1bc6ce74ba9100e94665cb61, type: 2}
+  - {fileID: 11400000, guid: 386dd84a138db8f479fa755eae2bcdca, type: 2}
+  - {fileID: 11400000, guid: d1388520fd8bdef4e9efad0d4c8531c7, type: 2}
+  - {fileID: 11400000, guid: 61c96d9a96a3edc4aa349007b403bf35, type: 2}
+  - {fileID: 11400000, guid: 93ad63c7b5ee2954fa903e349cb82b70, type: 2}
+  - {fileID: 11400000, guid: 67013484d0d9ea446b38768106996ba5, type: 2}
+  type: 0

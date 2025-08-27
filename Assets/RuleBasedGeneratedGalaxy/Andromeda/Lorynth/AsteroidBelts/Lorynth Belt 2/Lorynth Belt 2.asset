@@ -13,12 +13,5 @@ MonoBehaviour:
   m_Name: Lorynth Belt 2
   m_EditorClassIdentifier: 
   beltName: NJ440 AB 1
-  asteroids:
-  - {fileID: 11400000, guid: dc30880e88026f84a8a74d727704bd04, type: 2}
-  - {fileID: 11400000, guid: 137b942e7a0d88d42895c4ae728680ef, type: 2}
-  - {fileID: 11400000, guid: 627ceb174e51d4e40aa73b3b5ead908b, type: 2}
-  - {fileID: 11400000, guid: 8f088ef8dd76c6d4383db6616415ada4, type: 2}
-  - {fileID: 11400000, guid: 08a903aa9cad152469640469d250141f, type: 2}
-  - {fileID: 11400000, guid: 0938d400cf731b34796ebf702928600f, type: 2}
-  - {fileID: 11400000, guid: 7a8a0ed457fa1204baf166dbd1a64afe, type: 2}
+  asteroids: []
   type: 0

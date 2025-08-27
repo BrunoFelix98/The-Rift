@@ -12,9 +12,6 @@ public class OrbitingObject
     // Multiplier for slowing orbit speed (e.g., 0.2 means orbiting 5 times slower)
     private const float speedMultiplier = 0.2f;
 
-    /// <summary>
-    /// Constructor to orbit around a parent GameObject
-    /// </summary>
     public OrbitingObject(GameObject obj, GameObject parentObj, float radius, float speed)
     {
         this.obj = obj;
@@ -25,9 +22,6 @@ public class OrbitingObject
         this.fixedCenter = null;
     }
 
-    /// <summary>
-    /// Overloaded constructor to orbit around a fixed Vector3 point
-    /// </summary>
     public OrbitingObject(GameObject obj, Vector3 fixedCenter, float radius, float speed)
     {
         this.obj = obj;
@@ -38,9 +32,6 @@ public class OrbitingObject
         this.parentObj = null;
     }
 
-    /// <summary>
-    /// Update object position to orbit around parent or fixed center each frame
-    /// </summary>
     public void UpdatePosition(float deltaTime)
     {
         // Increment current angle based on speed and multiplier

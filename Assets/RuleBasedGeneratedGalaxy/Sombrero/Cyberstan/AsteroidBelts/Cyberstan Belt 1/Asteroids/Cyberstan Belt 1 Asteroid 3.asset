@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Cyberstan Belt 1 Asteroid 3
   m_EditorClassIdentifier: 
   asteroidName: Red boulder
-  resources: []
+  resources:
+  - {fileID: 11400000, guid: 4b784e1c50b621a41b3b6844029b82ed, type: 2}
   type: 0

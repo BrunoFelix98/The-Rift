@@ -15,16 +15,19 @@ MonoBehaviour:
   systemName: Caelcryst Dominion
   stars:
   - {fileID: 11400000, guid: 2b5367225999e214fa57134906f813b1, type: 2}
-  planets: []
+  planets:
+  - {fileID: 11400000, guid: 6c9784c6ae9756f45a6b15d9d53c19de, type: 2}
+  - {fileID: 11400000, guid: 888b7c8a2a94b104db8b881d946d3020, type: 2}
+  - {fileID: 11400000, guid: 04e4ec9f3038a9c4f94e696aa7d707f5, type: 2}
+  - {fileID: 11400000, guid: 79541782012576e46a3c45fb6cd71237, type: 2}
+  - {fileID: 11400000, guid: 20541900ff15a02488812e38e50cb87d, type: 2}
   asteroidBelts:
   - {fileID: 11400000, guid: 79ffd237a53553249a03f4d972bbf5cb, type: 2}
   - {fileID: 11400000, guid: 6eed3eeb0e7b0a248a491961f7b1848f, type: 2}
-  - {fileID: 11400000, guid: 441c97efeba643b47900fe42ad728125, type: 2}
   gates:
+  - {fileID: 11400000, guid: 62a4d07c44757984f8e958af90ca800e, type: 2}
   - {fileID: 11400000, guid: 5c8f949797aee1a439e835a083a1818a, type: 2}
-  - {fileID: 11400000, guid: f89e573aaa9f93d4ba3306c8f99497c9, type: 2}
-  - {fileID: 11400000, guid: 461f2677c20262f4fb4053857a80a132, type: 2}
-  - {fileID: 11400000, guid: 32e2de3a4075d4c41b57ee0cc45315b5, type: 2}
-  stations: []
+  stations:
+  - {fileID: 11400000, guid: 662947a171e567745bf9b3a0cf3146b2, type: 2}
   nebula: {fileID: 11400000, guid: c42c5fbaed5b19341962790199ffa638, type: 2}
   allegiance: {fileID: 11400000, guid: ae9f812292d0e45468c65f486c8fedd9, type: 2}
