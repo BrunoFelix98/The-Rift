@@ -6,4 +6,5 @@ public class AsteroidDTO
 {
     public string asteroidName;
     public List<ResourceDTO> resources = new List<ResourceDTO>();
+    public CelestialType type;
 }

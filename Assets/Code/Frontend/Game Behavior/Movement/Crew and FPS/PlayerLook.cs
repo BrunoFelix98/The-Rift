@@ -16,22 +16,14 @@ public class PlayerLook : NetworkBehaviour
     // NetworkVariable to synchronize yaw across clients
     private NetworkVariable<float> yaw = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private void OnEnable()
+    public override void OnNetworkSpawn()
     {
-        if (!Application.isFocused || !IsOwner) return;
-
         lookAction.action.Enable();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
-    private void OnDisable()
+    public override void OnNetworkDespawn()
     {
-        if (!Application.isFocused || !IsOwner) return;
-
         lookAction.action.Disable();
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 
     private void Update()

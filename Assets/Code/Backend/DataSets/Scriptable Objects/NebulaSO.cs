@@ -8,4 +8,6 @@ public class NebulaSO : ScriptableObject
     public float density; // Could influence visibility, navigation, etc.
     public Vector3 size;  // Dimensions or scale of the nebula
     public string description;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

@@ -457,7 +457,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1410117109}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4380c6537707d2b41838f697af991b88, type: 3}
   m_Name: 
@@ -508,20 +508,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1410117109}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 126b289eb7b989c4c94219b890351862, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  galaxiesInput:
-  - name: Andromeda
-    dustParticles: 100
-  - name: Milky Way
-    dustParticles: 150
-  - name: Pegasus
-    dustParticles: 200
-  - name: Sombrero
-    dustParticles: 50
+  galaxiesJsonFile: {fileID: 4900000, guid: 378d02f66af0a0c4689a1f1d5f8402f7, type: 3}
+  loadedGalaxies: []
   basePlanetSO: {fileID: 11400000, guid: 3aa6e54b0ce24ff4cbb58ca6e56b8178, type: 2}
   baseMoonSO: {fileID: 11400000, guid: b674718fede124341bbb72a6414af639, type: 2}
   baseStarSO: {fileID: 11400000, guid: 0579bda863c258649b1fa7e63547d1a5, type: 2}
@@ -546,6 +539,7 @@ MonoBehaviour:
   baseNebulaSO: {fileID: 11400000, guid: be70cb43f15f5674498ba744e5f5e20c, type: 2}
   resourcesJsonFile: {fileID: 4900000, guid: a28cbd839db48da43b07d1b664c83244, type: 3}
   loadedResources: []
+  prefabOutputFolder: Assets/RuleBasedGeneratedGalaxy/Prefabs
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -4,4 +4,6 @@ using UnityEngine;
 public class StarSO : ScriptableObject
 {
     public string starName;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

@@ -56,12 +56,15 @@ public class ConceptSOGenerator
             string corpName = faction.corporations[i];
             ConceptSO corpConcept = FindOrCreateConceptSO(corpName, faction.factionName, allianceFolder);
 
-            // Set allegiance to lead corporation
+            // Ensure allegiance points to the allianceConcept
             corpConcept.allegiance = allianceConcept;
+            EditorUtility.SetDirty(corpConcept);
 
+            // Keep the list in sync
             if (!allianceConcept.memberCorporations.Contains(corpConcept))
                 allianceConcept.memberCorporations.Add(corpConcept);
-            EditorUtility.SetDirty(corpConcept);
+
+            EditorUtility.SetDirty(allianceConcept);
         }
     }
 
@@ -74,12 +77,27 @@ public class ConceptSOGenerator
         LivingSO leader = FindOrCreateLiving(faction.leaderNames[0], faction.factionName, allianceConcept, Path.Combine(outputFolder, "Leaders"));
         allianceConcept.leader = leader;
 
+        // Add the alliance leader to the members list if not already present
+        if (!allianceConcept.members.Contains(leader))
+            allianceConcept.members.Add(leader);
+
+        EditorUtility.SetDirty(allianceConcept);
+
         // Assign remaining leaders to member corporations
-        for (int i = 1; i < faction.leaderNames.Count && i < faction.corporations.Count; i++)
+        for (int i = 1; i < faction.leaderNames.Count && i < allianceConcept.memberCorporations.Count + 1; i++)
         {
             LivingSO memberLeader = FindOrCreateLiving(faction.leaderNames[i], faction.factionName, allianceConcept, Path.Combine(outputFolder, "Leaders"));
             var corpConcept = allianceConcept.memberCorporations[i - 1];
+
             corpConcept.leader = memberLeader;
+
+            // Add each leader to their own member list if not present
+            if (!corpConcept.members.Contains(memberLeader))
+                corpConcept.members.Add(memberLeader);
+
+            // Ensure allegiance
+            corpConcept.allegiance = allianceConcept;
+
             EditorUtility.SetDirty(corpConcept);
         }
     }

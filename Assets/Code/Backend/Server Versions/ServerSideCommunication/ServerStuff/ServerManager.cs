@@ -1,21 +1,49 @@
+using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
 
 public class ServerManager : MonoBehaviour
 {
+    [Header("Build type check")]
     public bool isServer = true;
 
-    void Start()
+    [Header("Player Prefabs")]
+    public GameObject fpsCrewPlayerPrefab;
+    public GameObject fighterPlayerPrefab;
+    public GameObject bigShipPlayerPrefab;
+
+    private void Start()
     {
-        if (isServer)
+        try
         {
-            Debug.Log("Starting Dedicated Server...");
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.StartServer();
+            if (isServer)
+            {
+                Debug.Log("Starting Dedicated Server...");
+                if (NetworkManager.Singleton != null)
+                {
+                    NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+                    NetworkManager.Singleton.StartServer();
+                }
+                else
+                {
+                    Debug.LogError("NetworkManager.Singleton is null. Cannot start server.");
+                }
+            }
+            else
+            {
+                if (NetworkManager.Singleton != null)
+                {
+                    NetworkManager.Singleton.StartClient();
+                }
+                else
+                {
+                    Debug.LogError("NetworkManager.Singleton is null. Cannot start client.");
+                }
+            }
         }
-        else
+        catch (System.Exception ex)
         {
-            NetworkManager.Singleton.StartClient();
+            Debug.LogError($"[Network Error] Failed to start networking: {ex.Message}\n{ex.StackTrace}");
         }
     }
 
@@ -30,148 +58,74 @@ public class ServerManager : MonoBehaviour
         Debug.Log($"Client connected: {clientId}");
     }
 
-    // Call this from somewhere that processes input server-side
-    public void SwitchToFighter(ulong clientId)
+    public void SwitchPlayerPrefab(ulong clientId, ControllerType newShipType)
     {
+        Debug.Log($"SwitchPlayerPrefab called for client {clientId} to {newShipType}");
+
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
         {
             Debug.LogWarning($"Client ID {clientId} not connected");
             return;
         }
 
-        GameObject playerRoot = client.PlayerObject.gameObject;
-        Transform fpsPrefab = playerRoot.transform.Find("FPSCrewMovement");
-        Transform bigShipPrefab = playerRoot.transform.Find("BigShipMovement");
-        Transform fighterPrefab = playerRoot.transform.Find("FighterMovement");
-
-        if (fpsPrefab == null || bigShipPrefab == null || fighterPrefab == null)
+        // Get current player object
+        NetworkObject currentPlayer = client.PlayerObject;
+        if (currentPlayer == null)
         {
-            Debug.LogWarning($"One or more required child prefabs not found under player root for client {clientId}");
+            Debug.LogWarning($"No player object found for client {clientId}");
             return;
         }
 
-        if (fpsPrefab != null) fpsPrefab.gameObject.SetActive(false);
-        if (fighterPrefab != null) fighterPrefab.gameObject.SetActive(true);
-        if (bigShipPrefab != null) bigShipPrefab.gameObject.SetActive(false);
+        Debug.Log($"Current player found, despawning...");
 
-        if (fpsPrefab != null)
+        // Store position and rotation
+        Vector3 position = currentPlayer.transform.position;
+        Quaternion rotation = currentPlayer.transform.rotation;
+
+        // Despawn current player
+        currentPlayer.Despawn();
+
+        Debug.Log($"Player despawned, getting new prefab for {newShipType}");
+
+        // Get new prefab
+        GameObject newPrefab = GetPrefabForShipType(newShipType);
+        if (newPrefab == null)
         {
-            var cam = fpsPrefab.transform.Find("Camera");
-            Debug.Log("Found fps camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fpsCam)) fpsCam.enabled = false;
-        }
-        if (fighterPrefab != null)
-        {
-            var cam = fighterPrefab.transform.Find("Camera");
-            Debug.Log("Found fighter camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fighterCam)) fighterCam.enabled = true;
-        }
-        if (bigShipPrefab != null)
-        {
-            var cam = bigShipPrefab.transform.Find("Camera");
-            Debug.Log("Found big ship camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var bigShipCam)) bigShipCam.enabled = false;
+            Debug.LogError($"No prefab found for ship type {newShipType}");
+            return;
         }
 
-        // Activate the fighter prefab
-        fighterPrefab.gameObject.SetActive(true);
+        Debug.Log($"New prefab found: {newPrefab.name}, instantiating...");
 
-        Debug.Log($"Switched client {clientId} to fighter prefab by activating it and deactivating others.");
+        // Spawn new player prefab
+        GameObject newPlayerObj = Instantiate(newPrefab, position, rotation);
+        NetworkObject newNetworkObj = newPlayerObj.GetComponent<NetworkObject>();
+
+        if (newNetworkObj != null)
+        {
+            Debug.Log($"Spawning new player object for client {clientId}");
+            newNetworkObj.SpawnAsPlayerObject(clientId);
+            Debug.Log($"Successfully switched client {clientId} to {newShipType} prefab");
+        }
+        else
+        {
+            Debug.LogError("New player prefab doesn't have NetworkObject component");
+            Destroy(newPlayerObj);
+        }
     }
 
-    public void SwitchToBigShip(ulong clientId)
+    private GameObject GetPrefabForShipType(ControllerType shipType)
     {
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
+        switch (shipType)
         {
-            Debug.LogWarning($"Client ID {clientId} not connected");
-            return;
+            case ControllerType.Fighter:
+                return fighterPlayerPrefab;
+            case ControllerType.FPSCrew:
+                return fpsCrewPlayerPrefab;
+            case ControllerType.BigShip:
+                return bigShipPlayerPrefab;
+            default:
+                return null;
         }
-
-        GameObject playerRoot = client.PlayerObject.gameObject;
-        Transform fpsPrefab = playerRoot.transform.Find("FPSCrewMovement");
-        Transform bigShipPrefab = playerRoot.transform.Find("BigShipMovement");
-        Transform fighterPrefab = playerRoot.transform.Find("FighterMovement");
-
-        if (fpsPrefab == null || bigShipPrefab == null || fighterPrefab == null)
-        {
-            Debug.LogWarning($"One or more required child prefabs not found under player root for client {clientId}");
-            return;
-        }
-
-        if (fpsPrefab != null) fpsPrefab.gameObject.SetActive(false);
-        if (fighterPrefab != null) fighterPrefab.gameObject.SetActive(false);
-        if (bigShipPrefab != null) bigShipPrefab.gameObject.SetActive(true);
-
-        if (fpsPrefab != null)
-        {
-            var cam = fpsPrefab.transform.Find("Camera");
-            Debug.Log("Found fps camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fpsCam)) fpsCam.enabled = false;
-        }
-        if (fighterPrefab != null)
-        {
-            var cam = fighterPrefab.transform.Find("Camera");
-            Debug.Log("Found fighter camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fighterCam)) fighterCam.enabled = false;
-        }
-        if (bigShipPrefab != null)
-        {
-            var cam = bigShipPrefab.transform.Find("Camera");
-            Debug.Log("Found big ship camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var bigShipCam)) bigShipCam.enabled = true;
-        }
-
-        // Activate the fighter prefab
-        bigShipPrefab.gameObject.SetActive(true);
-
-        Debug.Log($"Switched client {clientId} to big ship prefab by activating it and deactivating others.");
-    }
-
-    public void SwitchToFPSCrew(ulong clientId)
-    {
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
-        {
-            Debug.LogWarning($"Client ID {clientId} not connected");
-            return;
-        }
-
-        GameObject playerRoot = client.PlayerObject.gameObject;
-        Transform fpsPrefab = playerRoot.transform.Find("FPSCrewMovement");
-        Transform bigShipPrefab = playerRoot.transform.Find("BigShipMovement");
-        Transform fighterPrefab = playerRoot.transform.Find("FighterMovement");
-
-        if (fpsPrefab == null || bigShipPrefab == null || fighterPrefab == null)
-        {
-            Debug.LogWarning($"One or more required child prefabs not found under player root for client {clientId}");
-            return;
-        }
-
-        if (fpsPrefab != null) fpsPrefab.gameObject.SetActive(true);
-        if (fighterPrefab != null) fighterPrefab.gameObject.SetActive(false);
-        if (bigShipPrefab != null) bigShipPrefab.gameObject.SetActive(false);
-
-        if (fpsPrefab != null)
-        {
-            var cam = fpsPrefab.transform.Find("Camera");
-            Debug.Log("Found fps camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fpsCam)) fpsCam.enabled = true;
-        }
-        if (fighterPrefab != null)
-        {
-            var cam = fighterPrefab.transform.Find("Camera");
-            Debug.Log("Found fighter camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var fighterCam)) fighterCam.enabled = false;
-        }
-        if (bigShipPrefab != null)
-        {
-            var cam = bigShipPrefab.transform.Find("Camera");
-            Debug.Log("Found big ship camera: " + cam);
-            if (cam != null && cam.TryGetComponent<Camera>(out var bigShipCam)) bigShipCam.enabled = false;
-        }
-
-        // Activate the fighter prefab
-        fpsPrefab.gameObject.SetActive(true);
-
-        Debug.Log($"Switched client {clientId} to fps crew prefab by activating it and deactivating others.");
     }
 }

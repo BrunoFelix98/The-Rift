@@ -6,5 +6,7 @@ public class AsteroidBeltSO : ScriptableObject
 {
     public string beltName;
     public List<AsteroidSO> asteroids = new List<AsteroidSO>();
-    public CelestialType type;
+    public CelestialEnvironment type;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

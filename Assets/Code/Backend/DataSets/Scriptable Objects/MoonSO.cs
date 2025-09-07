@@ -7,5 +7,7 @@ public class MoonSO : ScriptableObject
     public string moonName;
     public List<ResourceSO> resources = new List<ResourceSO>();
     public List<StationSO> stations = new List<StationSO>();
-    public CelestialType type;
+    public CelestialEnvironment type;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

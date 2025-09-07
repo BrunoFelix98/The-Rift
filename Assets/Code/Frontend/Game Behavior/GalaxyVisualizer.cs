@@ -195,8 +195,8 @@ public class GalaxyVisualizer : MonoBehaviour
                             Mathf.Sin(angle) * scatterRadius
                         );
                         asteroidObj.GetComponent<Renderer>().material.color = Color.white;
-                        var asteroidBehavior = asteroidObj.AddComponent<AsteroidBehavior>();
-                        asteroidBehavior.asteroidSO = asteroidSO;
+                        var asteroidBehavior = asteroidObj.AddComponent<AsteroidData>();
+                        asteroidBehavior.data = asteroidSO;
                     }
                     beltIndex++;
                 }

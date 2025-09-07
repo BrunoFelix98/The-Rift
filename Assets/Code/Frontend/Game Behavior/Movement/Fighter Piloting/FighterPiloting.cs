@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -29,55 +30,24 @@ public class FighterPiloting : NetworkBehaviour
     private Rigidbody rb;
     private float currentSpeed;
 
-    private struct InputData : INetworkSerializable
-    {
-        public float strafe;
-        public float strafeV;
-        public float roll;
-        public Vector2 look;
-        public bool accelerate;
-        public bool brake;
-        public int tick;
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref strafe);
-            serializer.SerializeValue(ref strafeV);
-            serializer.SerializeValue(ref roll);
-            serializer.SerializeValue(ref look);
-            serializer.SerializeValue(ref accelerate);
-            serializer.SerializeValue(ref brake);
-            serializer.SerializeValue(ref tick);
-        }
-    }
-
-    private List<InputData> inputBuffer = new List<InputData>();
-    private int lastProcessedTick = -1;
-    private int localTick = 0;
-
     private NetworkVariable<Vector3> netPosition = new NetworkVariable<Vector3>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<Quaternion> netRotation = new NetworkVariable<Quaternion>(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<Vector3> netVelocity = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private Vector2 lookInput;
-    private float rollInput;
-
-    private Vector3 lastValidPosition;
-    private Quaternion lastValidRotation;
-
     private const float MAX_ROTATION_PER_TICK = 360f;
+
+    private Quaternion accumulatedRotation = Quaternion.identity;
+    private float tickTimer = 0f;
+    private const float serverTickRate = 1f / 50f; // 50 Hz
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         currentSpeed = moveSpeed;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-        lastValidPosition = transform.position;
-        lastValidRotation = transform.rotation;
     }
 
-    private void OnEnable()
+    public override void OnNetworkSpawn()
     {
         if (IsOwner)
         {
@@ -87,13 +57,10 @@ public class FighterPiloting : NetworkBehaviour
             lookAction.action.Enable();
             accelerateAction.action.Enable();
             brakeAction.action.Enable();
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
     }
 
-    private void OnDisable()
+    public override void OnNetworkDespawn()
     {
         if (IsOwner)
         {
@@ -103,9 +70,6 @@ public class FighterPiloting : NetworkBehaviour
             lookAction.action.Disable();
             accelerateAction.action.Disable();
             brakeAction.action.Disable();
-
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
         }
     }
 
@@ -113,138 +77,88 @@ public class FighterPiloting : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // Read inputs every frame for responsiveness
-        lookInput = lookAction.action.ReadValue<Vector2>();
-        rollInput = rollAction.action.ReadValue<float>();
+        // Get inputs
+        Vector2 look = lookAction.action.ReadValue<Vector2>();
+        float roll = rollAction.action.ReadValue<float>();
+
+        // Build incremental quaternion from this frame
+        float pitchDelta = -look.y * pitchSpeed * mouseSensitivity * Time.deltaTime;
+        float yawDelta = look.x * yawSpeed * mouseSensitivity * Time.deltaTime;
+        float rollDelta = roll * rollSpeed * Time.deltaTime;
+
+        Quaternion frameRotation =
+            Quaternion.Euler(pitchDelta, yawDelta, rollDelta);
+
+        // Accumulate orientation locally
+        accumulatedRotation *= frameRotation;
+        transform.rotation = accumulatedRotation;
+
+        // Send orientation to server at fixed tick rate
+        tickTimer += Time.deltaTime;
+        if (tickTimer >= serverTickRate)
+        {
+            tickTimer -= serverTickRate;
+            SendTransformToServerRpc(transform.position, accumulatedRotation, rb.linearVelocity);
+        }
     }
 
     private void FixedUpdate()
     {
-        if (!IsOwner)
+        if (IsOwner)
         {
-            // Non-owners interpolate/network sync
-            transform.position = netPosition.Value;
-            transform.rotation = netRotation.Value;
-            rb.linearVelocity = netVelocity.Value;
-            return;
-        }
-
-        localTick++;
-
-        InputData input = new InputData
-        {
-            look = lookInput,
-            roll = rollInput,
-            strafe = moveAction.action.ReadValue<float>(),
-            strafeV = verticalStrafe.action.ReadValue<float>(),
-            accelerate = accelerateAction.action.IsPressed(),
-            brake = brakeAction.action.IsPressed(),
-            tick = localTick
-        };
-
-        // Calculate rotation delta based on input
-        float pitchDelta = -input.look.y * pitchSpeed * mouseSensitivity * Time.fixedDeltaTime;
-        float yawDelta = input.look.x * yawSpeed * mouseSensitivity * Time.fixedDeltaTime;
-        float rollDelta = input.roll * rollSpeed * mouseSensitivity * Time.fixedDeltaTime;
-
-        Vector3 rotationDelta = new Vector3(pitchDelta, yawDelta, rollDelta);
-
-        // Clamp rotation delta magnitude and revert if exceeding max
-        if (rotationDelta.magnitude > MAX_ROTATION_PER_TICK)
-        {
-            // Revert to last valid transform to prevent runaway rotation
-            transform.position = lastValidPosition;
-            transform.rotation = lastValidRotation;
-            // Optional: reset velocity or skip movement this tick
-            rb.linearVelocity = Vector3.zero;
+            HandleMovement();
         }
         else
         {
-            // Apply rotation
-            transform.Rotate(rotationDelta, Space.Self);
-
-            // Store last valid state
-            lastValidPosition = transform.position;
-            lastValidRotation = transform.rotation;
-
-            // Apply movement according to input
-            HandleMovement(input);
+            // Remote clients follow server state (interpolated for smoothness)
+            float lerpSpeed = 10f;
+            transform.position = Vector3.Lerp(transform.position, netPosition.Value, lerpSpeed * Time.fixedDeltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, netRotation.Value, lerpSpeed * Time.fixedDeltaTime);
+            rb.linearVelocity = netVelocity.Value;
         }
-
-        // Buffer input for server reconciliation (optional)
-        inputBuffer.Add(input);
-
-        // Send processed input to server
-        SendInputToServerRpc(input);
     }
 
-    private void HandleMovement(InputData input)
+    private void HandleMovement()
     {
-        if (input.accelerate)
+        if (accelerateAction.action.IsPressed())
             currentSpeed = Mathf.Min(currentSpeed + acceleration * Time.fixedDeltaTime, maxForwardSpeed);
-        else if (input.brake)
+        else if (brakeAction.action.IsPressed())
             currentSpeed = Mathf.Max(currentSpeed - deceleration * Time.fixedDeltaTime, maxBackwardSpeed);
         else
             currentSpeed = Mathf.MoveTowards(currentSpeed, moveSpeed, deceleration * Time.fixedDeltaTime);
 
-        Vector3 moveDir = transform.forward * currentSpeed +
-                          transform.right * input.strafe * strafeSpeed +
-                          transform.up * input.strafeV * strafeSpeed;
+        Vector3 moveDir =
+            transform.forward * currentSpeed +
+            transform.right * moveAction.action.ReadValue<float>() * strafeSpeed +
+            transform.up * verticalStrafe.action.ReadValue<float>() * strafeSpeed;
 
         rb.linearVelocity = moveDir;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void SendInputToServerRpc(InputData input, ServerRpcParams rpcParams = default)
+    [ServerRpc(RequireOwnership = true)]
+    private void SendTransformToServerRpc(Vector3 pos, Quaternion rot, Vector3 velocity)
     {
-        if (input.tick <= lastProcessedTick) return;
-        lastProcessedTick = input.tick;
+        // Server clamps extreme deltas to prevent abuse
+        Quaternion lastRot = netRotation.Value;
+        float angle;
+        Vector3 axis;
+        Quaternion deltaRot = rot * Quaternion.Inverse(lastRot);
+        deltaRot.ToAngleAxis(out angle, out axis);
 
-        // Calculate rotation delta on server side (same as client)
-        float pitchDelta = -input.look.y * pitchSpeed * mouseSensitivity * Time.fixedDeltaTime;
-        float yawDelta = input.look.x * yawSpeed * mouseSensitivity * Time.fixedDeltaTime;
-        float rollDelta = input.roll * rollSpeed * mouseSensitivity * Time.fixedDeltaTime * 2.0f; // roll multiplier
-
-        Vector3 rotationDelta = new Vector3(pitchDelta, yawDelta, rollDelta);
-
-        // Clamp rotation on server as well
-        if (rotationDelta.magnitude > MAX_ROTATION_PER_TICK)
+        if (angle > MAX_ROTATION_PER_TICK)
         {
-            // Revert server state to last valid
-            transform.position = lastValidPosition;
-            transform.rotation = lastValidRotation;
-            rb.linearVelocity = Vector3.zero;
-        }
-        else
-        {
-            transform.Rotate(rotationDelta, Space.Self);
-
-            lastValidPosition = transform.position;
-            lastValidRotation = transform.rotation;
-
-            HandleMovement(input);
+            angle = MAX_ROTATION_PER_TICK;
+            rot = Quaternion.AngleAxis(angle, axis) * lastRot;
         }
 
-        netPosition.Value = transform.position;
-        netRotation.Value = transform.rotation;
-        netVelocity.Value = rb.linearVelocity;
+        // Update authoritative state
+        netPosition.Value = pos;
+        netRotation.Value = rot;
+        netVelocity.Value = velocity;
 
-        // Send authoritative state back to client for reconciliation (could be improved with explicit tick)
-        RotationAckClientRpc(transform.position, transform.rotation, input.tick);
-    }
-
-    [ClientRpc]
-    private void RotationAckClientRpc(Vector3 authoritativePos, Quaternion authoritativeRot, int lastServerTick)
-    {
-        if (!IsOwner) return;
-
-        // Remove acknowledged inputs if you buffer them (optional)
-        inputBuffer.RemoveAll(i => i.tick <= lastServerTick);
-
-        // Set authoritative position and rotation from server
-        transform.position = authoritativePos;
-        transform.rotation = authoritativeRot;
-        lastValidPosition = authoritativePos;
-        lastValidRotation = authoritativeRot;
+        // Server also moves its own rigidbody
+        transform.position = pos;
+        transform.rotation = rot;
+        rb.linearVelocity = velocity;
     }
 }

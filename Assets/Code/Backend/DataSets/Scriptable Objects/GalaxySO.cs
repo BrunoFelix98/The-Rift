@@ -6,4 +6,6 @@ public class GalaxySO : ScriptableObject
 {
     public string galaxyName;
     public List<SystemSO> systems = new List<SystemSO>();
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

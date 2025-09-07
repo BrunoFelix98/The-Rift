@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.LowLevel;
 
 public class PlayerMovement : NetworkBehaviour
 {
@@ -10,12 +9,14 @@ public class PlayerMovement : NetworkBehaviour
     public float moveSpeed = 5f;
     public float jumpHeight = 2.5f;
     public float gravityValue = -9.81f;
-    public float jumpBufferTime = 0.2f;
+
+    [Header("Jump Buffer Settings")]
+    public float jumpBufferTime = 0.15f;
+    public float groundedGracePeriod = 0.2f;
 
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
-    private float groundedGracePeriod = 0.2f;
     private float lastGroundedTime = 0f;
 
     public InputActionReference moveAction;
@@ -24,6 +25,11 @@ public class PlayerMovement : NetworkBehaviour
     private float serverYaw;
     private PlayerLook playerLook;
 
+    // Mixed approach: Event-based + buffering
+    private bool jumpRequested = false;
+    private float jumpRequestTime = 0f;
+    private bool jumpConsumed = false;
+
     private struct InputState
     {
         public float time;
@@ -31,7 +37,6 @@ public class PlayerMovement : NetworkBehaviour
         public bool jump;
         public bool wasGroundedAtInput;
         public float yaw;
-        // For true FPS logic, add rotation here too.
     }
 
     private List<InputState> inputBuffer = new List<InputState>();
@@ -40,11 +45,33 @@ public class PlayerMovement : NetworkBehaviour
     private Vector2 serverMovementInput;
     private bool serverJumpInput;
     private bool serverGroundedState;
+    private float serverLastJumpTime = -1f;
 
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerLook = GetComponent<PlayerLook>();
+    }
+
+    void Update() // Handle input in Update for responsiveness
+    {
+        if (IsOwner && Application.isFocused)
+        {
+            // Event-based jump detection - much more reliable than triggered
+            if (jumpAction.action.WasPressedThisFrame())
+            {
+                jumpRequested = true;
+                jumpRequestTime = Time.time;
+                jumpConsumed = false;
+            }
+
+            // Clear expired jump requests
+            if (jumpRequested && (Time.time - jumpRequestTime) > jumpBufferTime)
+            {
+                jumpRequested = false;
+                jumpConsumed = true;
+            }
+        }
     }
 
     void FixedUpdate()
@@ -58,29 +85,34 @@ public class PlayerMovement : NetworkBehaviour
         {
             // Capture inputs
             Vector2 moveInput = moveAction.action.ReadValue<Vector2>();
-            bool jumpInput = jumpAction.action.triggered;
             bool isGrounded = controller.isGrounded;
             float currentYaw = playerLook != null ? playerLook.transform.rotation.eulerAngles.y : transform.rotation.eulerAngles.y;
 
-            // Buffer input and send with wasGroundedAtInput
+            // Only send jump if it's a fresh, unconsumed request
+            bool sendJump = jumpRequested && !jumpConsumed;
+
+            // Buffer input
             InputState state = new InputState
             {
                 time = Time.time,
                 move = moveInput,
-                jump = jumpInput,
-                wasGroundedAtInput = controller.isGrounded,
+                jump = sendJump,
+                wasGroundedAtInput = isGrounded,
                 yaw = currentYaw
             };
-
             inputBuffer.Add(state);
-
-            SendInputServerRpc(moveInput, jumpInput, controller.isGrounded, inputBuffer.Count - 1, currentYaw);
 
             // Local prediction
             PredictMove(state);
 
-            // Send input to the server (with buffer index or timestamp for reconciliation)
-            SendInputServerRpc(moveInput, jumpInput, isGrounded, inputBuffer.Count - 1, currentYaw);
+            // Send input to server (SINGLE CALL - fixes your duplicate RPC issue)
+            SendInputServerRpc(moveInput, sendJump, isGrounded, inputBuffer.Count - 1, currentYaw);
+
+            // Mark jump as consumed after sending
+            if (sendJump)
+            {
+                jumpConsumed = true;
+            }
         }
     }
 
@@ -90,7 +122,9 @@ public class PlayerMovement : NetworkBehaviour
         if (groundedPlayer)
             lastGroundedTime = Time.time;
 
+        // More forgiving jump conditions
         bool canJump = (Time.time - lastGroundedTime) <= groundedGracePeriod;
+
         if (canJump && state.jump)
         {
             playerVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
@@ -100,8 +134,8 @@ public class PlayerMovement : NetworkBehaviour
         move = Vector3.ClampMagnitude(move, 1f);
         Quaternion rotation = Quaternion.Euler(0f, state.yaw, 0f);
         move = rotation * move;
-        controller.Move(move * moveSpeed * Time.deltaTime);
 
+        controller.Move(move * moveSpeed * Time.deltaTime);
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
     }
@@ -115,7 +149,6 @@ public class PlayerMovement : NetworkBehaviour
         serverYaw = yaw;
 
         ServerMove();
-
         UpdatePositionClientRpc(transform.position, transform.rotation, inputIndex);
     }
 
@@ -125,21 +158,27 @@ public class PlayerMovement : NetworkBehaviour
         if (groundedPlayer)
             lastGroundedTime = Time.time;
 
-        bool canJump = serverGroundedState;
+        // Improved server-side jump logic with double protection
+        bool canJump = serverGroundedState || (Time.time - lastGroundedTime) <= groundedGracePeriod;
 
-        if (canJump && serverJumpInput)
+        // Prevent rapid-fire jumps with server-side cooldown
+        bool jumpCooldownExpired = (Time.time - serverLastJumpTime) > 0.1f;
+
+        if (canJump && serverJumpInput && jumpCooldownExpired)
         {
             playerVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravityValue);
-            serverJumpInput = false;
+            serverLastJumpTime = Time.time;
+            serverJumpInput = false; // Reset jump input immediately
         }
 
         // Apply server yaw rotation
         transform.rotation = Quaternion.Euler(0f, serverYaw, 0f);
 
-        // Process movement and jumping as before using serverYaw to rotate input move vector
+        // Process movement
         Vector3 move = new Vector3(serverMovementInput.x, 0, serverMovementInput.y);
         move = Vector3.ClampMagnitude(move, 1f);
         move = transform.rotation * move;
+
         controller.Move(move * moveSpeed * Time.fixedDeltaTime);
         playerVelocity.y += gravityValue * Time.fixedDeltaTime;
         controller.Move(playerVelocity * Time.fixedDeltaTime);
@@ -150,7 +189,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!IsOwner)
         {
-            // Non-owning clients get authoritative rotation & position applied directly
+            // Non-owning clients get authoritative position applied directly
             controller.enabled = false;
             transform.position = position;
             transform.rotation = rotation;
@@ -158,19 +197,19 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
         {
-            // Owner reconciles predicted position & rotation
+            // Owner reconciles predicted position
             controller.enabled = false;
             transform.position = position;
             transform.rotation = rotation;
             controller.enabled = true;
 
-            // Reapply unprocessed inputs for position and rotation prediction
+            // Reapply unprocessed inputs for smooth prediction
             for (int i = serverProcessedInputIndex + 1; i < inputBuffer.Count; i++)
             {
                 PredictMove(inputBuffer[i]);
             }
 
-            // Remove acknowledged inputs
+            // Clean up acknowledged inputs
             inputBuffer.RemoveRange(0, Mathf.Min(serverProcessedInputIndex + 1, inputBuffer.Count));
         }
     }

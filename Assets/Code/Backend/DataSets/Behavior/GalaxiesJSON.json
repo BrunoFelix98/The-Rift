@@ -1,8 +1,8 @@
 {
   "galaxies": [
-    { "name": "Milky Way" },
-    { "name": "Andromeda" },
-    { "name": "Pegasus" },
-    { "name": "Sombrero" }
+    {
+      "name": "Milky Way",
+      "dustParticles": 10
+    }
   ]
 }

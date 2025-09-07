@@ -13,9 +13,10 @@ public class BigShipMovement : NetworkBehaviour
     private float lastClickTime = -10f;
     private float targetDistance = 150f;
 
-    // Server-authoritative target position, synced to all clients
+    // Server-authoritative target position and rotation, synced to all clients
     private NetworkVariable<Vector3> targetPosition = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<bool> hasTargetPosition = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private NetworkVariable<Quaternion> shipRotation = new NetworkVariable<Quaternion>(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private Vector3 clientTargetPosition;
     private bool clientHasTargetPosition;
@@ -26,6 +27,12 @@ public class BigShipMovement : NetworkBehaviour
         {
             HandleInput();
             ClientMove();
+        }
+
+        // Apply server rotation to all non-owning clients
+        if (!IsOwner && shipModel != null)
+        {
+            shipModel.rotation = shipRotation.Value;
         }
     }
 
@@ -62,7 +69,6 @@ public class BigShipMovement : NetworkBehaviour
         else
         {
             float angleToTarget = 0f;
-
             if (shipModel != null)
             {
                 Vector3 currentForward = shipModel.forward;
@@ -71,9 +77,9 @@ public class BigShipMovement : NetworkBehaviour
             }
 
             float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
-
             transform.position += direction.normalized * moveSpeed * speedFactor * Time.deltaTime;
 
+            // Handle rotation for owning client
             if (shipModel != null && direction.sqrMagnitude > 0.001f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
@@ -110,7 +116,6 @@ public class BigShipMovement : NetworkBehaviour
         else
         {
             float angleToTarget = 0f;
-
             if (shipModel != null)
             {
                 Vector3 currentForward = shipModel.forward;
@@ -119,31 +124,30 @@ public class BigShipMovement : NetworkBehaviour
             }
 
             float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
-
             transform.position += direction.normalized * moveSpeed * speedFactor * Time.fixedDeltaTime;
 
+            // Handle rotation on server and sync to all clients
             if (shipModel != null && direction.sqrMagnitude > 0.001f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
                 shipModel.rotation = Quaternion.RotateTowards(shipModel.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+
+                // Update the networked rotation variable
+                shipRotation.Value = shipModel.rotation;
             }
         }
 
-        // Synchronize position and rotation with all clients
-        UpdatePositionClientRpc(transform.position, transform.rotation);
+        // Synchronize position with all clients (rotation is handled by NetworkVariable)
+        UpdatePositionClientRpc(transform.position);
     }
 
     [ClientRpc]
-    private void UpdatePositionClientRpc(Vector3 position, Quaternion rotation)
+    private void UpdatePositionClientRpc(Vector3 position)
     {
-        if (!Application.isFocused || !IsOwner)
+        if (!IsOwner)
         {
-            // Update position and rotation for non-owning clients
+            // Update position for non-owning clients (rotation handled by NetworkVariable)
             transform.position = position;
-            if (shipModel != null)
-            {
-                shipModel.rotation = rotation;
-            }
         }
     }
 }

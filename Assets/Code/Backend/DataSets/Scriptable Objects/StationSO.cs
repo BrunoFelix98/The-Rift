@@ -14,4 +14,7 @@ public class StationSO : ScriptableObject
     public BlueprintSO blueprint;
 
     public List<ModuleSO> modules = new List<ModuleSO>();
+
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

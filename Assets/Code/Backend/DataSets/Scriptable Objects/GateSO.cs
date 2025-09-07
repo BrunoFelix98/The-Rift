@@ -7,4 +7,6 @@ public class GateSO : ScriptableObject
 
     // Reference to the connected system ScriptableObject
     public SystemSO connectedSystem;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

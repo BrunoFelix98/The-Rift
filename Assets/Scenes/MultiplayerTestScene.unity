@@ -469,6 +469,173 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1858762671
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1858762674}
+  - component: {fileID: 1858762672}
+  - component: {fileID: 1858762675}
+  - component: {fileID: 1858762673}
+  m_Layer: 0
+  m_Name: GalaxyVisualizer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1858762672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1858762671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 843642152
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &1858762673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1858762671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0afa85735d7e4e438d67a6da12d468f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkedGalaxyVisualizer
+  ShowTopMostFoldoutHeaderGroup: 1
+  galaxyAssets:
+  - {fileID: 11400000, guid: 52f1c1567d8c1334391a5629ba83d11d, type: 2}
+  - {fileID: 11400000, guid: a46ca0534d17b584dab1e528c919df9e, type: 2}
+  - {fileID: 11400000, guid: 020e4bcaeaee8ff46a7fc552da468116, type: 2}
+  - {fileID: 11400000, guid: b4cbae546cffffd47b2bf04c06cb6507, type: 2}
+  starPrefab: {fileID: 1446122883225867678, guid: 171b72fa1c76f704d99fd4daf95da763, type: 3}
+  planetPrefab: {fileID: 6554570631295941936, guid: ae2f77b8c0b0e8e4ebdcdc7e83e8a74f, type: 3}
+  moonPrefab: {fileID: 2471529623173599463, guid: e7b3b296662d30a47b1b7589e44b3660, type: 3}
+  stationPrefab: {fileID: 3156010735745078877, guid: 5fe96403cb6e1154fb24002d58a680b4, type: 3}
+  asteroidPrefab: {fileID: 3268471424244243924, guid: 2d29c7fe279b71641b1ac340258930ea, type: 3}
+  nebulaPrefab: {fileID: 6585333819559384535, guid: 747e03d08db06f94f957bda5e58b8359, type: 3}
+  asteroidBeltPrefab: {fileID: 7764973025491808214, guid: 9be538ce5ac91aa4880a5419661438f3, type: 3}
+  gatePrefab: {fileID: 6549077639392160837, guid: 056fc087ed150144e8a95ca0d6014dbe, type: 3}
+  centerPrefab: {fileID: 3819855718246445913, guid: 2bc75de981d2c5c4abd6e7f56ae9c125, type: 3}
+  galaxyRadiusMul: 1
+  galaxySpeedMin: 0.001
+  galaxySpeedMax: 0.0045
+  systemBase: 16
+  systemStep: 7.5
+  systemSpeed: 0.0013
+  starRadius: 4.5
+  starSpeed: 0.0017
+  planetBase: 7
+  planetStep: 3
+  moonBase: 2
+  moonStep: 1.2
+  stationRadius: 0.4
+  beltBase: 12
+  beltStep: 1.8
+  nebulaRadius: 25
+  nebulaSpeed: 0.05
+  viewDistance: 4000
+  allOrbits: []
+--- !u!4 &1858762674
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1858762671}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -14.85943, y: -7.99001, z: -19.1446}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1858762675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1858762671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acd8b2b22b1955944a5faf9387672eb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkedObjectPoolManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  pooledPrefabs:
+  - prefab: {fileID: 1446122883225867678, guid: 171b72fa1c76f704d99fd4daf95da763, type: 3}
+    initialPoolSize: 200
+    maxPoolSize: 2000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 6554570631295941936, guid: ae2f77b8c0b0e8e4ebdcdc7e83e8a74f, type: 3}
+    initialPoolSize: 1000
+    maxPoolSize: 5000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 6585333819559384535, guid: 747e03d08db06f94f957bda5e58b8359, type: 3}
+    initialPoolSize: 200
+    maxPoolSize: 2000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 2471529623173599463, guid: e7b3b296662d30a47b1b7589e44b3660, type: 3}
+    initialPoolSize: 5000
+    maxPoolSize: 10000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 6549077639392160837, guid: 056fc087ed150144e8a95ca0d6014dbe, type: 3}
+    initialPoolSize: 300
+    maxPoolSize: 2500
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 3268471424244243924, guid: 2d29c7fe279b71641b1ac340258930ea, type: 3}
+    initialPoolSize: 5000
+    maxPoolSize: 10000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 3156010735745078877, guid: 5fe96403cb6e1154fb24002d58a680b4, type: 3}
+    initialPoolSize: 300
+    maxPoolSize: 2500
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
+  - prefab: {fileID: 7764973025491808214, guid: 9be538ce5ac91aa4880a5419661438f3, type: 3}
+    initialPoolSize: 1000
+    maxPoolSize: 2000
+    autoExpand: 1
+    activeCount: 0
+    pooledCount: 0
 --- !u!1 &2076912491
 GameObject:
   m_ObjectHideFlags: 0
@@ -527,9 +694,9 @@ MonoBehaviour:
   m_MaxConnectAttempts: 60
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
-    Address: 176.78.37.117
+    Address: 176.78.88.244
     Port: 30000
-    ServerListenAddress: 192.168.1.209
+    ServerListenAddress: 192.168.1.208
   DebugSimulator:
     PacketDelayMS: 0
     PacketJitterMS: 0
@@ -550,7 +717,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 2076912494}
-    PlayerPrefab: {fileID: 6944412788152461890, guid: e137b690eb1cf1249883e7e9d4bae98b, type: 3}
+    PlayerPrefab: {fileID: 3173229439167831745, guid: eeda449acf59bd04389bd3f5df7378ec, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 6c34612067d99d649ae0ee1f63be2b6f, type: 2}
@@ -590,6 +757,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ServerManager
   isServer: 1
+  fpsCrewPlayerPrefab: {fileID: 3173229439167831745, guid: eeda449acf59bd04389bd3f5df7378ec, type: 3}
+  fighterPlayerPrefab: {fileID: 1181918415118748020, guid: d4471b160a5a0cb4fbe458231a81b14f, type: 3}
+  bigShipPlayerPrefab: {fileID: 5425038381815344191, guid: 151477605a83027479e224a008bf3eb6, type: 3}
 --- !u!114 &2076912497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -623,3 +793,4 @@ SceneRoots:
   - {fileID: 2076912493}
   - {fileID: 92239694}
   - {fileID: 493324309}
+  - {fileID: 1858762674}

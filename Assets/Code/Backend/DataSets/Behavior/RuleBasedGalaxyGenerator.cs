@@ -1,17 +1,27 @@
 #if UNITY_EDITOR
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
 [Serializable]
-public class GalaxyData
+public class GalaxyJsonData
 {
     public string name;
     public int dustParticles;
+}
+
+[Serializable]
+public class GalaxyJsonContainer
+{
+    public List<GalaxyJsonData> galaxies;
 }
 
 [System.Serializable]
@@ -34,25 +44,9 @@ public class ResourceListData
 }
 
 [Serializable]
-public class FactionData
-{
-    public string factionName;
-    public string homeGalaxy;
-    public List<string> corporations;
-    public List<string> leaderNames;
-    public List<string> starNames;
-    public bool requiresNebulas;
-}
-
-[Serializable]
 public class FactionsListData
 {
     public List<FactionData> factions;
-}
-
-public interface IAllegianceAssignable
-{
-    void AssignAllegiance(ConceptSO allegiance);
 }
 
 [System.Serializable]
@@ -68,8 +62,7 @@ public class GenerationCosts
 
 public class RuleBasedGalaxyGenerator : MonoBehaviour
 {
-    [Header("Galaxy Input")]
-    public List<GalaxyData> galaxiesInput;
+    //Base SOs
     [Header("Base Scriptable Objects")]
     public PlanetSO basePlanetSO;
     public MoonSO baseMoonSO;
@@ -78,17 +71,27 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
     public AsteroidBeltSO baseAsteroidBeltSO;
     public GateSO baseGateSO;
     public StationSO baseStationSO;
+
+    //Resources
     [Header("Resources")]
     public List<ResourceData> planetResources;
     public List<ResourceData> moonResources;
     public List<ResourceData> asteroidResources;
+
+    //Stations per galaxy limit
     [Header("Limits")]
     public int maxStationsPerGalaxy = 3;
+
+    //Universal generation costs
     [Header("Generation parameters")]
     public GenerationCosts generationCosts;
-    [Header("Output")]
-    public string outputFolder = "Assets/RuleBasedGeneratedGalaxy";
-    private List<SystemSO> allGeneratedSystems = new List<SystemSO>();
+
+    //Input folders & loaded variables
+    [Header("Galaxy Input")]
+    public TextAsset galaxiesJsonFile;
+    private GalaxyJsonContainer galaxyJsonContainer;
+    [SerializeField]
+    private List<GalaxyJsonData> loadedGalaxies = new List<GalaxyJsonData>();
     [Header("Faction Input")]
     public TextAsset factionsJsonFile;
     [SerializeField]
@@ -99,31 +102,62 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
     [SerializeField]
     private List<ResourceData> loadedResources = new List<ResourceData>();
 
+    //SO output folder
+    [Header("Output")]
+    public string outputFolder = "Assets/RuleBasedGeneratedGalaxy";
+    private List<SystemSO> allGeneratedSystems = new List<SystemSO>();
+
+    //Prefab output folder
+    [Header("Prefab Output")]
+    public string prefabOutputFolder = "Assets/RuleBasedGeneratedGalaxy/Prefabs";
+
+    //Orbit creation and data
+    private ulong currentOrbitId = 1;
+    private readonly ConcurrentDictionary<ulong, OrbitParams> allOrbits = new ConcurrentDictionary<ulong, OrbitParams>();
+
+    //Unity random replacement
+    private static readonly ThreadLocal<System.Random> threadRandom = new ThreadLocal<System.Random>(() => new System.Random());
+
+    private readonly object orbitIdLock = new object();
+
+    private ulong GenerateOrbitId()
+    {
+        lock (orbitIdLock)
+        {
+            return currentOrbitId++;
+        }
+    }
+
     void Start()
     {
-        if (factionsJsonFile == null || resourcesJsonFile == null)
+        if (galaxiesJsonFile == null || factionsJsonFile == null || resourcesJsonFile == null)
         {
-            Debug.LogWarning("JSON files not assigned!");
+            Debug.LogWarning("Galaxy JSON, factions JSON, or resources JSON not assigned!");
             return;
         }
 
-        string factionJsonText = factionsJsonFile.text;        // Main thread read
-        string resourceJsonText = resourcesJsonFile.text;      // Main thread read
+        string galaxiesJsonText = galaxiesJsonFile.text;
+        string factionJsonText = factionsJsonFile.text;
+        string resourceJsonText = resourcesJsonFile.text;
 
         Task.Run(() =>
         {
             try
             {
+                // Parse galaxies JSON on background thread
+                var galaxies = ParseGalaxyJson(galaxiesJsonText);
                 var factions = ParseFactionJson(factionJsonText);
                 var resources = ParseResourceJson(resourceJsonText);
 
                 UnityEditor.EditorApplication.delayCall += () =>
                 {
+                    loadedGalaxies = galaxies;
+                    Debug.Log("Galaxies loaded: " + (galaxies?.Count ?? 0));
                     loadedFactions = factions;
                     Debug.Log("Factions loaded: " + (factions?.Count ?? 0));
                     loadedResources = resources;
                     Debug.Log("Resources loaded: " + (resources?.Count ?? 0));
-                    GenerateAllGalaxies();
+                    _ = GenerateAllGalaxiesAsync();
                 };
             }
             catch (System.Exception ex)
@@ -134,6 +168,18 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
     }
 
     //------------------------File loading---------------------------
+
+    //Loads galaxies from a JSON file
+    private List<GalaxyJsonData> ParseGalaxyJson(string json)
+    {
+        if (string.IsNullOrEmpty(json))
+        {
+            Debug.LogWarning("Galaxy JSON is empty!");
+            return new List<GalaxyJsonData>();
+        }
+        var galaxyList = JsonUtility.FromJson<GalaxyJsonContainer>(json);
+        return galaxyList?.galaxies ?? new List<GalaxyJsonData>();
+    }
 
     //Loads factions from a JSON file
     private List<FactionData> ParseFactionJson(string json)
@@ -159,88 +205,636 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         return resourceList?.resources ?? new List<ResourceData>();
     }
 
-    /*private T LoadFromJSON<T>(TextAsset jsonFile, string fileType) where T : class
-    {
-        if (jsonFile == null)
-        {
-            Debug.LogWarning($"No {fileType} JSON file assigned!");
-            return null;
-        }
-
-        if (string.IsNullOrEmpty(jsonFile.text))
-        {
-            Debug.LogWarning($"{fileType} JSON file '{jsonFile.name}' is empty!");
-            return null;
-        }
-
-        var data = JsonUtility.FromJson<T>(jsonFile.text);
-        if (data == null)
-        {
-            Debug.LogWarning($"{fileType} JSON file '{jsonFile.name}' is badly formatted.");
-        }
-
-        return data;
-    }*/
-
     //------------------------End of file loading---------------------------
 
     //------------------------Main functions---------------------------
-    public void GenerateAllGalaxies()
+
+    public async Task GenerateAllGalaxiesAsync()
     {
         Debug.Log("Generating Universe");
+
         try
         {
-            // Clear previously generated systems and load necessary data
             allGeneratedSystems.Clear();
 
-            // --- 1. Concept Generation ---
+            // Step 1: Create concepts on main thread
             var conceptGenerator = InitializeConceptGenerator();
             conceptGenerator.CreateConceptsFromFactions(loadedFactions);
             Dictionary<string, ConceptSO> factionConcepts = conceptGenerator.GetFactionConceptDictionary();
 
-            // --- 2. Galaxy Generation ---
-            foreach (var galaxyData in galaxiesInput)
+            // Step 2: Generate galaxies in parallel (background threads)
+            var galaxyTasks = loadedGalaxies.Select(galaxyData =>
+                Task.Run(() => GenerateGalaxyData(galaxyData, factionConcepts))
+            ).ToArray();
+
+            var galaxyResults = await Task.WhenAll(galaxyTasks);
+
+            // Step 3: Save all results on main thread
+            foreach (var galaxyResult in galaxyResults)
             {
-                try
-                {
-                    Debug.Log($"Generating galaxy: {galaxyData.name} with {galaxyData.dustParticles} dust");
-                    string galaxyFolder = Path.Combine(outputFolder, SanitizeFileName(galaxyData.name));
-                    EnsureFolder(galaxyFolder);
-
-                    // Create Galaxy ScriptableObject
-                    GalaxySO galaxySO = ScriptableObject.CreateInstance<GalaxySO>();
-                    galaxySO.galaxyName = galaxyData.name;
-                    galaxySO.systems = new List<SystemSO>();
-
-                    int dustLeft = galaxyData.dustParticles;
-                    int stationCount = 0;
-
-                    // --- 2.1 Generate Faction Systems ---
-                    GenerateSystems(galaxySO, galaxyData, galaxyFolder, factionConcepts, ref dustLeft, ref stationCount, isFactionBased: true);
-
-                    // --- 2.2 Generate Random Systems ---
-                    GenerateSystems(galaxySO, galaxyData, galaxyFolder, factionConcepts, ref dustLeft, ref stationCount, isFactionBased: false);
-
-                    // --- 2.3 Finalize Galaxy ---
-                    ConnectGatesWithinGalaxy(galaxySO, galaxyFolder);
-
-                    SaveGalaxyAsset(galaxySO, galaxyFolder);
-
-                    Debug.Log($"Galaxy '{galaxySO.galaxyName}' saved successfully.");
-
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"Error generating galaxy {galaxyData.name}: {ex.Message}");
-                }
+                SaveGalaxyAssetsToUnity(galaxyResult.galaxyName, galaxyResult.systemsData, galaxyResult.galaxyOrbit, galaxyResult.galaxyFolder);
             }
-
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
             Debug.Log("Galaxy generation complete");
         }
         catch (Exception ex)
         {
             Debug.LogError($"Error during galaxy generation: {ex.Message}");
+        }
+    }
+
+    private (string galaxyName, List<SystemGenerationData> systemsData, OrbitParams galaxyOrbit, string galaxyFolder) GenerateGalaxyData(GalaxyJsonData galaxyData, Dictionary<string, ConceptSO> factionConcepts)
+    {
+        try
+        {
+            Debug.Log($"Generating galaxy: {galaxyData.name} with {galaxyData.dustParticles} dust");
+
+            string galaxyFolder = Path.Combine(outputFolder, SanitizeFileName(galaxyData.name));
+
+            // Generate galaxy orbit params (no ScriptableObject creation)
+            ulong galaxyOrbitId = GenerateOrbitId();
+            Vector3 universeCenter = Vector3.zero;
+            float galaxyRadius = (float)(threadRandom.Value.NextDouble() * (5000f - 1000f) + 1000f);
+            float galaxyAngularSpeed = (float)(threadRandom.Value.NextDouble() * (0.02f - 0.005f) + 0.005f);
+            float galaxyPhase = (float)(threadRandom.Value.NextDouble() * Mathf.PI * 2f);
+
+            var galaxyOrbit = new OrbitParams(galaxyOrbitId, 0, universeCenter, galaxyRadius, galaxyAngularSpeed, galaxyPhase, CelestialType.GALAXY, requiresNetworking: false);
+
+            int dustLeft = galaxyData.dustParticles;
+            int stationCount = 0;
+
+            // Generate systems data (background thread)
+            var systemsData = GenerateSystemsData(galaxyData, factionConcepts, ref dustLeft, ref stationCount, galaxyOrbit);
+
+            Debug.Log($"Galaxy '{galaxyData.name}' data generated successfully.");
+
+            return (galaxyData.name, systemsData, galaxyOrbit, galaxyFolder);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error generating galaxy {galaxyData.name}: {ex.Message}");
+            throw;
+        }
+    }
+
+    private List<SystemGenerationData> GenerateSystemsData(GalaxyJsonData galaxyData, Dictionary<string, ConceptSO> factionConcepts, ref int dustLeft, ref int stationCount, OrbitParams galaxyOrbit)
+    {
+        var systemsList = new List<SystemGenerationData>();
+        int maxSystemsPerGalaxy = 10;
+
+        // Faction-based systems
+        List<FactionData> galaxyFactions = loadedFactions.FindAll(f => f.homeGalaxy == galaxyData.name);
+
+        if (galaxyFactions != null)
+        {
+            foreach (var faction in galaxyFactions)
+            {
+                foreach (var sysName in faction.starNames)
+                {
+                    if (systemsList.Exists(s => s.systemName == sysName))
+                        continue;
+
+                    if (systemsList.Count >= maxSystemsPerGalaxy)
+                        break;                    
+
+                    var systemData = new SystemGenerationData();
+                    systemData.systemName = sysName;
+
+                    ulong systemOrbitId = GenerateOrbitId();
+                    OrbitParams systemOrbit = CalculateOrbit(systemOrbitId, galaxyOrbit.NetworkId, galaxyOrbit.CenterPos, CelestialType.SYSTEM, systemsList.Count, true);
+                    allOrbits[systemOrbitId] = systemOrbit;
+                    systemData.orbitParams = systemOrbit;
+
+                    ConceptSO factionConcept = null;
+                    if (factionConcepts.TryGetValue(faction.factionName, out factionConcept) && factionConcept != null)
+                    {
+                        systemData.allegiance = factionConcept;
+                    }
+
+                    systemData.requiresNebula = faction.requiresNebulas;
+
+                    // Generate system bodies data
+                    CreateSystemBodiesData(systemData, dustLeft, ref stationCount, factionConcept);
+
+                    systemsList.Add(systemData);
+                }
+
+                
+            }
+        }
+
+        // Random systems
+        while (dustLeft >= generationCosts.system + generationCosts.star && systemsList.Count < maxSystemsPerGalaxy)
+        {
+            dustLeft -= generationCosts.system + generationCosts.star;
+
+            string systemName = $"{galaxyData.name} System {systemsList.Count + 1}";
+
+            var systemData = new SystemGenerationData();
+            systemData.systemName = systemName;
+
+            ulong systemOrbitId = GenerateOrbitId();
+            OrbitParams systemOrbit = CalculateOrbit(systemOrbitId, galaxyOrbit.NetworkId, galaxyOrbit.CenterPos, CelestialType.SYSTEM, systemsList.Count, true);
+            allOrbits[systemOrbitId] = systemOrbit;
+            systemData.orbitParams = systemOrbit;
+
+            //20% chance of nebula in random system
+            systemData.requiresNebula = threadRandom.Value.NextDouble() < 0.20;
+
+            CreateSystemBodiesData(systemData, dustLeft, ref stationCount, null);
+
+            systemsList.Add(systemData);
+        }
+
+        Debug.Log($"System generation complete. Remaining dust: {dustLeft}");
+        return systemsList;
+    }
+
+    private void CreateSystemBodiesData(SystemGenerationData systemData, int dustLeft, ref int stationCount, ConceptSO allegiance)
+    {
+        // Initialize lists
+        systemData.stars = new List<StarGenerationData>();
+        systemData.planets = new List<PlanetGenerationData>();
+        systemData.asteroidBelts = new List<AsteroidBeltGenerationData>();
+        systemData.gates = new List<GateGenerationData>();
+        systemData.stations = new List<StationGenerationData>();
+
+        // Create Stars data
+        int numberOfStars = threadRandom.Value.NextDouble() < 0.1 ? 2 : 1;
+        for (int i = 0; i < numberOfStars; i++)
+        {
+            string starName = $"{systemData.systemName} Star {i + 1}";
+            var starData = new StarGenerationData();
+            starData.name = starName;
+
+            ulong starOrbitId = GenerateOrbitId();
+            OrbitParams starOrbit = CalculateOrbit(starOrbitId, systemData.orbitParams.NetworkId, systemData.orbitParams.CenterPos, CelestialType.STAR, systemData.stars.Count, false);
+            allOrbits[starOrbitId] = starOrbit;
+            starData.orbitParams = starOrbit;
+
+            systemData.stars.Add(starData);
+        }
+
+        // Create Planets data
+        if (allegiance != null)
+        {
+            int planetCount = Mathf.Min(dustLeft / generationCosts.planet, 5);
+            bool stationPlaced = false;
+
+            for (int i = 0; i < planetCount; i++)
+            {
+                if (dustLeft < generationCosts.planet) break;
+                dustLeft -= generationCosts.planet;
+
+                string planetName = $"{systemData.systemName} Planet {i + 1}";
+                CelestialEnvironment planetType = GetRandomCelestialTypeBackground();
+
+                var planetData = new PlanetGenerationData();
+                planetData.planetName = planetName;
+                planetData.type = planetType;
+
+                ulong planetOrbitId = GenerateOrbitId();
+                OrbitParams planetOrbit = CalculateOrbit(planetOrbitId, systemData.orbitParams.NetworkId, systemData.orbitParams.CenterPos, CelestialType.PLANET, systemData.planets.Count, false);
+                allOrbits[planetOrbitId] = planetOrbit;
+                planetData.orbitParams = planetOrbit;
+
+                planetData.moons = new List<MoonGenerationData>();
+                int moonCount = Mathf.Min(dustLeft / generationCosts.moon, 3);
+
+                for (int m = 0; m < moonCount; m++)
+                {
+                    if (dustLeft < generationCosts.moon) break;
+                    dustLeft -= generationCosts.moon;
+
+                    string moonName = $"{planetData.planetName} Moon {m + 1}";
+                    CelestialEnvironment moonType = GetRandomCelestialTypeBackground();
+
+                    var moonData = new MoonGenerationData();
+                    moonData.moonName = moonName;
+                    moonData.type = moonType;
+
+                    ulong moonOrbitId = GenerateOrbitId();
+                    OrbitParams moonOrbit = CalculateOrbit(moonOrbitId, planetData.orbitParams.NetworkId, planetData.orbitParams.CenterPos, CelestialType.MOON, planetData.moons.Count, false);
+                    allOrbits[moonOrbitId] = moonOrbit;
+                    moonData.orbitParams = moonOrbit;
+
+                    if (!stationPlaced && baseStationSO != null)
+                    {
+                        moonData.stations = new List<StationGenerationData>();
+                        ulong stationOrbitId = GenerateOrbitId();
+                        OrbitParams stationOrbit = CalculateOrbit(stationOrbitId, moonData.orbitParams.NetworkId, moonData.orbitParams.CenterPos, CelestialType.STATION, 0, true);
+                        allOrbits[stationOrbitId] = stationOrbit;
+
+                        var stationData = new StationGenerationData();
+                        stationData.stationName = $"{moonData.moonName} Station";
+                        stationData.orbitParams = stationOrbit;
+                        stationData.allegiance = allegiance;
+
+                        moonData.stations.Add(stationData);
+                        systemData.stations.Add(stationData);
+                        stationPlaced = true;
+                        stationCount++;
+                    }
+
+                    planetData.moons.Add(moonData);
+                }
+
+                systemData.planets.Add(planetData);
+            }
+        }
+        else
+        {
+            // Random system planets
+            int planetCount = Mathf.Min(dustLeft / generationCosts.planet, 5);
+
+            for (int i = 0; i < planetCount; i++)
+            {
+                if (dustLeft < generationCosts.planet) break;
+                dustLeft -= generationCosts.planet;
+
+                string planetName = $"{systemData.systemName} Planet {i + 1}";
+                CelestialEnvironment planetType = GetRandomCelestialTypeBackground();
+
+                var planetData = new PlanetGenerationData();
+                planetData.planetName = planetName;
+                planetData.type = planetType;
+
+                ulong planetOrbitId = GenerateOrbitId();
+                OrbitParams planetOrbit = CalculateOrbit(planetOrbitId, systemData.orbitParams.NetworkId, systemData.orbitParams.CenterPos, CelestialType.PLANET, systemData.planets.Count, false);
+                allOrbits[planetOrbitId] = planetOrbit;
+                planetData.orbitParams = planetOrbit;
+
+                planetData.moons = new List<MoonGenerationData>();
+                int moonCount = Mathf.Min(dustLeft / generationCosts.moon, 3);
+
+                for (int m = 0; m < moonCount; m++)
+                {
+                    if (dustLeft < generationCosts.moon) break;
+                    dustLeft -= generationCosts.moon;
+
+                    string moonName = $"{planetData.planetName} Moon {m + 1}";
+                    CelestialEnvironment moonType = GetRandomCelestialTypeBackground();
+
+                    var moonData = new MoonGenerationData();
+                    moonData.moonName = moonName;
+                    moonData.type = moonType;
+
+                    ulong moonOrbitId = GenerateOrbitId();
+                    OrbitParams moonOrbit = CalculateOrbit(moonOrbitId, planetData.orbitParams.NetworkId, planetData.orbitParams.CenterPos, CelestialType.MOON, planetData.moons.Count, false);
+                    allOrbits[moonOrbitId] = moonOrbit;
+                    moonData.orbitParams = moonOrbit;
+
+                    planetData.moons.Add(moonData);
+                }
+
+                systemData.planets.Add(planetData);
+            }
+        }
+
+        // Create asteroid belts data
+        int beltCount = allegiance != null ? threadRandom.Value.Next(2, 6) : Mathf.Min(dustLeft / generationCosts.asteroidBelt, 3);
+
+        for (int b = 0; b < beltCount; b++)
+        {
+            if (dustLeft < generationCosts.asteroidBelt && allegiance == null) break;
+            dustLeft -= generationCosts.asteroidBelt;
+
+            string beltName = $"{systemData.systemName} Belt {b + 1}";
+            double roll = threadRandom.Value.NextDouble();
+            CelestialEnvironment beltType = roll < 0.7f ? CelestialEnvironment.ROCKY : CelestialEnvironment.GAS;
+
+            var beltData = new AsteroidBeltGenerationData();
+            beltData.name = beltName;
+            beltData.type = beltType;
+            beltData.asteroids = new List<AsteroidGenerationData>();
+
+            ulong beltOrbitId = GenerateOrbitId();
+            OrbitParams beltOrbit = CalculateOrbit(beltOrbitId, systemData.orbitParams.NetworkId, systemData.orbitParams.CenterPos, CelestialType.ASTEROIDBELT, systemData.asteroidBelts.Count, false);
+            allOrbits[beltOrbitId] = beltOrbit;
+            beltData.orbitParams = beltOrbit;
+
+            int asteroidCount = threadRandom.Value.Next(5, 16);
+            for (int a = 0; a < asteroidCount && dustLeft >= generationCosts.asteroid; a++)
+            {
+                dustLeft -= generationCosts.asteroid;
+                string asteroidName = $"{beltName} Asteroid {a + 1}";
+
+                var asteroidData = new AsteroidGenerationData();
+                asteroidData.name = asteroidName;
+                asteroidData.type = beltType;
+
+                ulong asteroidOrbitId = GenerateOrbitId();
+                OrbitParams asteroidOrbit = CalculateOrbit(asteroidOrbitId, beltData.orbitParams.NetworkId, beltData.orbitParams.CenterPos, CelestialType.ASTEROID, beltData.asteroids.Count, true);
+                allOrbits[asteroidOrbitId] = asteroidOrbit;
+                asteroidData.orbitParams = asteroidOrbit;
+
+                beltData.asteroids.Add(asteroidData);
+            }
+
+            systemData.asteroidBelts.Add(beltData);
+        }
+
+        // Create gates data
+        if (allegiance != null || threadRandom.Value.NextDouble() < 0.3)
+        {
+            int gateCount = threadRandom.Value.Next(1, 5);
+
+            for (int g = 0; g < gateCount; g++)
+            {
+                string gateName = $"{systemData.systemName} Gate {g + 1}";
+                var gateData = new GateGenerationData();
+                gateData.gateName = gateName;
+
+                ulong gateOrbitId = GenerateOrbitId();
+                OrbitParams gateOrbit = CalculateOrbit(gateOrbitId, systemData.orbitParams.NetworkId, systemData.orbitParams.CenterPos, CelestialType.GATE, systemData.gates.Count, true);
+                allOrbits[gateOrbitId] = gateOrbit;
+                gateData.orbitParams = gateOrbit;
+
+                systemData.gates.Add(gateData);
+            }
+        }
+
+        systemData.allegiance = allegiance;
+    }
+
+    private void SaveGalaxyAssetsToUnity(string galaxyName, List<SystemGenerationData> systemsData, OrbitParams galaxyOrbitParams, string galaxyFolder)
+    {
+        try
+        {
+            EnsureFolder(galaxyFolder);
+
+            // Create galaxy ScriptableObject on main thread
+            GalaxySO galaxySO = ScriptableObject.CreateInstance<GalaxySO>();
+            galaxySO.galaxyName = galaxyName;
+            galaxySO.orbitParams = galaxyOrbitParams;
+            galaxySO.systems = new List<SystemSO>();
+
+            // Save galaxy
+            string galaxyAssetPath = Path.Combine(galaxyFolder, $"{SanitizeFileName(galaxyName)}.asset");
+            
+
+            // Convert SystemData to SystemSO and save
+            foreach (var systemData in systemsData)
+            {
+                string systemFolder = Path.Combine(galaxyFolder, SanitizeFileName(systemData.systemName));
+                EnsureFolder(systemFolder);
+
+                string systemAssetPath = Path.Combine(systemFolder, $"{SanitizeFileName(systemData.systemName)}.asset");
+
+                // Create SystemSO on main thread
+                SystemSO systemSO = ScriptableObject.CreateInstance<SystemSO>();
+                systemSO.systemName = systemData.systemName;
+                systemSO.orbitParams = systemData.orbitParams;
+                systemSO.allegiance = systemData.allegiance;
+                GameObject systemPrefab = CreateAndSaveCelestialPrefab(systemSO.systemName, CelestialType.SYSTEM, CelestialEnvironment.ROCKY, null, systemSO, systemSO.orbitParams);
+                AssetDatabase.CreateAsset(systemSO, systemAssetPath);
+                systemSO.prefabReference = systemPrefab;
+
+                if (systemData.requiresNebula)
+                {
+                    CreateAndAssignNebula(systemSO, systemSO.systemName, systemSO.allegiance?.name, systemFolder, systemSO.orbitParams);
+                }
+
+                // Convert and create all child objects
+                ConvertAndSaveSystemChildren(systemSO, systemData, systemFolder);
+                galaxySO.systems.Add(systemSO);
+                EditorUtility.SetDirty(systemSO);
+                EditorUtility.SetDirty(galaxySO);
+            }
+
+            // Create galaxy prefab
+            GameObject galaxyPrefab = CreateAndSaveCelestialPrefab(galaxySO.galaxyName, CelestialType.GALAXY, CelestialEnvironment.ROCKY, null, galaxySO, galaxySO.orbitParams);
+            AssetDatabase.CreateAsset(galaxySO, galaxyAssetPath);
+            galaxySO.prefabReference = galaxyPrefab;
+
+            ConnectGatesWithinGalaxy(galaxySO, galaxyFolder);
+            EditorUtility.SetDirty(galaxySO);
+
+            Debug.Log($"Galaxy '{galaxySO.galaxyName}' saved successfully.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error saving galaxy {galaxyName}: {ex.Message}");
+        }
+    }
+
+    private void ConvertAndSaveSystemChildren(SystemSO systemSO, SystemGenerationData systemData, string systemFolder)
+    {
+        // Convert stars
+        systemSO.stars = new List<StarSO>();
+        if (systemData.stars != null)
+        {
+            string starFolder = Path.Combine(systemFolder, "Stars");
+            EnsureFolder(starFolder);
+
+            foreach (var starData in systemData.stars)
+            {
+                string starAssetPath = Path.Combine(starFolder, $"{SanitizeFileName(starData.name)}.asset");
+
+                StarSO starSO = ScriptableObject.CreateInstance<StarSO>();
+                starSO.name = starData.name;
+                starSO.orbitParams = starData.orbitParams;
+
+                GameObject starPrefab = CreateAndSaveCelestialPrefab(starSO.name, CelestialType.STAR, CelestialEnvironment.GAS, null, starSO, starSO.orbitParams);
+                AssetDatabase.CreateAsset(starSO, starAssetPath);
+                starSO.prefabReference = starPrefab;
+
+                systemSO.stars.Add(starSO);
+                EditorUtility.SetDirty(starSO);
+            }
+        }
+
+        // Convert planets
+        systemSO.planets = new List<PlanetSO>();
+        if (systemData.planets != null)
+        {
+            string planetsFolder = Path.Combine(systemFolder, "Planets");
+            EnsureFolder(planetsFolder);
+
+            foreach (var planetData in systemData.planets)
+            {
+                string planetFolder = Path.Combine(planetsFolder, SanitizeFileName(planetData.planetName));
+                EnsureFolder(planetFolder);
+
+                string planetAssetPath = Path.Combine(planetFolder, $"{SanitizeFileName(planetData.planetName)}.asset");
+
+                PlanetSO planetSO = ScriptableObject.CreateInstance<PlanetSO>();
+                planetSO.name = planetData.planetName;
+                planetSO.planetName = planetData.planetName;
+                planetSO.type = planetData.type;
+                planetSO.orbitParams = planetData.orbitParams;
+
+                var resources = GenerateResources(loadedResources, planetFolder, "Planet", planetData.type);
+                planetSO.resources = resources;
+
+                // Convert moons
+                planetSO.moons = new List<MoonSO>();
+                if (planetData.moons != null)
+                {
+                    string moonsFolder = Path.Combine(planetFolder, "Moons");
+                    EnsureFolder(moonsFolder);
+
+                    foreach (var moonData in planetData.moons)
+                    {
+                        string moonAssetPath = Path.Combine(moonsFolder, $"{SanitizeFileName(moonData.moonName)}.asset");
+
+                        MoonSO moonSO = ScriptableObject.CreateInstance<MoonSO>();
+                        
+                        moonSO.name = moonData.moonName;
+                        moonSO.moonName = moonData.moonName;
+                        moonSO.type = moonData.type;
+                        moonSO.orbitParams = moonData.orbitParams;
+
+                        var moonResources = GenerateResources(loadedResources, moonsFolder, "Moon", moonData.type);
+                        moonSO.resources = moonResources;
+
+                        // Convert stations
+                        moonSO.stations = new List<StationSO>();
+                        if (moonData.stations != null)
+                        {
+                            string stationsFolder = Path.Combine(moonsFolder, "Stations");
+                            EnsureFolder(stationsFolder);
+
+                            foreach (var stationData in moonData.stations)
+                            {
+                                string stationAssetPath = Path.Combine(stationsFolder, $"{SanitizeFileName(stationData.stationName)}.asset");
+
+                                StationSO stationSO = ScriptableObject.CreateInstance<StationSO>();
+                                
+                                stationSO.name = stationData.stationName;
+                                stationSO.stationName = stationData.stationName;
+                                stationSO.orbitParams = stationData.orbitParams;
+                                stationSO.allegiance = stationData.allegiance;
+
+                                GameObject stationPrefab = CreateAndSaveCelestialPrefab(stationSO.stationName, CelestialType.STATION, CelestialEnvironment.ROCKY, null, stationSO, stationSO.orbitParams);
+                                AssetDatabase.CreateAsset(stationSO, stationAssetPath);
+                                stationSO.prefabReference = stationPrefab;
+
+                                moonSO.stations.Add(stationSO);
+                                EditorUtility.SetDirty(stationSO);
+                            }
+                        }
+                        GameObject moonPrefab = CreateAndSaveCelestialPrefab(moonSO.moonName, CelestialType.MOON, moonSO.type, moonResources, moonSO, moonSO.orbitParams);
+                        AssetDatabase.CreateAsset(moonSO, moonAssetPath);
+                        moonSO.prefabReference = moonPrefab;
+
+                        planetSO.moons.Add(moonSO);
+                        EditorUtility.SetDirty(moonSO);
+                    }
+                }
+
+                GameObject planetPrefab = CreateAndSaveCelestialPrefab(planetSO.planetName, CelestialType.PLANET, planetSO.type, resources, planetSO, planetSO.orbitParams);
+                AssetDatabase.CreateAsset(planetSO, planetAssetPath);
+                planetSO.prefabReference = planetPrefab;
+
+                systemSO.planets.Add(planetSO);
+                EditorUtility.SetDirty(planetSO);
+            }
+        }
+
+        // Convert asteroid belts (similar pattern)
+        systemSO.asteroidBelts = new List<AsteroidBeltSO>();
+        if (systemData.asteroidBelts != null)
+        {
+            string beltFolder = Path.Combine(systemFolder, "AsteroidBelts");
+            EnsureFolder(beltFolder);
+
+            foreach (var beltData in systemData.asteroidBelts)
+            {
+                string currentBeltFolder = Path.Combine(beltFolder, SanitizeFileName(beltData.name));
+                EnsureFolder(currentBeltFolder);
+
+                string beltAssetPath = Path.Combine(currentBeltFolder, $"{SanitizeFileName(beltData.name)}.asset");
+
+                AsteroidBeltSO beltSO = ScriptableObject.CreateInstance<AsteroidBeltSO>();
+                beltSO.name = beltData.name;
+                beltSO.type = beltData.type;
+                beltSO.orbitParams = beltData.orbitParams;
+                beltSO.asteroids = new List<AsteroidSO>();
+
+                // Convert asteroids
+                if (beltData.asteroids != null)
+                {
+                    string asteroidsFolder = Path.Combine(currentBeltFolder, "Asteroids");
+                    EnsureFolder(asteroidsFolder);
+
+                    foreach (var asteroidData in beltData.asteroids)
+                    {
+                        string asteroidAssetPath = Path.Combine(asteroidsFolder, $"{SanitizeFileName(asteroidData.name)}.asset");
+                        AsteroidSO asteroidSO = ScriptableObject.CreateInstance<AsteroidSO>();
+                        
+                        asteroidSO.name = asteroidData.name;
+                        asteroidSO.type = asteroidData.type;
+                        asteroidSO.orbitParams = asteroidData.orbitParams;
+
+                        var asteroidResources = GenerateResources(loadedResources, asteroidsFolder, "Asteroid", beltData.type);
+                        asteroidSO.resources = asteroidResources;
+
+                        GameObject asteroidPrefab = CreateAndSaveCelestialPrefab(asteroidSO.name, CelestialType.ASTEROID, beltSO.type, asteroidResources, asteroidSO, asteroidSO.orbitParams);
+                        AssetDatabase.CreateAsset(asteroidSO, asteroidAssetPath);
+                        asteroidSO.prefabReference = asteroidPrefab;
+
+                        beltSO.asteroids.Add(asteroidSO);
+                        EditorUtility.SetDirty(asteroidSO);
+                    }
+                }
+                GameObject beltPrefab = CreateAndSaveCelestialPrefab(beltSO.name, CelestialType.ASTEROIDBELT, beltSO.type, null, beltSO, beltSO.orbitParams);
+                AssetDatabase.CreateAsset(beltSO, beltAssetPath);
+                beltSO.prefabReference = beltPrefab;
+
+                systemSO.asteroidBelts.Add(beltSO);
+                EditorUtility.SetDirty(beltSO);
+            }
+        }
+
+        // Convert gates
+        systemSO.gates = new List<GateSO>();
+        systemSO.stations = new List<StationSO>();
+        if (systemData.gates != null)
+        {
+            string gatesFolder = Path.Combine(systemFolder, "Gates");
+            EnsureFolder(gatesFolder);
+
+            foreach (var gateData in systemData.gates)
+            {
+                string gateAssetPath = Path.Combine(gatesFolder, $"{SanitizeFileName(gateData.gateName)}.asset");
+
+                GateSO gateSO = ScriptableObject.CreateInstance<GateSO>();
+                gateSO.name = gateData.gateName;
+                gateSO.gateName = gateData.gateName;
+                gateSO.orbitParams = gateData.orbitParams;
+
+                GameObject gatePrefab = CreateAndSaveCelestialPrefab(gateSO.gateName, CelestialType.GATE, CelestialEnvironment.ROCKY, null, gateSO, gateSO.orbitParams);
+                AssetDatabase.CreateAsset(gateSO, gateAssetPath);
+                gateSO.prefabReference = gatePrefab;
+
+                systemSO.gates.Add(gateSO);
+                EditorUtility.SetDirty(gateSO);
+            }
+        }
+
+        // Add stations from systemData.stations to systemSO.stations
+        if (systemData.stations != null)
+        {
+            foreach (var stationData in systemData.stations)
+            {
+                // Find the corresponding StationSO that was already created in moon processing
+                foreach (var planetSO in systemSO.planets)
+                {
+                    foreach (var moonSO in planetSO.moons)
+                    {
+                        foreach (var stationSO in moonSO.stations)
+                        {
+                            if (stationSO.stationName == stationData.stationName)
+                            {
+                                systemSO.stations.Add(stationSO);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -252,329 +846,11 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         };
     }
 
-    private void SaveGalaxyAsset(GalaxySO galaxySO, string galaxyFolder)
+    private CelestialEnvironment GetRandomCelestialTypeBackground()
     {
-        string sanitizedName = SanitizeFileName(galaxySO.galaxyName);
-        string galaxyAssetPath = Path.Combine(galaxyFolder, $"{sanitizedName}.asset");
-        AssetDatabase.CreateAsset(galaxySO, galaxyAssetPath);
-        EditorUtility.SetDirty(galaxySO);
-    }
-
-    //------------------------End of main functions---------------------------
-
-    //------------------------Helper functions---------------------------
-
-    private void GenerateSystems(GalaxySO galaxySO, GalaxyData galaxyData, string galaxyFolder, Dictionary<string, ConceptSO> factionConcepts, ref int dustLeft, ref int stationCount, bool isFactionBased = false)
-    {
-        // Define a maximum limit for systems to prevent runaway generation
-        int maxSystemsPerGalaxy = 40; // Adjust this value as needed
-
-        // Get factions for faction-based generation
-        List<FactionData> galaxyFactions = isFactionBased ? loadedFactions.FindAll(f => f.homeGalaxy == galaxyData.name) : null;
-
-        if (isFactionBased && galaxyFactions != null)
-        {
-            foreach (var faction in galaxyFactions)
-            {
-                foreach (var sysName in faction.starNames)
-                {
-                    // Check if the system already exists
-                    if (galaxySO.systems.Exists(s => s.systemName == sysName))
-                        continue;
-
-                    // Stop if we exceed the maximum system limit
-                    if (galaxySO.systems.Count >= maxSystemsPerGalaxy)
-                    {
-                        Debug.LogWarning("Reached the maximum system limit for the galaxy.");
-                        return;
-                    }
-
-                    // Create the system folder
-                    string systemFolder = Path.Combine(galaxyFolder, SanitizeFileName(sysName));
-                    EnsureFolder(systemFolder);
-
-                    // Create the system ScriptableObject
-                    SystemSO systemSO = ScriptableObject.CreateInstance<SystemSO>();
-                    systemSO.systemName = sysName;
-
-                    // Assign allegiance if the faction concept exists
-                    if (factionConcepts.TryGetValue(faction.factionName, out ConceptSO factionConcept) && factionConcept != null)
-                    {
-                        AssignAllegiance(systemSO, factionConcept);
-
-                        // Create a nebula if required by the faction
-                        if (faction.requiresNebulas)
-                        {
-                            CreateAndAssignNebula(systemSO, systemSO.systemName, systemSO.allegiance.conceptName, systemFolder);
-                        }
-                    }
-
-                    // Generate celestial bodies for the system
-                    CreateSystemBodies(systemSO, systemFolder, dustLeft, ref stationCount, factionConcept);
-
-                    // Add the system to the galaxy
-                    galaxySO.systems.Add(systemSO);
-                    EditorUtility.SetDirty(galaxySO);
-
-                    // Save the system asset
-                    string systemAssetPath = Path.Combine(systemFolder, $"{SanitizeFileName(sysName)}.asset");
-                    AssetDatabase.CreateAsset(systemSO, systemAssetPath);
-                    EditorUtility.SetDirty(systemSO);
-                }
-            }
-        }
-        else
-        {
-            // Generate random systems until dust runs out or the system limit is reached
-            while (dustLeft >= generationCosts.system + generationCosts.star && galaxySO.systems.Count < maxSystemsPerGalaxy)
-            {
-                // Deduct the cost for creating a system and a star
-                dustLeft -= generationCosts.system + generationCosts.star;
-
-                // Generate a unique system name
-                string systemName = $"{galaxyData.name} System {galaxySO.systems.Count + 1}";
-                string systemFolder = Path.Combine(galaxyFolder, SanitizeFileName(systemName));
-                EnsureFolder(systemFolder);
-
-                // Create the system ScriptableObject
-                SystemSO systemSO = ScriptableObject.CreateInstance<SystemSO>();
-                systemSO.systemName = systemName;
-
-                // Generate celestial bodies for the system
-                dustLeft = CreateSystemBodies(systemSO, systemFolder, dustLeft, ref stationCount, null);
-
-                // Add the system to the galaxy
-                galaxySO.systems.Add(systemSO);
-                EditorUtility.SetDirty(galaxySO);
-
-                // Save the system asset
-                string systemAssetPath = Path.Combine(systemFolder, $"{SanitizeFileName(systemName)}.asset");
-                AssetDatabase.CreateAsset(systemSO, systemAssetPath);
-                EditorUtility.SetDirty(systemSO);
-            }
-        }
-
-        // Log the remaining dust for debugging purposes
-        Debug.Log($"System generation complete. Remaining dust: {dustLeft}");
-    }
-
-    private int CreateSystemBodies(SystemSO systemSO, string systemFolder, int dustLeft, ref int stationCount, ConceptSO allegiance)
-    {
-        // --- 1. Create Stars ---
-        string starFolder = Path.Combine(systemFolder, "Stars");
-        EnsureFolder(starFolder);
-
-        // Two-star systems are rare (10% chance)
-        int numberOfStars = UnityEngine.Random.value < 0.1f ? 2 : 1;
-
-        for (int i = 0; i < numberOfStars; i++)
-        {
-            string starName = $"{systemSO.systemName} Star {i + 1}";
-            StarSO starSO = CreateAndSaveStar(starName, starFolder);
-            systemSO.stars.Add(starSO);
-        }
-
-        // --- 2. Planets and Moons ---
-        string planetsFolder = Path.Combine(systemFolder, "Planets");
-        EnsureFolder(planetsFolder);
-
-        if (allegiance != null)
-        {
-            // Decide how many planets and moons to spawn (use dust allocation or a set number)
-            int planetCount = Mathf.Min(dustLeft / generationCosts.planet, 5);
-            bool stationPlaced = false;
-
-            for (int i = 0; i < planetCount; i++)
-            {
-                if (dustLeft < generationCosts.planet) break;
-                dustLeft -= generationCosts.planet;
-
-                string planetName = $"{systemSO.systemName} Planet {i + 1}";
-                CelestialType planetType = GetRandomCelestialType();
-                string planetFolder = Path.Combine(planetsFolder, SanitizeFileName(planetName));
-                EnsureFolder(planetFolder);
-
-                PlanetSO planetSO = CreatePlanet(planetName, planetFolder);
-                planetSO.type = planetType;
-                EditorUtility.SetDirty(planetSO);
-                if (planetSO.resources == null || planetSO.resources.Count == 0)
-                {
-                    planetSO.resources = GenerateResources(loadedResources, planetFolder, "Planet", planetSO.type);
-                }
-                systemSO.planets.Add(planetSO);
-
-                string moonsFolder = Path.Combine(planetFolder, "Moons");
-                EnsureFolder(moonsFolder);
-
-                int moonCount = Mathf.Min(dustLeft / generationCosts.moon, 3);
-
-                for (int m = 0; m < moonCount; m++)
-                {
-                    if (dustLeft < generationCosts.moon) break;
-                    dustLeft -= generationCosts.moon;
-                    string moonName = $"{planetSO.planetName} Moon {m + 1}";
-                    CelestialType moonType = GetRandomCelestialType();
-                    MoonSO moonSO = CreateMoon(moonName, moonsFolder);
-                    moonSO.type = moonType;
-                    EditorUtility.SetDirty(moonSO);
-                    if (moonSO.resources == null || moonSO.resources.Count == 0)
-                    {
-                        moonSO.resources = GenerateResources(loadedResources, moonsFolder, "Moon", moonSO.type);
-                    }
-                    planetSO.moons.Add(moonSO);
-
-                    // Place at least one station on a moon
-                    if (!stationPlaced && baseStationSO != null)
-                    {
-                        CreateStationForMoon(moonSO, moonsFolder, systemSO, ref stationCount);
-                        stationPlaced = true;
-                    }
-                }
-            }
-            // If you want 1 station per planet or per system, adjust stationPlaced logic accordingly
-        }
-        else
-        {
-            // Random system: Generate planets and moons based on dustLeft
-            int planetCount = Mathf.Min(dustLeft / generationCosts.planet, 5);
-
-            for (int i = 0; i < planetCount; i++)
-            {
-                if (dustLeft < generationCosts.planet)
-                    break;
-
-                dustLeft -= generationCosts.planet;
-                string planetName = $"{systemSO.systemName} Planet {i + 1}";
-                CelestialType planetType = GetRandomCelestialType(); // Assign a random type
-                string planetFolder = Path.Combine(planetsFolder, SanitizeFileName(planetName));
-                EnsureFolder(planetFolder);
-
-                PlanetSO planetSO = CreatePlanet(planetName, planetFolder);
-                planetSO.type = planetType;
-                EditorUtility.SetDirty(planetSO);
-                if (planetSO.resources == null || planetSO.resources.Count == 0)
-                {
-                    Debug.Log($"Generating resources for planet: {planetSO.name}");
-                    planetSO.resources = GenerateResources(loadedResources, planetFolder, "Planet", planetSO.type);
-                }
-                else
-                {
-                    Debug.Log($"planetSO.resources is already initialized for planet: {planetSO.name}");
-                }
-                systemSO.planets.Add(planetSO);
-
-                string moonsFolder = Path.Combine(planetFolder, "Moons");
-                EnsureFolder(moonsFolder);
-
-                int moonCount = Mathf.Min(dustLeft / generationCosts.moon, 3);
-
-                for (int m = 0; m < moonCount; m++)
-                {
-                    if (dustLeft < generationCosts.moon)
-                        break;
-
-                    dustLeft -= generationCosts.moon;
-                    string moonName = $"{planetSO.planetName} Moon {m + 1}";
-                    CelestialType moonType = GetRandomCelestialType(); // Assign a random type
-                    MoonSO moonSO = CreateMoon(moonName, moonsFolder);
-                    moonSO.type = moonType;
-                    EditorUtility.SetDirty(moonSO);
-                    if (moonSO.resources == null || moonSO.resources.Count == 0)
-                    {
-                        Debug.Log($"Generating resources for moon: {moonSO.name}");
-                        moonSO.resources = GenerateResources(loadedResources, moonsFolder, "Moon", moonSO.type);
-                    }
-                    else
-                    {
-                        Debug.Log($"moonSO.resources is already initialized for moon: {moonSO.name}");
-                    }
-                    planetSO.moons.Add(moonSO);
-                }
-            }
-        }
-
-        // --- 3. Asteroid Belts ---
-        string beltFolder = Path.Combine(systemFolder, "AsteroidBelts");
-        EnsureFolder(beltFolder);
-
-        int beltCount = allegiance != null
-            ? UnityEngine.Random.Range(2, 5) // Faction systems have more belts
-            : Mathf.Min(dustLeft / generationCosts.asteroidBelt, 3);
-
-        for (int b = 0; b < beltCount; b++)
-        {
-            if (dustLeft < generationCosts.asteroidBelt && allegiance == null)
-                break;
-
-            dustLeft -= generationCosts.asteroidBelt;
-            string beltName = $"{systemSO.systemName} Belt {b + 1}";
-            CelestialType beltType = GetRandomCelestialType(); // Assign a random type
-            string currentBeltFolder = Path.Combine(beltFolder, SanitizeFileName(beltName));
-            EnsureFolder(currentBeltFolder);
-
-            int asteroidCount = UnityEngine.Random.Range(5, 15);
-            AsteroidBeltSO beltSO = CreateAsteroidBelt(beltName, currentBeltFolder, asteroidCount, ref dustLeft, beltType);
-            beltSO.type = beltType;
-            systemSO.asteroidBelts.Add(beltSO);
-        }
-
-        // --- 4. Nebulas ---
-        if (systemSO.planets.Count < 3 && UnityEngine.Random.value < 0.5f && systemSO.nebula == null)
-        {
-            CreateAndAssignNebula(systemSO, systemSO.systemName, allegiance?.name, systemFolder);
-        }
-
-        // --- 5. Assign Allegiance ---
-        AssignAllegiance(systemSO, allegiance);
-
-        EditorUtility.SetDirty(systemSO);
-        return dustLeft;
-    }
-
-    private void CreateAndAssignNebula(SystemSO systemSO, string systemName, string allegianceName, string systemFolder)
-    {
-        string nebulaName = $"{systemName} Nebula";
-        string nebulaFolder = Path.Combine(systemFolder, "Nebulas");
-
-        NebulaSO nebulaSO = CreateAsset(nebulaName, nebulaFolder, baseNebulaSO);
-        if (nebulaSO == null)
-        {
-            Debug.LogError("Failed to create nebula.");
-            return;
-        }
-
-        systemSO.nebula = nebulaSO;
-        Debug.Log($"Created and assigned nebula '{nebulaName}' to system '{systemSO.systemName}'");
-    }
-
-    private void CreateStationForMoon(MoonSO moonSO, string moonsFolder, SystemSO systemSO, ref int stationCount)
-    {
-        string stationsFolder = Path.Combine(moonsFolder, "Stations");
-        EnsureFolder(Path.Combine(stationsFolder, moonSO.moonName));
-
-        StationSO stationSO = Instantiate(baseStationSO);
-        stationSO.stationName = $"{moonSO.moonName} Station";
-
-        if (systemSO != null)
-        {
-            stationSO.allegiance = systemSO.allegiance;
-        }
-
-        string stationAssetPath = Path.Combine(stationsFolder, $"{SanitizeFileName(stationSO.stationName)}.asset");
-        AssetDatabase.CreateAsset(stationSO, stationAssetPath);
-        EditorUtility.SetDirty(stationSO);
-
-        moonSO.stations = new List<StationSO> { stationSO };
-
-        if (systemSO != null)
-        {
-            if (systemSO.stations == null)
-            {
-                systemSO.stations = new List<StationSO>();
-            }
-            systemSO.stations.Add(stationSO);
-        }
-        stationCount++;
+        // For background threads - use System.Random
+        var values = System.Enum.GetValues(typeof(CelestialEnvironment));
+        return (CelestialEnvironment)values.GetValue(threadRandom.Value.Next(values.Length));
     }
 
     private void ConnectGatesWithinGalaxy(GalaxySO galaxy, string galaxyFolder)
@@ -588,6 +864,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
             systemAFolder = Path.GetDirectoryName(systemAFolder);
             string gatesFolderA = Path.Combine(systemAFolder, "Gates");
             EnsureFolder(Path.Combine(gatesFolderA, systemA.name));
+
             for (int g = 0; g < gateCount; g++)
             {
                 int targetIndex = UnityEngine.Random.Range(0, totalSystems);
@@ -607,6 +884,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
                 systemBFolder = Path.GetDirectoryName(systemBFolder);
                 string gatesFolderB = Path.Combine(systemBFolder, "Gates");
                 EnsureFolder(Path.Combine(gatesFolderB, systemB.name));
+
                 var gateSO_B = Instantiate(baseGateSO);
                 gateSO_B.gateName = $"{systemB.systemName} <-> {systemA.systemName} Gate";
                 gateSO_B.connectedSystem = systemA;
@@ -621,63 +899,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         AssetDatabase.SaveAssets();
     }
 
-    private StarSO CreateAndSaveStar(string name, string folder)
-    {
-        return CreateAsset(name, folder, baseStarSO);
-    }
-
-    private PlanetSO CreatePlanet(string name, string folder)
-    {
-        return CreateAsset(name, folder, basePlanetSO);
-    }
-
-    private MoonSO CreateMoon(string name, string folder)
-    {
-        return CreateAsset(name, folder, baseMoonSO);
-    }
-
-    private AsteroidSO CreateAsteroid(string name, string folder)
-    {
-        return CreateAsset(name, folder, baseAsteroidSO);
-    }
-
-    private AsteroidBeltSO CreateAsteroidBelt(string name, string folder, int asteroidCount, ref int dustLeft, CelestialType beltType)
-    {
-        var beltSO = CreateAsset(name, folder, baseAsteroidBeltSO);
-        if (beltSO == null)
-            return null;
-
-        beltSO.type = beltType; // Assign the type
-        beltSO.asteroids = new List<AsteroidSO>();
-
-        string asteroidsFolder = Path.Combine(folder, "Asteroids");
-        EnsureFolder(asteroidsFolder);
-
-        for (int i = 0; i < asteroidCount && dustLeft >= generationCosts.asteroid; i++)
-        {
-            dustLeft -= generationCosts.asteroid;
-
-            string asteroidName = $"{name} Asteroid {i + 1}";
-            AsteroidSO asteroidSO = CreateAsteroid(asteroidName, asteroidsFolder);
-            if (asteroidSO != null)
-            {
-                if (asteroidSO.resources == null || asteroidSO.resources.Count == 0)
-                {
-                    // Pass the beltType to GenerateResources
-                    asteroidSO.resources = GenerateResources(loadedResources, asteroidsFolder, "Asteroid", beltType);
-                }
-                beltSO.asteroids.Add(asteroidSO);
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to create asteroid: {asteroidName}");
-            }
-        }
-
-        return beltSO;
-    }
-
-    private List<ResourceSO> GenerateResources(List<ResourceData> resources, string targetFolder, string category, CelestialType bodyType)
+    private List<ResourceSO> GenerateResources(List<ResourceData> resources, string targetFolder, string category, CelestialEnvironment bodyType)
     {
         // Validate inputs
         if (resources == null || resources.Count == 0)
@@ -764,7 +986,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         return resourceList;
     }
 
-    private bool IsResourceAllowedForCelestialType(ResourceData resource, CelestialType bodyType)
+    private bool IsResourceAllowedForCelestialType(ResourceData resource, CelestialEnvironment bodyType)
     {
         if (resource.celestialType == null || resource.celestialType.Count == 0)
             return false;
@@ -787,42 +1009,645 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         return false;
     }
 
-    private CelestialType GetRandomCelestialType()
+    private GameObject CreateCelestialGameObject(string name, CelestialType type, CelestialEnvironment environment = CelestialEnvironment.ROCKY, object dataSource = null)
     {
-        // Randomly pick a CelestialType
-        return (CelestialType)UnityEngine.Random.Range(0, System.Enum.GetValues(typeof(CelestialType)).Length);
-    }
+        GameObject go = new GameObject(name);
 
-    private void AssignAllegiance(UnityEngine.Object entity, ConceptSO allegiance)
-    {
-        if (allegiance == null)
+        // Add appropriate components based on type
+        switch (type)
         {
-            Debug.LogWarning($"AssignAllegiance: Tried to assign null allegiance to {entity.name}");
-            return;
-        }
-
-        switch (entity)
-        {
-            case SystemSO system:
-                if (system.allegiance == null)
+            case CelestialType.STAR:
+                if (dataSource is StarSO starData)
                 {
-                    system.allegiance = allegiance;
-                    Debug.Log($"Assigned allegiance '{allegiance.name}' to system '{system.systemName}'");
+                    AddStarComponents(go, environment, starData);
+                    EditorUtility.SetDirty(go);
                 }
                 break;
 
-            case StationSO station:
-                if (station.allegiance == null)
+            case CelestialType.PLANET:
+                if (dataSource is PlanetSO planetData)
                 {
-                    station.allegiance = allegiance;
-                    Debug.Log($"Assigned allegiance '{allegiance.name}' to station '{station.stationName}'");
+                    AddPlanetComponents(go, environment, planetData);
+                    EditorUtility.SetDirty(go);
                 }
+                break;
+
+            case CelestialType.MOON:
+                if (dataSource is MoonSO moonData)
+                {
+                    AddMoonComponents(go, environment, moonData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.NEBULA:
+                if (dataSource is NebulaSO nebulaData)
+                {
+                    AddNebulaComponents(go, nebulaData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.ASTEROID:
+                go.AddComponent<NetworkObject>(); // Asteroids are networked (can be mined)
+                if (dataSource is AsteroidSO asteroidData)
+                {
+                    AddAsteroidComponents(go, environment, asteroidData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.ASTEROIDBELT:
+                if (dataSource is AsteroidBeltSO beltData)
+                {
+                    AddAsteroidBeltComponents(go, environment, beltData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.STATION:
+                go.AddComponent<NetworkObject>(); // Stations are networked
+                if (dataSource is StationSO stationData)
+                {
+                    AddStationComponents(go, stationData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.GATE:
+                go.AddComponent<NetworkObject>(); // Gates are networked
+                if (dataSource is GateSO gateData)
+                {
+                    AddGateComponents(go, gateData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.SYSTEM:
+                go.AddComponent<NetworkObject>(); // Systems are networked (allegiance can change)
+                if (dataSource is SystemSO systemData)
+                {
+                    AddSystemComponents(go, systemData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+
+            case CelestialType.GALAXY:
+                go.AddComponent<NetworkObject>(); // Galaxies might be networked for control changes
+                if (dataSource is GalaxySO galaxyData)
+                {
+                    AddGalaxyComponents(go, galaxyData);
+                    EditorUtility.SetDirty(go);
+                }
+                break;
+        }
+
+        return go;
+    }
+
+    private void CreateAndAssignNebula(SystemSO systemSO, string systemName, string allegianceName, string systemFolder, OrbitParams orbit = null)
+    {
+        // Ensure subfolder for nebulas exists
+        string nebulaFolder = Path.Combine(systemFolder, "Nebulas");
+        EnsureFolder(nebulaFolder);
+
+        // Create NebulaSO instance
+        NebulaSO nebulaSO;
+        if (baseNebulaSO != null)
+        {
+            nebulaSO = ScriptableObject.Instantiate(baseNebulaSO);
+            nebulaSO.name = systemName + " Nebula";
+        }
+        else
+        {
+            nebulaSO = ScriptableObject.CreateInstance<NebulaSO>();
+            nebulaSO.name = systemName + " Nebula";
+        }
+
+        // Optionally assign allegiance name (if relevant in your NebulaSO)
+        // nebulaSO.allegiance = allegianceName; // Uncomment if NebulaSO supports it
+
+        nebulaSO.orbitParams = orbit ?? systemSO.orbitParams;
+
+        // Save NebulaSO asset
+        string nebulaAssetPath = Path.Combine(nebulaFolder, $"{SanitizeFileName(nebulaSO.name)}.asset");
+        AssetDatabase.CreateAsset(nebulaSO, nebulaAssetPath);
+
+        // Create Nebula prefab for visuals
+        GameObject nebulaPrefab = CreateAndSaveCelestialPrefab(nebulaSO.name, CelestialType.NEBULA, CelestialEnvironment.GAS, null, nebulaSO, nebulaSO.orbitParams);
+        nebulaSO.prefabReference = nebulaPrefab;
+
+        // Assign to systemSO
+        systemSO.nebula = nebulaSO;
+
+        EditorUtility.SetDirty(nebulaSO);
+        EditorUtility.SetDirty(systemSO);
+
+        Debug.Log($"Created and assigned nebula '{nebulaSO.name}' to system '{systemSO.systemName}'.");
+    }
+
+    private void AddStarComponents(GameObject go, CelestialEnvironment environment, StarSO starSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var starData = go.AddComponent<StarData>();
+        starData.data = starSO;
+        var light = go.AddComponent<Light>();
+
+        // Configure light based on star type
+        switch (environment)
+        {
+            case CelestialEnvironment.TEMPERATE: // Hot stars
+                light.color = Color.white;
+                light.intensity = 3f;
+                break;
+            case CelestialEnvironment.GAS: // Very hot stars
+                light.color = Color.blue;
+                light.intensity = 5f;
+                break;
+            case CelestialEnvironment.ICE: // Cooler red dwarf
+                light.color = Color.red;
+                light.intensity = 1.5f;
+                break;
+            case CelestialEnvironment.ROCKY: // Old star
+                light.color = Color.orange;
+                light.intensity = 2f;
+                break;
+            default:
+                light.color = Color.yellow;
+                light.intensity = 2f;
+                break;
+        }
+
+        light.type = LightType.Point;
+        light.range = 100f;
+
+        // Add particle system for solar flares/corona effects
+        var particleSystem = go.AddComponent<ParticleSystem>();
+        var main = particleSystem.main;
+        main.startColor = light.color;
+        main.startLifetime = 5f;
+        main.startSpeed = 2f;
+        main.maxParticles = 100;
+
+        // Add audio source for ambient star sounds
+        var audioSource = go.AddComponent<AudioSource>();
+        audioSource.loop = true;
+        audioSource.playOnAwake = true;
+        audioSource.volume = 0.3f;
+        audioSource.spatialBlend = 1f; // 3D sound
+    }
+
+    private void AddPlanetComponents(GameObject go, CelestialEnvironment environment, PlanetSO planetSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var sphereCollider = go.AddComponent<SphereCollider>();
+        var planetData = go.AddComponent<PlanetData>();
+        planetData.data = planetSO;
+
+        // Configure scale based on environment
+        float scale = environment switch
+        {
+            CelestialEnvironment.GAS => UnityEngine.Random.Range(3f, 6f),     // Gas giants are huge
+            CelestialEnvironment.ICE => UnityEngine.Random.Range(0.8f, 1.5f),  // Ice planets are smaller
+            CelestialEnvironment.ROCKY => UnityEngine.Random.Range(1f, 2f),   // Rocky planets are medium
+            CelestialEnvironment.TEMPERATE => UnityEngine.Random.Range(2f, 2.5f), // Volcanic planets
+            _ => UnityEngine.Random.Range(1f, 2f)
+        };
+        go.transform.localScale = Vector3.one * scale;
+
+        // Add atmosphere effect for gas planets
+        if (environment == CelestialEnvironment.GAS)
+        {
+            var atmosphereGO = new GameObject("Atmosphere");
+            atmosphereGO.transform.SetParent(go.transform);
+            var atmMeshFilter = atmosphereGO.AddComponent<MeshFilter>();
+            var atmMeshRenderer = atmosphereGO.AddComponent<MeshRenderer>();
+            atmosphereGO.transform.localScale = Vector3.one * 1.1f; // Slightly larger than planet
+            atmosphereGO.transform.localPosition = Vector3.zero;
+        }
+
+        // Add particle effects for certain environments
+        if (environment == CelestialEnvironment.ICE)
+        {
+            var particleSystem = go.AddComponent<ParticleSystem>();
+            var main = particleSystem.main;
+
+            main.startColor = Color.cyan;
+            main.startLifetime = 10f;
+
+            main.maxParticles = 50;
+            main.startSpeed = 0.5f;
+        }
+
+        // Add rotation component for planet spinning
+        var rotator = go.AddComponent<SimpleRotator>();
+        rotator.rotationSpeed = new Vector3(0, UnityEngine.Random.Range(5f, 15f), 0);
+    }
+
+    private void AddMoonComponents(GameObject go, CelestialEnvironment environment, MoonSO moonSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var sphereCollider = go.AddComponent<SphereCollider>();
+        var moonData = go.AddComponent<MoonData>();
+        moonData.data = moonSO;
+
+        // Moons are generally smaller than planets
+        float scale = environment switch
+        {
+            CelestialEnvironment.GAS => UnityEngine.Random.Range(0.3f, 0.6f),
+            CelestialEnvironment.ICE => UnityEngine.Random.Range(0.2f, 0.5f),
+            CelestialEnvironment.ROCKY => UnityEngine.Random.Range(0.3f, 0.7f),
+            CelestialEnvironment.TEMPERATE => UnityEngine.Random.Range(0.2f, 0.3f),
+            _ => UnityEngine.Random.Range(0.3f, 0.6f)
+        };
+        go.transform.localScale = Vector3.one * scale;
+
+        // Add rotation (moons typically rotate slower than planets)
+        var rotator = go.AddComponent<SimpleRotator>();
+        rotator.rotationSpeed = new Vector3(0, UnityEngine.Random.Range(2f, 8f), 0);
+
+        // Add crater effects for rocky moons
+        if (environment == CelestialEnvironment.ROCKY)
+        {
+            // You could add crater decals or additional geometry here
+        }
+    }
+
+    private void AddNebulaComponents(GameObject go, NebulaSO nebulaSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var particleSystem = go.AddComponent<ParticleSystem>();
+        var nebulaData = go.AddComponent<NebulaData>();
+        nebulaData.data = nebulaSO;
+
+        // Configure particle system for nebula effects
+        var main = particleSystem.main;
+        main.startLifetime = float.MaxValue; // Particles don't die
+        main.startSpeed = 0.1f;
+        main.maxParticles = 1000;
+        main.startSize = UnityEngine.Random.Range(0.5f, 2f);
+        main.startColor = new Color(
+            UnityEngine.Random.Range(0.3f, 1f),
+            UnityEngine.Random.Range(0.1f, 0.8f),
+            UnityEngine.Random.Range(0.5f, 1f),
+            0.3f // Semi-transparent
+        );
+
+        // Add shape module for volume emission
+        var shape = particleSystem.shape;
+        shape.shapeType = ParticleSystemShapeType.Box;
+        shape.scale = new Vector3(20f, 10f, 20f);
+
+        // Add velocity over lifetime for gentle movement
+        var velocityOverLifetime = particleSystem.velocityOverLifetime;
+        velocityOverLifetime.enabled = true;
+        velocityOverLifetime.space = ParticleSystemSimulationSpace.Local;
+        velocityOverLifetime.radial = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+
+        // Scale up the nebula
+        go.transform.localScale = Vector3.one * UnityEngine.Random.Range(5f, 15f);
+
+        // Add audio for ambient nebula sounds
+        var audioSource = go.AddComponent<AudioSource>();
+        audioSource.loop = true;
+        audioSource.playOnAwake = true;
+        audioSource.volume = 0.1f;
+        audioSource.spatialBlend = 1f;
+    }
+
+    private void AddAsteroidComponents(GameObject go, CelestialEnvironment environment, AsteroidSO asteroidSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var meshCollider = go.AddComponent<MeshCollider>();
+        meshCollider.convex = true; // Required for rigidbodies
+
+        // Add rigidbody for physics interactions
+        var rigidbody = go.AddComponent<Rigidbody>();
+        rigidbody.mass = UnityEngine.Random.Range(10f, 100f);
+        rigidbody.linearDamping = 0.5f;
+        rigidbody.angularDamping = 0.5f;
+
+        // Add mining-related components
+        var asteroidData = go.AddComponent<AsteroidData>();
+        asteroidData.data = asteroidSO;
+
+        // Vary size based on environment
+        float scale = environment switch
+        {
+            CelestialEnvironment.ROCKY => UnityEngine.Random.Range(0.5f, 2f),
+            CelestialEnvironment.GAS => UnityEngine.Random.Range(0.3f, 1.5f),
+            CelestialEnvironment.ICE => UnityEngine.Random.Range(0.4f, 1.8f),
+            CelestialEnvironment.TEMPERATE => UnityEngine.Random.Range(0.6f, 1.2f),
+            _ => UnityEngine.Random.Range(0.5f, 1.5f)
+        };
+        go.transform.localScale = Vector3.one * scale;
+
+        // Add rotation for tumbling effect
+        var rotator = go.AddComponent<SimpleRotator>();
+        rotator.rotationSpeed = new Vector3(
+            UnityEngine.Random.Range(-30f, 30f),
+            UnityEngine.Random.Range(-30f, 30f),
+            UnityEngine.Random.Range(-30f, 30f)
+        );
+    }
+
+    private void AddStationComponents(GameObject go, StationSO stationSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var boxCollider = go.AddComponent<BoxCollider>();
+        boxCollider.isTrigger = true; // Allow ships to dock
+
+        // Add multiple lights for station visibility
+        var mainLight = go.AddComponent<Light>();
+        mainLight.type = LightType.Point;
+        mainLight.color = Color.cyan;
+        mainLight.intensity = 2f;
+        mainLight.range = 20f;
+
+        // Add blinking navigation lights
+        for (int i = 0; i < 4; i++)
+        {
+            var navLightGO = new GameObject($"NavLight_{i}");
+            navLightGO.transform.SetParent(go.transform);
+            navLightGO.transform.localPosition = new Vector3(
+                UnityEngine.Random.Range(-2f, 2f),
+                UnityEngine.Random.Range(-1f, 1f),
+                UnityEngine.Random.Range(-2f, 2f)
+            );
+
+            var navLight = navLightGO.AddComponent<Light>();
+            navLight.type = LightType.Point;
+            navLight.color = Color.red;
+            navLight.intensity = 0.5f;
+            navLight.range = 5f;
+
+            var blinker = navLightGO.AddComponent<LightBlinker>();
+            blinker.blinkInterval = UnityEngine.Random.Range(1f, 3f);
+        }
+
+        // Add docking bay trigger
+        var dockingBayGO = new GameObject("DockingBay");
+        dockingBayGO.transform.SetParent(go.transform);
+        dockingBayGO.transform.localPosition = new Vector3(0, -1f, 0);
+        var dockingCollider = dockingBayGO.AddComponent<BoxCollider>();
+        dockingCollider.isTrigger = true;
+        dockingCollider.size = new Vector3(5f, 2f, 5f);
+
+        // Add station behavior component
+        var stationData = go.AddComponent<StationData>();
+        stationData.data = stationSO;
+
+        // Add audio for station ambience
+        var audioSource = go.AddComponent<AudioSource>();
+        audioSource.loop = true;
+        audioSource.playOnAwake = true;
+        audioSource.volume = 0.4f;
+        audioSource.spatialBlend = 1f;
+
+        // Add rotation (stations typically rotate for artificial gravity)
+        var rotator = go.AddComponent<SimpleRotator>();
+        rotator.rotationSpeed = new Vector3(0, 5f, 0);
+    }
+
+    private void AddGateComponents(GameObject go, GateSO gateSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var boxCollider = go.AddComponent<BoxCollider>();
+        boxCollider.isTrigger = true; // Gates should be triggers for travel
+        boxCollider.size = new Vector3(10f, 10f, 2f); // Large trigger area
+
+        // Add gate-specific visual effects
+        var particleSystem = go.AddComponent<ParticleSystem>();
+        var main = particleSystem.main;
+        main.startColor = Color.magenta;
+        main.startLifetime = 2f;
+        main.startSpeed = 3f;
+        main.maxParticles = 200;
+        main.startSize = 0.5f;
+
+        // Configure shape for gate effect
+        var shape = particleSystem.shape;
+        shape.shapeType = ParticleSystemShapeType.Donut;
+        shape.radius = 5f;
+        shape.donutRadius = 0.5f;
+
+        // Add distinctive lighting
+        var light = go.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = Color.magenta;
+        light.intensity = 3f;
+        light.range = 25f;
+
+        // Add pulsing light effect
+        var lightPulser = go.AddComponent<LightPulser>();
+        lightPulser.pulseSpeed = 2f;
+        lightPulser.minIntensity = 1f;
+        lightPulser.maxIntensity = 5f;
+
+        // Add gate behavior component
+        var gateData = go.AddComponent<GateData>();
+        gateData.data = gateSO;
+
+        // Add audio for gate activation
+        var audioSource = go.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false; // Only play when activated
+        audioSource.volume = 0.8f;
+        audioSource.spatialBlend = 1f;
+
+        // Add rotation for gate spinning effect
+        var rotator = go.AddComponent<SimpleRotator>();
+        rotator.rotationSpeed = new Vector3(0, 0, 20f); // Spin around Z-axis
+    }
+
+    private void AddAsteroidBeltComponents(GameObject go, CelestialEnvironment environment, AsteroidBeltSO asteroidBeltSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+        var particleSystem = go.AddComponent<ParticleSystem>();
+
+        // Configure belt particle system
+        var main = particleSystem.main;
+        main.startLifetime = float.MaxValue; // Particles persist
+        main.startSpeed = 0f; // Stationary particles
+        main.maxParticles = 2000;
+        main.startSize = new ParticleSystem.MinMaxCurve(0.1f, 0.5f);
+
+        // Configure particles based on environment
+        if (environment == CelestialEnvironment.ROCKY)
+        {
+            main.startColor = new Color(0.6f, 0.5f, 0.4f, 0.8f); // Rocky brown
+        }
+        else // GAS or other
+        {
+            main.startColor = new Color(0.8f, 0.6f, 1f, 0.5f); // Ethereal purple
+        }
+
+        // Configure belt shape
+        var shape = particleSystem.shape;
+        shape.shapeType = ParticleSystemShapeType.Donut;
+        shape.radius = 15f;
+        shape.donutRadius = 3f;
+        shape.arc = 360f;
+
+        // Add slow rotation to the belt
+        var velocityOverLifetime = particleSystem.velocityOverLifetime;
+        velocityOverLifetime.enabled = true;
+        velocityOverLifetime.space = ParticleSystemSimulationSpace.Local;
+        velocityOverLifetime.orbitalX = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+
+        // Add belt behavior component
+        var asteroidBeltData = go.AddComponent<AsteroidBeltData>();
+        asteroidBeltData.data = asteroidBeltSO;
+
+        // Scale the belt
+        go.transform.localScale = Vector3.one * UnityEngine.Random.Range(1f, 2f);
+    }
+
+    private void AddSystemComponents(GameObject go, SystemSO systemSO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+
+        // Systems are typically invisible organizational nodes, but add a subtle marker
+        var light = go.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = Color.white;
+        light.intensity = 0.5f;
+        light.range = 5f;
+        light.enabled = false; // Disabled by default, can be enabled for debugging
+
+        // Add system behavior for managing allegiances
+        var systemData = go.AddComponent<SystemData>();
+        systemData.data = systemSO;
+        // Very small scale since it's just an organizational node
+        go.transform.localScale = Vector3.one * 0.1f;
+    }
+
+    private void AddGalaxyComponents(GameObject go, GalaxySO galaxySO)
+    {
+        var meshFilter = go.AddComponent<MeshFilter>();
+        var meshRenderer = go.AddComponent<MeshRenderer>();
+
+        // Galaxies are even more abstract - just organizational nodes
+        var light = go.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = Color.yellow;
+        light.intensity = 0.3f;
+        light.range = 10f;
+        light.enabled = false; // Disabled by default
+
+        // Add galaxy behavior for large-scale management
+        var galaxyData = go.AddComponent<GalaxyData>();
+        galaxyData.data = galaxySO;
+        // Very small scale
+        go.transform.localScale = Vector3.one * 0.05f;
+    }
+
+    private GameObject CreateAndSaveCelestialPrefab(string name, CelestialType type, CelestialEnvironment environment, List<ResourceSO> resources = null, object celestialSO = null, OrbitParams orbitParams = null)
+    {
+        GameObject go = CreateCelestialGameObject(name, type, environment, celestialSO);
+
+        // Add resource data component if needed
+        if (resources != null && resources.Count > 0)
+        {
+            var resourceComponent = go.AddComponent<CelestialResources>();
+            resourceComponent.resources = resources;
+        }
+
+        if (orbitParams != null)
+        {
+            var orbitComponent = go.AddComponent<OrbitComponent>();
+            orbitComponent.orbitParams = orbitParams;
+        }
+
+        // Save as prefab
+        string prefabPath = Path.Combine(prefabOutputFolder, type.ToString(), $"{SanitizeFileName(name)}.prefab");
+        string prefabDirectory = Path.GetDirectoryName(prefabPath);
+        EnsureFolder(prefabDirectory);
+
+        GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
+        DestroyImmediate(go); // Clean up the temp GameObject
+
+        return prefab;
+    }
+
+    //Create orbits for celestials, gates and stations
+    private OrbitParams CalculateOrbit(ulong networkId, ulong parentId, Vector3 parentCenter, CelestialType type, int sequenceIndex, bool requiresNetworking)
+    {
+        Vector3 centerPos = parentCenter; // Position of the parent orbit center
+
+        float radius = 0f;
+        float angularSpeed = 0f;
+
+        // Example orbit rules matching your visualizer settings
+        switch (type)
+        {
+            case CelestialType.GALAXY:
+                radius = (float)(threadRandom.Value.NextDouble() * (1000f - 100f) + 100f) * 1f;
+                angularSpeed = (float)(threadRandom.Value.NextDouble() * (0.045f - 0.01f) + 0.01f);
+                break;
+
+            case CelestialType.SYSTEM:
+                radius = 16f + (sequenceIndex * 7.5f); // systemBase + idx*systemStep
+                angularSpeed = 0.13f;                   // systemSpeed
+                break;
+
+            case CelestialType.STAR:
+                radius = 4.5f;      // starRadius
+                angularSpeed = 0.17f; // starSpeed
+                break;
+
+            case CelestialType.PLANET:
+                radius = 7f + (sequenceIndex * 3f);       // planetBase + idx*planetStep
+                angularSpeed = 7f / radius;                // planetBase / radius (simplified)
+                break;
+
+            case CelestialType.MOON:
+                radius = 2f + (sequenceIndex * 1.2f);    // moonBase + idx*moonStep
+                angularSpeed = 1.2f / radius;             // moonStep / radius
+                break;
+
+            case CelestialType.STATION:
+                radius = 0.4f;         // stationRadius
+                angularSpeed = 0.13f;  // systemSpeed (example)
+                break;
+
+            case CelestialType.ASTEROIDBELT:
+                radius = 12f + (sequenceIndex * 1.8f);  // beltBase + idx*beltStep
+                angularSpeed = 1.8f / radius;
+                break;
+
+            case CelestialType.ASTEROID:
+                radius = 0.5f;
+                angularSpeed = (float)(threadRandom.Value.NextDouble() * (0.6f - 0.3f) + 0.3f);
+                break;
+
+            case CelestialType.GATE:
+                radius = 2f;
+                angularSpeed = 0f;
+                break;
+
+            case CelestialType.NEBULA:
+                radius = 25f;
+                angularSpeed = 0.05f;
                 break;
 
             default:
-                Debug.LogWarning($"AssignAllegiance: Unsupported entity type {entity.GetType().Name}");
+                radius = 1f;
+                angularSpeed = 0.1f;
                 break;
         }
+
+        float phaseOffset = (float)(threadRandom.Value.NextDouble() * Mathf.PI * 2f);
+
+        return new OrbitParams(networkId, parentId, centerPos, radius, angularSpeed, phaseOffset, type, requiresNetworking);
     }
 
     // General helper to ensure a folder exists inside Unity's AssetDatabase
@@ -846,47 +1671,6 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
             AssetDatabase.CreateFolder(parentFolder, newFolderName);
             Debug.Log($"Created folder: {folder}");
         }
-    }
-
-    // General helper to create and save a ScriptableObject asset
-    private T CreateAsset<T>(string name, string folder, T baseAsset, bool overwrite = false) where T : ScriptableObject
-    {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(folder) || baseAsset == null)
-        {
-            Debug.LogError($"Invalid inputs for creating asset: {name}");
-            return null;
-        }
-
-        EnsureFolder(folder);
-
-        var asset = Instantiate(baseAsset);
-        asset.name = name;
-
-        string assetPath = Path.Combine(folder, $"{SanitizeFileName(name)}.asset");
-
-        if (overwrite && AssetDatabase.LoadAssetAtPath<T>(assetPath) != null)
-        {
-            AssetDatabase.DeleteAsset(assetPath);
-            Debug.Log($"Overwriting existing asset at: {assetPath}");
-        }
-
-        var savedAsset = CreateAndSaveAsset(asset, assetPath);
-        Debug.Log($"Asset '{name}' created successfully at '{folder}'.");
-        return savedAsset;
-    }
-
-    private T CreateAndSaveAsset<T>(T asset, string path, bool overwrite = false) where T : ScriptableObject
-    {
-        if (overwrite && AssetDatabase.LoadAssetAtPath<T>(path) != null)
-        {
-            AssetDatabase.DeleteAsset(path);
-            Debug.Log($"Overwriting existing asset at: {path}");
-        }
-
-        AssetDatabase.CreateAsset(asset, path);
-        EditorUtility.SetDirty(asset);
-        Debug.Log($"Saved asset at: {path}");
-        return asset;
     }
 
     // Cleans up a string to be a valid filename by removing invalid characters.

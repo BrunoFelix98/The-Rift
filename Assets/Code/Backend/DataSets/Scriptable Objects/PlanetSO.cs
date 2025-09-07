@@ -7,5 +7,7 @@ public class PlanetSO : ScriptableObject
     public string planetName;
     public List<MoonSO> moons = new List<MoonSO>();
     public List<ResourceSO> resources = new List<ResourceSO>();
-    public CelestialType type;
+    public CelestialEnvironment type;
+    public GameObject prefabReference;
+    public OrbitParams orbitParams;
 }

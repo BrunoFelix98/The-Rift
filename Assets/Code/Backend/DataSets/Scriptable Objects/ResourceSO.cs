@@ -12,6 +12,7 @@ public class ResourceSO : ScriptableObject
     // Range for spawn quantity
     public int minQuantity;
     public int maxQuantity;
+    public int quantity;
 
     public float resourceWeight;
 
