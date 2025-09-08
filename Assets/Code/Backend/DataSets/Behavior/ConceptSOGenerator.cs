@@ -104,6 +104,8 @@ public class ConceptSOGenerator
 
     private ConceptSO FindOrCreateConceptSO(string conceptName, string factionDescription, string folder)
     {
+        EnsureFolder(folder);
+
         string assetPath = Path.Combine(folder, $"{SanitizeFileName(conceptName)}.asset");
         ConceptSO existing = AssetDatabase.LoadAssetAtPath<ConceptSO>(assetPath);
         if (existing != null)
@@ -122,6 +124,8 @@ public class ConceptSOGenerator
 
     private LivingSO FindOrCreateLiving(string leaderName, string factionName, ConceptSO allegiance, string folder)
     {
+        EnsureFolder(folder);
+
         CreateFoldersRecursively(folder);
         string safeName = SanitizeFileName(leaderName);
         string assetPath = Path.Combine(folder, safeName + ".asset").Replace("\\", "/");
@@ -161,6 +165,28 @@ public class ConceptSOGenerator
         foreach (var c in input)
             sb.Append(System.Array.IndexOf(invalidChars, c) >= 0 ? '_' : c);
         return sb.ToString();
+    }
+
+    private void EnsureFolder(string folder)
+    {
+        if (string.IsNullOrEmpty(folder))
+        {
+            Debug.LogError("EnsureFolder: Folder path is null or empty.");
+            return;
+        }
+
+        if (AssetDatabase.IsValidFolder(folder))
+            return;
+
+        string parentFolder = Path.GetDirectoryName(folder);
+        string newFolderName = Path.GetFileName(folder);
+
+        if (!string.IsNullOrEmpty(parentFolder) && !string.IsNullOrEmpty(newFolderName))
+        {
+            EnsureFolder(parentFolder); // Recursively ensure parent folders exist
+            AssetDatabase.CreateFolder(parentFolder, newFolderName);
+            Debug.Log($"Created folder: {folder}");
+        }
     }
 }
 #endif

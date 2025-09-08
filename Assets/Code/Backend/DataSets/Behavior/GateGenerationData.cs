@@ -1,8 +1,16 @@
-using UnityEngine;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Netcode;
 
-[System.Serializable]
-public class GateGenerationData : MonoBehaviour
+[BurstCompile]
+public struct GateGenerationData : INetworkSerializable
 {
-    public string gateName;
+    public FixedString64Bytes gateName;
     public OrbitParams orbitParams;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref gateName);
+        orbitParams.NetworkSerialize(serializer);
+    }
 }

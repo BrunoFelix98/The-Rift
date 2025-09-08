@@ -1,9 +1,10 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using static UnityEngine.XR.XRDisplaySubsystem;
 
 [Serializable]
-public class OrbitParams : INetworkSerializable
+public struct OrbitParams : INetworkSerializable
 {
     public ulong NetworkId;
     public ulong ParentId;
@@ -13,9 +14,6 @@ public class OrbitParams : INetworkSerializable
     public float PhaseOffset;
     public CelestialType Type;
     public bool RequiresNetworking; // true for asteroids/stations/gates
-
-    // Parameterless constructor required for serialization
-    public OrbitParams() { }
 
     public OrbitParams(ulong networkId, ulong parentId, Vector3 centerPos, float radius, float angularSpeed, float phaseOffset, CelestialType type, bool requiresNetworking)
     {

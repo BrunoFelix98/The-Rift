@@ -3,6 +3,18 @@
     {
       "name": "Milky Way",
       "dustParticles": 10
+    },
+    {
+      "name": "Andromeda",
+      "dustParticles": 15
+    },
+    {
+      "name": "Pegasus",
+      "dustParticles": 20
+    },
+    {
+      "name": "Sombrero",
+      "dustParticles": 5
     }
   ]
 }

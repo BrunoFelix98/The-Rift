@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewStation", menuName = "Game Data/Station")]
-public class StationSO : ScriptableObject
+public class StationSO : ScriptableObject, IOrbitable, IHasPrefab
 {
     public string stationName;
     public ConceptSO allegiance;
@@ -15,6 +15,14 @@ public class StationSO : ScriptableObject
 
     public List<ModuleSO> modules = new List<ModuleSO>();
 
-    public GameObject prefabReference;
     public OrbitParams orbitParams;
+
+    public GameObject prefabReference { get; set; }
+
+    public OrbitParams GetOrbitParams()
+    {
+        return orbitParams;
+    }
+
+    public void InitializeOrbit(OrbitParams orbitParams) => this.orbitParams = orbitParams;
 }

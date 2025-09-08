@@ -1,8 +1,16 @@
-using UnityEngine;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Netcode;
 
-[System.Serializable]
-public class StarGenerationData : MonoBehaviour
+[BurstCompile]
+public struct StarGenerationData : INetworkSerializable
 {
-    public string name;
+    public FixedString64Bytes starName;
     public OrbitParams orbitParams;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref starName);
+        orbitParams.NetworkSerialize(serializer);
+    }
 }

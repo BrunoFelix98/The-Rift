@@ -1,11 +1,26 @@
 using System.Collections.Generic;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-[System.Serializable]
-public class PlanetGenerationData : MonoBehaviour
+[BurstCompile]
+public struct PlanetGenerationData : INetworkSerializable
 {
-    public string planetName;
+    public FixedString64Bytes planetName;
     public CelestialEnvironment type;
     public OrbitParams orbitParams;
-    public List<MoonGenerationData> moons;
+    public int moonCount;
+    public int moonListStartIndex;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref planetName);
+        int t = (int)type;
+        serializer.SerializeValue(ref t);
+        if (serializer.IsReader) type = (CelestialEnvironment)t;
+        orbitParams.NetworkSerialize(serializer);
+        serializer.SerializeValue(ref moonCount);
+        serializer.SerializeValue(ref moonListStartIndex);
+    }
 }

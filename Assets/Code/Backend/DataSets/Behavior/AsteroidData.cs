@@ -28,6 +28,11 @@ public class AsteroidData : MonoBehaviour
         }
     }
 
+    public void Initialize(AsteroidSO so)
+    {
+        data = so;
+    }
+
     public void TakeDamage(int damageAmount)
     {
         int remainingDamage = damageAmount;
