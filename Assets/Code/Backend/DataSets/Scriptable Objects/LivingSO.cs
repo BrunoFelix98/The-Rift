@@ -15,7 +15,7 @@ public class LivingSO : ScriptableObject
     public int carryWeight;
     public ModuleSO weapon;
     public ModuleSO armor;
-    public ConceptSO allegiance;
+    public OrganizationSO allegiance;
 
     // Additional fields for stats, appearance, etc. can be added here
 }

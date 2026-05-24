@@ -2,20 +2,6 @@ using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
 
-public enum CelestialType
-{
-    STAR,
-    PLANET,
-    MOON,
-    ASTEROIDBELT,
-    ASTEROID,
-    STATION,
-    GATE,
-    NEBULA,
-    SYSTEM,
-    GALAXY
-}
-
 public class NetworkedCelestial : NetworkBehaviour
 {
     [Header("Celestial Settings")]

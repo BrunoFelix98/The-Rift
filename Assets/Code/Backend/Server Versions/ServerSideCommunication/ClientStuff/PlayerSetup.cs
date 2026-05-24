@@ -29,11 +29,22 @@ public class PlayerSetup : NetworkBehaviour
         }
 
         // For the local owner, enable cameras
-        var ownerCameras = GetComponentsInChildren<Camera>();
+        var ownerCameras = GetComponentsInChildren<Camera>(true);
         foreach (var cam in ownerCameras)
         {
             cam.enabled = true;
+            // Ensure we can see the massive systems (1 million units far clip)
+            cam.farClipPlane = 1000000f;
+
+            if (cam.gameObject.name.Contains("Main") || ownerCameras.Length == 1)
+            {
+                cam.tag = "MainCamera";
+            }
         }
+
+        // Enable Cinemachine Brain if present on the player or children
+        var brains = GetComponentsInChildren<Unity.Cinemachine.CinemachineBrain>(true);
+        foreach (var brain in brains) brain.enabled = true;
 
         // Set cursor based on ship type
         SetCursorForShipType();

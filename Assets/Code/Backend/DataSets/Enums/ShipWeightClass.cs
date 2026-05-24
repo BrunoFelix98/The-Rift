@@ -1,8 +1,8 @@
 public enum ShipWeightClass
 {
-    Light,
-    Medium,
-    Heavy,
-    Superheavy,
-    Capital
+    LIGHT,
+    MEDIUM,
+    HEAVY,
+    SUPERHEAVY,
+    CAPITAL
 }

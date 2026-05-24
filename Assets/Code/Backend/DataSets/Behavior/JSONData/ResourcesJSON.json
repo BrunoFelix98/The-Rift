@@ -1,0 +1,172 @@
+{
+	"resources": [
+		{
+			"resourceID": 0,
+			"resourceName": "Iron",
+			"resourceDescription": "Basically everywhere.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 1.0,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "ROCKY", "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 1,
+			"resourceName": "Gold",
+			"resourceDescription": "Extremely conductive, but rarer than copper, used for key electrical components.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 10,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "ROCKY", "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "RARE"
+		},
+		{
+			"resourceID": 2,
+			"resourceName": "Platinum",
+			"resourceDescription": "Used in the production of highly reflective materials.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON" ],
+			"environment": [ "ROCKY", "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "VERYRARE"
+		},
+		{
+			"resourceID": 3,
+			"resourceName": "Rune Ore",
+			"resourceDescription": "Artificial ore, unique to Sanctum Ferrum.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON" ],
+			"environment": [ "ROCKY" ],
+			"allowedFactions": [ "Sanctum Ferrum" ],
+			"rarity": "UNIQUE"
+		},
+		{
+			"resourceID": 4,
+			"resourceName": "Starfire",
+			"resourceDescription": "Extracted from stars, refined by Sanctum Ferrum.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET" ],
+			"environment": [ "ROCKY", "GAS", "TEMPERATE" ],
+			"allowedFactions": [ "Sanctum Ferrum" ],
+			"rarity": "UNIQUE"
+		},
+		{
+			"resourceID": 5,
+			"resourceName": "Oil",
+			"resourceDescription": "Needed for every mechanical component, keeps things lubricated.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON" ],
+			"environment": [ "ROCKY", "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 6,
+			"resourceName": "Sulfur Gas",
+			"resourceDescription": "Highly explosive.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "Moon", "ASTEROID" ],
+			"environment": [ "GAS", "LAVA" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 7,
+			"resourceName": "Hydrogen",
+			"resourceDescription": "Highly versatile.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "ROCKY", "ICE", "GAS", "LAVA", "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 8,
+			"resourceName": "Argon",
+			"resourceDescription": "Highly non-reactive, very useful for controlled environments.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "GAS", "ICE", "TEMPERATE", "ROCKY" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 9,
+			"resourceName": "Animal lifeforms",
+			"resourceDescription": "Primairly used for food, certain factions may have no use for it though.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON" ],
+			"environment": [ "TEMPERATE" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "UNCOMMON"
+		},
+		{
+			"resourceID": 10,
+			"resourceName": "Plant lifeforms",
+			"resourceDescription": "Primairly used for food, certain factions may have no use for it though.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON" ],
+			"environment": [ "TEMPERATE", "ROCKY" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 11,
+			"resourceName": "Copper",
+			"resourceDescription": "Highly conductive and common, making it the go-to material for electrical components.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "TEMPERATE", "ROCKY" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		},
+		{
+			"resourceID": 12,
+			"resourceName": "Silver",
+			"resourceDescription": "Shiny material used in jewelery, nowadays however, it's probably not used for cosmetic purposes anymore.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "TEMPERATE", "ROCKY" ],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "RARE"
+		},
+		{
+			"resourceID": 13,
+			"resourceName": "Water",
+			"resourceDescription": "Some say its the most basic necessity for life, but its nearly everywhere.",
+			"minQuantity": 1,
+			"maxQuantity": 5,
+			"resourceWeight": 20,
+			"appliesTo": [ "PLANET", "MOON", "ASTEROID" ],
+			"environment": [ "TEMPERATE", "ROCKY", "ICE"],
+			"allowedFactions": [ "Universal" ],
+			"rarity": "COMMON"
+		}
+	]
+}

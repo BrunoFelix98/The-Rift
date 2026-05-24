@@ -66,8 +66,8 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  far clip plane: 200000
+  field of view: 90
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -154,6 +154,7 @@ GameObject:
   - component: {fileID: 7354917288230261648}
   - component: {fileID: -7729994627342722629}
   - component: {fileID: 8001476458352545311}
+  - component: {fileID: 6825633051159442617}
   m_Layer: 0
   m_Name: PlayerFighterPiloting
   m_TagString: Player
@@ -171,7 +172,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2.5556, y: 0.7291521, z: 1.9936235}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6517750080286442940}
@@ -184,7 +185,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1181918415118748020}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 824334816446914250, guid: c5f1c36c6766b824c9eef9f2254cec2a, type: 3}
 --- !u!23 &8728486228060573134
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -210,7 +211,9 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: bd61d42d23a02ff47ab52a7d806f92ab, type: 2}
+  - {fileID: 2100000, guid: 3766156b69cc51542abfb44a87ba9dc5, type: 2}
+  - {fileID: 2100000, guid: 07726c4bf0c188f49ad1abec0c3f797d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -232,6 +235,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &27721278849940013
 SphereCollider:
@@ -252,7 +256,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &8265301965322111826
 Rigidbody:
@@ -320,7 +324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FighterPiloting
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 0
-  maxForwardSpeed: 100
+  maxForwardSpeed: 1000
   maxBackwardSpeed: -100
   acceleration: 50
   deceleration: 50
@@ -361,3 +365,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestSwitchShips
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &6825633051159442617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1181918415118748020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8bfed681f6aa164d831ed840c4704c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerJumpController
+  ShowTopMostFoldoutHeaderGroup: 1
+  interactionRange: 1000
+  jumpKey: 122

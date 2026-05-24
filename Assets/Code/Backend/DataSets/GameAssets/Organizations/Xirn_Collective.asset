@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 236c037ebd4887945b5f2aeb46a857ad, type: 3}
+  m_Name: Xirn_Collective
+  m_EditorClassIdentifier: Assembly-CSharp::OrganizationSO
+  organizationName: Xirn Collective
+  type: 0
+  description: 
+  allegiance: {fileID: 0}
+  leader: {fileID: 11400000, guid: 1f248b01b0f9feb448db3c1320187c4f, type: 2}
+  memberOrganizations:
+  - {fileID: 11400000, guid: 3f0234d6a3f2ddb4490a4296292422b0, type: 2}
+  - {fileID: 11400000, guid: 9e957e8a3b7237f43b1764ab78a85eb0, type: 2}
+  - {fileID: 11400000, guid: 2ffead040d5e08342b637ac5abc4de1d, type: 2}
+  - {fileID: 11400000, guid: 2b5bef587b0d04f46b36903e646a3c48, type: 2}
+  - {fileID: 11400000, guid: c8b7640e0632226419e4a13896525212, type: 2}
+  - {fileID: 11400000, guid: 276acc890c2e0394492c5dfdaa6fa6d9, type: 2}
+  members: []
+  organizationId: 2
+  homeGalaxy: Sombrero
+  starNames:
+  - Cyberstan
+  requiresNebulas: 0
+  organizationColor: {r: 0.6666667, g: 0.29411766, b: 0.09803922, a: 1}
+  seed: 78901
+  gates: []

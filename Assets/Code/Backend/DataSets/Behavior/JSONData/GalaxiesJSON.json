@@ -1,0 +1,32 @@
+{
+  "galaxies": [
+    {
+      "id": 0,
+      "name": "Milky Way",
+      "dustParticles": 100000,
+      "seed": 34567,
+      "maxSystems": 10000
+    },
+    {
+      "id": 1,
+      "name": "Andromeda",
+      "dustParticles": 150000,
+      "seed": 98765,
+      "maxSystems": 10000
+    },
+    {
+      "id": 2,
+      "name": "Pegasus",
+      "dustParticles": 200000,
+      "seed": 54321,
+      "maxSystems": 10000
+    },
+    {
+      "id": 3,
+      "name": "Sombrero",
+      "dustParticles": 50000,
+      "seed": 12345,
+      "maxSystems": 10000
+    }
+  ]
+}

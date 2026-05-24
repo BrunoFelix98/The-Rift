@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewResource", menuName = "Game Data/Resource")]
 public class ResourceSO : ScriptableObject
 {
+    public int resourceId;
     public string resourceName;
 
     [TextArea]
@@ -12,13 +13,21 @@ public class ResourceSO : ScriptableObject
     // Range for spawn quantity
     public int minQuantity;
     public int maxQuantity;
-    public int quantity;
-
+    
+    // Weight in metric tonnes
     public float resourceWeight;
 
-    public List<ResourceCategory> resourceCategory;
+    public ResourceRarity rarity;
 
-    // List of allowed factions by their unique IDs or names
-    public List<string> celestialType = new List<string>();
+    // List of allowed celestial types (Planet, Moon, etc)
+    public List<CelestialType> appliesTo = new List<CelestialType>();
+    
+    // Environments where it can appear
+    public List<CelestialEnvironment> environments = new List<CelestialEnvironment>();
+    
+    // List of allowed factions (names or "Universal")
     public List<string> allowedFactions = new List<string>();
+
+    [Header("Runtime Info")]
+    public int quantity; // Can be used for instances
 }

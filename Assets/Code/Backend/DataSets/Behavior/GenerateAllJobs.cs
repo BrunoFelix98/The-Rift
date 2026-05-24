@@ -108,7 +108,7 @@ public struct GenerateAllJobs : IJob
                 // use FixedString building for systemName
                 FixedString64Bytes sysName = default;
                 sysName.Append(g.galaxyName);
-                sysName.Append(" System ");
+                sysName.Append((FixedString64Bytes)" System ");
                 sysName.Append(sysCount + 1);
                 sd.systemName = sysName;
 
@@ -156,7 +156,7 @@ public struct GenerateAllJobs : IJob
             StarGenerationData st = default;
             FixedString64Bytes name = default;
             name.Append(sd.systemName);
-            name.Append(" Star ");
+            name.Append((FixedString64Bytes)" Star ");
             name.Append(i + 1);
             st.starName = name;
             st.orbitParams = CalculateOrbitForStar(sd.orbitParams, i);
@@ -172,7 +172,7 @@ public struct GenerateAllJobs : IJob
             PlanetGenerationData pd = default;
             FixedString64Bytes pname = default;
             pname.Append(sd.systemName);
-            pname.Append(" Planet ");
+            pname.Append((FixedString64Bytes)" Planet ");
             pname.Append(i + 1);
             pd.planetName = pname;
 
@@ -186,7 +186,7 @@ public struct GenerateAllJobs : IJob
                 MoonGenerationData md = default;
                 FixedString64Bytes mname = default;
                 mname.Append(pd.planetName);
-                mname.Append(" Moon ");
+                mname.Append((FixedString64Bytes)" Moon ");
                 mname.Append(m + 1);
                 md.moonName = mname;
                 md.orbitParams = CalculateOrbitForMoon(pd.orbitParams, m);
@@ -204,7 +204,7 @@ public struct GenerateAllJobs : IJob
             AsteroidBeltGenerationData bd = default;
             FixedString64Bytes bname = default;
             bname.Append(sd.systemName);
-            bname.Append(" Belt ");
+            bname.Append((FixedString64Bytes)" Belt ");
             bname.Append(b + 1);
             bd.asteroidBeltName = bname;
 
@@ -217,7 +217,7 @@ public struct GenerateAllJobs : IJob
                 AsteroidGenerationData ad = default;
                 FixedString64Bytes aname = default;
                 aname.Append(bd.asteroidBeltName);
-                aname.Append(" Asteroid ");
+                aname.Append((FixedString64Bytes)" Asteroid ");
                 aname.Append(a + 1);
                 ad.asteroidName = aname;
                 ad.orbitParams = CalculateOrbitForAsteroid(bd.orbitParams, a);
@@ -234,7 +234,7 @@ public struct GenerateAllJobs : IJob
             GateGenerationData gd = default;
             FixedString64Bytes gname = default;
             gname.Append(sd.systemName);
-            gname.Append(" Gate ");
+            gname.Append((FixedString64Bytes)" Gate ");
             gname.Append(gI + 1);
             gd.gateName = gname;
             gd.orbitParams = CalculateOrbitForGate(sd.orbitParams, gI);
@@ -257,7 +257,7 @@ public struct GenerateAllJobs : IJob
             StationGenerationData sdg = default;
             FixedString64Bytes sname = default;
             sname.Append(sd.systemName);
-            sname.Append(" Station ");
+            sname.Append((FixedString64Bytes)" Station ");
             sname.Append(sI + 1);
             sdg.stationName = sname;
 

@@ -52,7 +52,7 @@ public class Ship : ArtificialEntity
         modulesBySlot[SlotType.Low] = new List<Module>();
         modulesBySlot[SlotType.Rig] = new List<Module>();
 
-        if (WeightClass == ShipWeightClass.Capital)
+        if (WeightClass == ShipWeightClass.CAPITAL)
         {
             modulesBySlot[SlotType.Capital] = new List<Module>();
         }

@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 6067149108355955629}
   - component: {fileID: 6988178989124324298}
   - component: {fileID: 4851802961266030018}
-  - component: {fileID: 7872544588438828846}
   - component: {fileID: 6009944385347218968}
   - component: {fileID: -2657193288220436579}
+  - component: {fileID: 384252960515491737}
   m_Layer: 0
   m_Name: PlanetPrefab
   m_TagString: Untagged
@@ -72,7 +72,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 907e195df92175b4e8f28ee14f65002d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -94,6 +94,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &6067149108355955629
 SphereCollider:
@@ -157,19 +158,6 @@ MonoBehaviour:
   celestialType: 1
   viewDistance: 200
   nearDistance: 50
---- !u!114 &7872544588438828846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6554570631295941936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e7af9922dc86ef4cbfe5b2e80c7e4fc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlanetData
-  data: {fileID: 11400000, guid: 3aa6e54b0ce24ff4cbb58ca6e56b8178, type: 2}
 --- !u!114 &6009944385347218968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,7 +176,7 @@ MonoBehaviour:
     moons: []
     resources: []
   planetPrefab: {fileID: 0}
-  planetData: {fileID: 7872544588438828846}
+  planetData: {fileID: 0}
 --- !u!114 &-2657193288220436579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,3 +223,16 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &384252960515491737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6554570631295941936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86c77a76b1896640908df50100812e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlanetData
+  data: {fileID: 0}

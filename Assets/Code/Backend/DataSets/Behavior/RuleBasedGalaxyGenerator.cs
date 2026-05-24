@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,19 +23,6 @@ public class GalaxyJsonContainer
     public List<GalaxyJsonData> galaxies;
 }
 
-[System.Serializable]
-public class ResourceData
-{
-    public string resourceName;
-    public string resourceDescription;
-    public int minQuantity;
-    public int maxQuantity;
-    public float resourceWeight;
-    public List<string> category;
-    public List<string> celestialType;
-    public List<string> allowedFactions;
-}
-
 [Serializable]
 public class ResourceListData
 {
@@ -48,17 +33,6 @@ public class ResourceListData
 public class FactionsListData
 {
     public List<FactionData> factions;
-}
-
-[Serializable]
-public struct GenerationCosts
-{
-    public int system;
-    public int star;
-    public int planet;
-    public int moon;
-    public int asteroidBelt;
-    public int asteroid;
 }
 
 public class RuleBasedGalaxyGenerator : MonoBehaviour
@@ -133,7 +107,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
     private NativeList<GateGenerationData> gates;
 
     private Dictionary<string, int> factionNameToId;
-    private Dictionary<int, ConceptSO> idToConceptSO;
+    private Dictionary<int, OrganizationSO> idToOrganizationSO;
 
     private ulong GenerateOrbitId()
     {
@@ -154,11 +128,11 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         moonResources = resourcePocos.Where(r => r.category.Any(c => string.Equals(c, "Moon", StringComparison.OrdinalIgnoreCase) || string.Equals(c, "Universal", StringComparison.OrdinalIgnoreCase))).ToList();
         asteroidResources = resourcePocos.Where(r => r.category.Any(c => string.Equals(c, "Asteroid", StringComparison.OrdinalIgnoreCase) || string.Equals(c, "Universal", StringComparison.OrdinalIgnoreCase))).ToList();
         
-        // 2. Create ConceptSO assets and map faction names IDs
-        var conceptGen = InitializeConceptSOGenerator();
-        conceptGen.CreateConceptsFromFactions(factionPocos);
-        var factionConcepts = conceptGen.GetFactionConceptDictionary();
-        BuildFactionMappings(factionConcepts);
+        // 2. Create OrganizationSO assets and map faction names IDs
+        var orgGen = InitializeOrganizationSOGenerator();
+        orgGen.CreateOrganizationsFromFactions(factionPocos);
+        var factionOrgs = orgGen.GetFactionOrganizationDictionary();
+        BuildFactionMappings(factionOrgs);
 
         // 3. Build NebulaSO map (if factions require nebulas)
         //    Assign each NebulaSO an integer ID (0 = none)
@@ -174,24 +148,21 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
                 nextNebulaId++;
             }
         }
-        
-        // 5. Convert native data assets & prefabs
-        //ConvertAllNativeDataToAssets.Run(galaxies, systems, stars, planets, moons, belts, asteroids, stations, gates, idToConceptSO, nebulaMap, planetResources, moonResources, asteroidResources, outputFolder, prefabOutputFolder);
 
         // 4. Allocate and run generation jobs
         InitializeAndScheduleJobs(galaxyPocos, factionPocos);
     }
 
-    void BuildFactionMappings(Dictionary<string, ConceptSO> factionConcepts)
+    void BuildFactionMappings(Dictionary<string, OrganizationSO> factionOrgs)
     {
         factionNameToId = new Dictionary<string, int>();
-        idToConceptSO = new Dictionary<int, ConceptSO>();
+        idToOrganizationSO = new Dictionary<int, OrganizationSO>();
         int nextId = 1; // 0 = no allegiance
 
-        foreach (var kv in factionConcepts)
+        foreach (var kv in factionOrgs)
         {
             factionNameToId[kv.Key] = nextId;
-            idToConceptSO[nextId] = kv.Value;
+            idToOrganizationSO[nextId] = kv.Value;
             nextId++;
         }
     }
@@ -280,7 +251,7 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         nativeFactionMap.Dispose();
 
         // 8. Convert native data back into ScriptableObjects
-        ConvertAllNativeDataToAssets.Run(galaxies, systems, stars, planets, moons, belts, asteroids, stations, gates, idToConceptSO, new Dictionary<int, NebulaSO>(), planetResources, moonResources, asteroidResources, outputFolder, prefabOutputFolder);
+        ConvertAllNativeDataToAssets.Run(galaxies, systems, stars, planets, moons, belts, asteroids, stations, gates, idToOrganizationSO, new Dictionary<int, NebulaSO>(), planetResources, moonResources, asteroidResources, outputFolder, prefabOutputFolder);
 
         // 9. Dispose native lists
         galaxies.Dispose();
@@ -362,11 +333,11 @@ public class RuleBasedGalaxyGenerator : MonoBehaviour
         return new OrbitParams(networkId, parentId, center, radius, angularSpeed, phase, CelestialType.GALAXY, requiresNetworking);
     }
 
-    private ConceptSOGenerator InitializeConceptSOGenerator()
+    private OrganizationSOGenerator InitializeOrganizationSOGenerator()
     {
-        return new ConceptSOGenerator
+        return new OrganizationSOGenerator
         {
-            outputFolder = Path.Combine(outputFolder, "Concepts")
+            outputFolder = Path.Combine(outputFolder, "Organizations")
         };
     }
 

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 236c037ebd4887945b5f2aeb46a857ad, type: 3}
+  m_Name: Sanctum_Ferrum
+  m_EditorClassIdentifier: Assembly-CSharp::OrganizationSO
+  organizationName: Sanctum Ferrum
+  type: 0
+  description: 
+  allegiance: {fileID: 11400000}
+  leader: {fileID: 11400000, guid: 4a8130506daac1f4ebad391c22739c49, type: 2}
+  memberOrganizations:
+  - {fileID: 11400000, guid: 0a0e7ef647162134b810db2860478b8e, type: 2}
+  - {fileID: 11400000, guid: 4c87b4de148d4dc4996055512eaa89b6, type: 2}
+  - {fileID: 11400000, guid: 689462a3d7ba1f84086e63a795ff5462, type: 2}
+  - {fileID: 11400000, guid: 56474d28a7a71a1429c2f80f94c6698a, type: 2}
+  - {fileID: 11400000, guid: c18074ede15dd44468c72a8b1f41302d, type: 2}
+  members: []
+  organizationId: 3
+  homeGalaxy: Milky Way
+  starNames:
+  - Throne World
+  requiresNebulas: 0
+  organizationColor: {r: 0.54901963, g: 0.54901963, b: 0.54901963, a: 1}
+  seed: 23456
+  gates: []

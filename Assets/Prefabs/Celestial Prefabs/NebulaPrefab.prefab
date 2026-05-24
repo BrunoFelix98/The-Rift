@@ -14,8 +14,8 @@ GameObject:
   - component: {fileID: 705664610051022708}
   - component: {fileID: 8000612516691015455}
   - component: {fileID: 3693619878905539286}
-  - component: {fileID: 6170283012589666110}
   - component: {fileID: 4265265515823673245}
+  - component: {fileID: 9195139838316100757}
   m_Layer: 0
   m_Name: NebulaPrefab
   m_TagString: Untagged
@@ -156,19 +156,6 @@ MonoBehaviour:
   celestialType: 7
   viewDistance: 200
   nearDistance: 50
---- !u!114 &6170283012589666110
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6585333819559384535}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb6ac039b4c6e0d44924ce6d7d16010e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NebulaData
-  data: {fileID: 11400000, guid: be70cb43f15f5674498ba744e5f5e20c, type: 2}
 --- !u!114 &4265265515823673245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,3 +202,16 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &9195139838316100757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6585333819559384535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc6677fb67f15d5439743e6a90004d8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NebulaData
+  data: {fileID: 0}

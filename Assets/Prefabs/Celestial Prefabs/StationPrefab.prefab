@@ -12,11 +12,11 @@ GameObject:
   - component: {fileID: 3491602079127311546}
   - component: {fileID: 6919313137113514621}
   - component: {fileID: 5653531078991900192}
-  - component: {fileID: 6561906232721045574}
   - component: {fileID: 2834718472998755274}
   - component: {fileID: 8794547768872781270}
   - component: {fileID: 4292084661022050993}
   - component: {fileID: -4614358583926859367}
+  - component: {fileID: 2589424433214566401}
   m_Layer: 0
   m_Name: StationPrefab
   m_TagString: Untagged
@@ -116,19 +116,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6561906232721045574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3156010735745078877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4835cff968a2de04c9ec396423d04ae7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StationData
-  data: {fileID: 11400000, guid: 9084ce9d5ffc4f14591958e84f8b946b, type: 2}
 --- !u!114 &2834718472998755274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -186,7 +173,7 @@ MonoBehaviour:
     blueprintId: 
     modules: []
   stationPrefab: {fileID: 0}
-  stationData: {fileID: 6561906232721045574}
+  stationData: {fileID: 0}
 --- !u!114 &4292084661022050993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,3 +236,16 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &2589424433214566401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3156010735745078877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86e72fa181a7cd94fbd5707c9535c4c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StationData
+  data: {fileID: 0}

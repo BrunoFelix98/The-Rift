@@ -14,105 +14,71 @@ public class NetworkedMoonData : NetworkBehaviour, IPoolable
     [Header("Original Data (Immutable)")]
     [SerializeField] private MoonData moonData;
 
-    // Moons have infinite resources like planets
     private Dictionary<string, NetworkVariable<int>> resourceAmounts = new Dictionary<string, NetworkVariable<int>>();
 
-    void Awake()
+    public void Reinitialize(MoonSO so, CelestialHierarchyNode node)
     {
-        moonData = GetComponent<MoonData>();
-        if (moonData == null)
-        {
-            Debug.LogError($"NetworkedMoonData requires MoonData component on {gameObject.name}");
-            return;
-        }
-
-        ConvertSOToDTO();
+        if (moonData == null) moonData = GetComponent<MoonData>();
+        moonData.data = so;
+        
+        ConvertDataToDTO(node);
         InitializeNetworkVariables();
     }
 
-    void ConvertSOToDTO()
+    void ConvertDataToDTO(CelestialHierarchyNode node)
     {
-        if (moonData.data == null) return;
-
+        var op = node.Params;
         moonDTO = new MoonDTO
         {
-            moonName = moonData.data.moonName,
+            moonName = op.Name.ToString(),
             resources = new List<ResourceDTO>(),
-            stations = new List<StationDTO>() // Stations will be separate GameObjects
+            stations = new List<StationDTO>()
         };
 
-        // Convert resources (moons have infinite resources)
-        foreach (var resourceSO in moonData.data.resources)
+        foreach (var resData in node.Data.resources)
         {
             moonDTO.resources.Add(new ResourceDTO
             {
-                resourceName = resourceSO.resourceName,
-                resourceDescription = resourceSO.resourceDescription,
-                minQuantity = resourceSO.minQuantity,
-                maxQuantity = resourceSO.maxQuantity,
-                quantity = int.MaxValue, // Infinite resources
-                resourceWeight = resourceSO.resourceWeight,
-                resourceCategory = new List<ResourceCategory>(resourceSO.resourceCategory),
-                celestialType = new List<string>(resourceSO.celestialType),
-                allowedFactions = new List<string>(resourceSO.allowedFactions)
+                resourceName = resData.name,
+                minQuantity = resData.minQuantity,
+                maxQuantity = resData.maxQuantity,
+                quantity = resData.quantity,
+                resourceWeight = resData.weight,
+                resourceCategory = new List<ResourceCategory> { GetCategory(resData.rarity) }
             });
         }
+
+        foreach (var child in node.Children)
+        {
+            if (child.Params.Type == CelestialType.STATION)
+            {
+                moonDTO.stations.Add(new StationDTO { stationName = child.Params.Name.ToString() });
+            }
+        }
+    }
+
+    private ResourceCategory GetCategory(string rarity)
+    {
+        if (string.IsNullOrEmpty(rarity)) return ResourceCategory.Universal;
+        if (rarity.Contains("Common")) return ResourceCategory.Asteroid;
+        if (rarity.Contains("Rare")) return ResourceCategory.Moon;
+        return ResourceCategory.Planet;
     }
 
     void InitializeNetworkVariables()
     {
         if (!IsServer) return;
-
         foreach (var resource in moonDTO.resources)
         {
-            var networkVar = new NetworkVariable<int>(int.MaxValue,
-                NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-            resourceAmounts[resource.resourceName] = networkVar;
+            if (!resourceAmounts.ContainsKey(resource.resourceName))
+            {
+                var networkVar = new NetworkVariable<int>(resource.quantity,
+                    NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+                resourceAmounts[resource.resourceName] = networkVar;
+            }
+            else resourceAmounts[resource.resourceName].Value = resource.quantity;
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void MineResourceServerRpc(string resourceName, int amount, ServerRpcParams rpcParams = default)
-    {
-        if (!IsServer) return;
-
-        if (!resourceAmounts.ContainsKey(resourceName))
-        {
-            NotifyMiningFailedClientRpc("Resource not found", rpcParams.Receive.SenderClientId);
-            return;
-        }
-
-        // Moons have infinite resources
-        NotifyMiningSuccessClientRpc(resourceName, amount, rpcParams.Receive.SenderClientId);
-    }
-
-    [ClientRpc]
-    void NotifyMiningSuccessClientRpc(string resourceName, int amount, ulong clientId)
-    {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
-        {
-            Debug.Log($"Successfully mined {amount} {resourceName} from {moonDTO.moonName} (infinite source)");
-        }
-    }
-
-    [ClientRpc]
-    void NotifyMiningFailedClientRpc(string reason, ulong clientId)
-    {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
-        {
-            Debug.Log($"Mining failed: {reason}");
-        }
-    }
-
-    // IPoolable implementation
-    public void OnReturnToPool()
-    {
-        ConvertSOToDTO();
-        Debug.Log($"Moon {moonDTO.moonName} returned to pool and reset");
-    }
-
-    public bool HasResource(string resourceName)
-    {
-        return resourceAmounts.ContainsKey(resourceName);
-    }
+    public void OnReturnToPool() { moonDTO = null; }
 }

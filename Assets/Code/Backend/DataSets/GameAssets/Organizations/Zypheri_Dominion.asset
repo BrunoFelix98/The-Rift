@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 236c037ebd4887945b5f2aeb46a857ad, type: 3}
+  m_Name: Zypheri_Dominion
+  m_EditorClassIdentifier: Assembly-CSharp::OrganizationSO
+  organizationName: Zypheri Dominion
+  type: 0
+  description: 
+  allegiance: {fileID: 11400000}
+  leader: {fileID: 11400000, guid: 4302518c015839146a71330dc078c5fe, type: 2}
+  memberOrganizations:
+  - {fileID: 11400000, guid: 9626c052c7098d344a45be7004b0c277, type: 2}
+  - {fileID: 11400000, guid: 64d84815dc1dabe47a3815d9d71d47a3, type: 2}
+  - {fileID: 11400000, guid: c8c36fb448f6a9c4e8c9fe80c01dbdf7, type: 2}
+  - {fileID: 11400000, guid: 33b0717e42778be45adddcc4e7e61b98, type: 2}
+  - {fileID: 11400000, guid: 68267cdba4d1d254c8565db64b466add, type: 2}
+  members: []
+  organizationId: 1
+  homeGalaxy: Andromeda
+  starNames:
+  - Lorynth
+  - Auralis Prime
+  - "Veythar\u2019s Shard"
+  - Chorvane Echo
+  - Irrithal Veil
+  - Thryssaline
+  - Nyxhalor Rift
+  - Caelcryst Dominion
+  - Xyrenthal Abyss
+  requiresNebulas: 1
+  organizationColor: {r: 0.42352942, g: 0.21568628, b: 0.8784314, a: 1}
+  seed: 45678
+  gates:
+  - fromStar: Lorynth
+    toStar: Auralis Prime
+  - fromStar: Lorynth
+    toStar: "Veythar\u2019s Shard"
+  - fromStar: Lorynth
+    toStar: Caelcryst Dominion
+  - fromStar: Auralis Prime
+    toStar: "Veythar\u2019s Shard"
+  - fromStar: "Veythar\u2019s Shard"
+    toStar: Chorvane Echo
+  - fromStar: Chorvane Echo
+    toStar: Irrithal Veil
+  - fromStar: Irrithal Veil
+    toStar: Thryssaline
+  - fromStar: Thryssaline
+    toStar: Nyxhalor Rift
+  - fromStar: Nyxhalor Rift
+    toStar: Caelcryst Dominion
+  - fromStar: Caelcryst Dominion
+    toStar: Xyrenthal Abyss

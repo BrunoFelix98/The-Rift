@@ -14,107 +14,72 @@ public class NetworkedPlanetData : NetworkBehaviour, IPoolable
     [Header("Original Data (Immutable)")]
     [SerializeField] private PlanetData planetData;
 
-    // Planets have infinite resources, so no depletion tracking needed
     private Dictionary<string, NetworkVariable<int>> resourceAmounts = new Dictionary<string, NetworkVariable<int>>();
 
-    void Awake()
+    public void Reinitialize(PlanetSO so, CelestialHierarchyNode node)
     {
-        planetData = GetComponent<PlanetData>();
-        if (planetData == null)
-        {
-            Debug.LogError($"NetworkedPlanetData requires PlanetData component on {gameObject.name}");
-            return;
-        }
-
-        ConvertSOToDTO();
+        if (planetData == null) planetData = GetComponent<PlanetData>();
+        planetData.data = so;
+        
+        ConvertDataToDTO(node);
         InitializeNetworkVariables();
     }
 
-    void ConvertSOToDTO()
+    void ConvertDataToDTO(CelestialHierarchyNode node)
     {
-        if (planetData.data == null) return;
-
+        var op = node.Params;
         planetDTO = new PlanetDTO
         {
-            planetName = planetData.data.planetName,
+            planetName = op.Name.ToString(),
             resources = new List<ResourceDTO>(),
-            moons = new List<MoonDTO>() // Moons will be separate GameObjects, this is just for data reference
+            moons = new List<MoonDTO>()
         };
 
-        // Convert resources (planets have infinite resources)
-        foreach (var resourceSO in planetData.data.resources)
+        // Use PRE-GENERATED resources from persistence data
+        foreach (var resData in node.Data.resources)
         {
             planetDTO.resources.Add(new ResourceDTO
             {
-                resourceName = resourceSO.resourceName,
-                resourceDescription = resourceSO.resourceDescription,
-                minQuantity = resourceSO.minQuantity,
-                maxQuantity = resourceSO.maxQuantity,
-                quantity = int.MaxValue, // Infinite resources
-                resourceWeight = resourceSO.resourceWeight,
-                resourceCategory = new List<ResourceCategory>(resourceSO.resourceCategory),
-                celestialType = new List<string>(resourceSO.celestialType),
-                allowedFactions = new List<string>(resourceSO.allowedFactions)
+                resourceName = resData.name,
+                minQuantity = resData.minQuantity,
+                maxQuantity = resData.maxQuantity,
+                quantity = resData.quantity,
+                resourceWeight = resData.weight,
+                resourceCategory = new List<ResourceCategory> { GetCategory(resData.rarity) }
             });
         }
+
+        foreach (var child in node.Children)
+        {
+            if (child.Params.Type == CelestialType.MOON)
+            {
+                planetDTO.moons.Add(new MoonDTO { moonName = child.Params.Name.ToString() });
+            }
+        }
+    }
+
+    private ResourceCategory GetCategory(string rarity)
+    {
+        if (string.IsNullOrEmpty(rarity)) return ResourceCategory.Universal;
+        if (rarity.Contains("Common")) return ResourceCategory.Asteroid;
+        if (rarity.Contains("Rare")) return ResourceCategory.Moon;
+        return ResourceCategory.Planet;
     }
 
     void InitializeNetworkVariables()
     {
         if (!IsServer) return;
-
-        // Planets have infinite resources, but we still track for consistency
         foreach (var resource in planetDTO.resources)
         {
-            var networkVar = new NetworkVariable<int>(int.MaxValue,
-                NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-            resourceAmounts[resource.resourceName] = networkVar;
+            if (!resourceAmounts.ContainsKey(resource.resourceName))
+            {
+                var networkVar = new NetworkVariable<int>(resource.quantity,
+                    NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+                resourceAmounts[resource.resourceName] = networkVar;
+            }
+            else resourceAmounts[resource.resourceName].Value = resource.quantity;
         }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void MineResourceServerRpc(string resourceName, int amount, ServerRpcParams rpcParams = default)
-    {
-        if (!IsServer) return;
-
-        if (!resourceAmounts.ContainsKey(resourceName))
-        {
-            NotifyMiningFailedClientRpc("Resource not found", rpcParams.Receive.SenderClientId);
-            return;
-        }
-
-        // Planets have infinite resources - always succeed
-        NotifyMiningSuccessClientRpc(resourceName, amount, rpcParams.Receive.SenderClientId);
-    }
-
-    [ClientRpc]
-    void NotifyMiningSuccessClientRpc(string resourceName, int amount, ulong clientId)
-    {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
-        {
-            Debug.Log($"Successfully mined {amount} {resourceName} from {planetDTO.planetName} (infinite source)");
-        }
-    }
-
-    [ClientRpc]
-    void NotifyMiningFailedClientRpc(string reason, ulong clientId)
-    {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
-        {
-            Debug.Log($"Mining failed: {reason}");
-        }
-    }
-
-    // IPoolable implementation
-    public void OnReturnToPool()
-    {
-        // Reset to original SO values
-        ConvertSOToDTO();
-        Debug.Log($"Planet {planetDTO.planetName} returned to pool and reset");
-    }
-
-    public bool HasResource(string resourceName)
-    {
-        return resourceAmounts.ContainsKey(resourceName);
-    }
+    public void OnReturnToPool() { planetDTO = null; }
 }

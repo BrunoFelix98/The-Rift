@@ -12,11 +12,11 @@ GameObject:
   - component: {fileID: 8221665859534951941}
   - component: {fileID: 9214083994427250491}
   - component: {fileID: 2421934453029008133}
-  - component: {fileID: 1247113146519872721}
   - component: {fileID: 6904994480703155649}
   - component: {fileID: 4207694681206519925}
   - component: {fileID: 2897316891500232894}
   - component: {fileID: -4626882389305718840}
+  - component: {fileID: 1999939322785064122}
   m_Layer: 0
   m_Name: MoonPrefab
   m_TagString: Untagged
@@ -72,7 +72,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 46248e2c409a72548a984bb89249712e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -94,6 +94,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &2421934453029008133
 SphereCollider:
@@ -116,19 +117,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1247113146519872721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2471529623173599463}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7396f69294e8251429e8b140208f374a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MoonData
-  data: {fileID: 11400000, guid: b674718fede124341bbb72a6414af639, type: 2}
 --- !u!114 &6904994480703155649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,7 +160,7 @@ MonoBehaviour:
     resources: []
     stations: []
   moonPrefab: {fileID: 0}
-  moonData: {fileID: 1247113146519872721}
+  moonData: {fileID: 0}
 --- !u!114 &2897316891500232894
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,3 +223,16 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &1999939322785064122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2471529623173599463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d61f17cadb14674686425970d7ba058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoonData
+  data: {fileID: 0}

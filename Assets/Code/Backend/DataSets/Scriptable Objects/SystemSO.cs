@@ -15,12 +15,12 @@ public class SystemSO : ScriptableObject, IOrbitable, IHasPrefab
     public NebulaSO nebula;
 
     // Allegiance to a faction or concept, stored as string identifier
-    public ConceptSO allegiance;
+    public OrganizationSO allegiance;
     public OrbitParams orbitParams;
 
     public GameObject prefabReference { get; set; }
 
-    public void AssignAllegiance(ConceptSO allegiance)
+    public void AssignAllegiance(OrganizationSO allegiance)
     {
         if (this.allegiance == null)
         {

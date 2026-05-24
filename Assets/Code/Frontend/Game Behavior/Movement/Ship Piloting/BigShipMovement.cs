@@ -21,6 +21,11 @@ public class BigShipMovement : NetworkBehaviour
     private Vector3 clientTargetPosition;
     private bool clientHasTargetPosition;
 
+    [Header("Sync Settings")]
+    public float positionLerpSpeed = 10f;
+    public float rotationLerpSpeed = 10f;
+    private Vector3 targetNetPosition;
+
     private void Update()
     {
         if (IsOwner && Application.isFocused)
@@ -28,11 +33,18 @@ public class BigShipMovement : NetworkBehaviour
             HandleInput();
             ClientMove();
         }
-
-        // Apply server rotation to all non-owning clients
-        if (!IsOwner && shipModel != null)
+        else if (!IsOwner)
         {
-            shipModel.rotation = shipRotation.Value;
+            // Smoothly interpolate position and rotation for other clients
+            if (targetNetPosition != Vector3.zero)
+            {
+                transform.position = Vector3.Lerp(transform.position, targetNetPosition, positionLerpSpeed * Time.deltaTime);
+            }
+            
+            if (shipModel != null)
+            {
+                shipModel.rotation = Quaternion.Slerp(shipModel.rotation, shipRotation.Value, rotationLerpSpeed * Time.deltaTime);
+            }
         }
     }
 
@@ -146,8 +158,8 @@ public class BigShipMovement : NetworkBehaviour
     {
         if (!IsOwner)
         {
-            // Update position for non-owning clients (rotation handled by NetworkVariable)
-            transform.position = position;
+            // Update target position for non-owning clients for interpolation in Update()
+            targetNetPosition = position;
         }
     }
 }

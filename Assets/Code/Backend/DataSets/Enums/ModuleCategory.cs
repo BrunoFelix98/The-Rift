@@ -8,6 +8,5 @@ public enum ModuleCategory
     ShipModification,
     CapitalShipModule,
     StationModule,
-    Consumable,       // if relevant
-    // Add more specific tags as needed
+    Consumable
 }

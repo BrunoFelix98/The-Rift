@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,7 @@ public static class ConvertAllNativeDataToAssets
         NativeList<AsteroidGenerationData> asteroids,
         NativeList<StationGenerationData> stations,
         NativeList<GateGenerationData> gates,
-        Dictionary<int, ConceptSO> idToConceptSO,
+        Dictionary<int, OrganizationSO> idToOrganizationSO,
         Dictionary<int, NebulaSO> idToNebulaSO,
         List<ResourceData> planetResources,
         List<ResourceData> moonResources,
@@ -51,9 +52,9 @@ public static class ConvertAllNativeDataToAssets
                 var systemSO = ScriptableObject.CreateInstance<SystemSO>();
                 systemSO.systemName = sd.systemName.ToString();
                 systemSO.orbitParams = sd.orbitParams;
-                if (!idToConceptSO.TryGetValue(sd.allegianceID, out var concept))
-                    concept = null;
-                systemSO.allegiance = concept;
+                if (!idToOrganizationSO.TryGetValue(sd.allegianceID, out var org))
+                    org = null;
+                systemSO.allegiance = org;
                 systemSO.stars = new List<StarSO>();
                 systemSO.planets = new List<PlanetSO>();
                 systemSO.asteroidBelts = new List<AsteroidBeltSO>();
@@ -156,7 +157,7 @@ public static class ConvertAllNativeDataToAssets
 
                     systemSO.stations.Add(stationSO);
 
-                    // Optional: warn if a station wasn’t attached to any moon
+                    // Optional: warn if a station wasnï¿½t attached to any moon
                     if (!attachedToMoon)
                     {
                         Debug.LogWarning(
@@ -346,8 +347,17 @@ public static class ConvertAllNativeDataToAssets
             so.minQuantity = tpl.minQuantity;
             so.maxQuantity = tpl.maxQuantity;
             so.resourceWeight = tpl.resourceWeight;
-            so.resourceCategory = tpl.category.Select(c => Enum.Parse<ResourceCategory>(c)).ToList();
-            so.celestialType = new List<string>(tpl.celestialType);
+            
+            so.environments = tpl.category.Select(c => {
+                if (Enum.TryParse<CelestialEnvironment>(c.ToUpper(), out var env)) return env;
+                return CelestialEnvironment.ROCKY; // Fallback
+            }).ToList();
+
+            so.appliesTo = tpl.celestialType.Select(t => {
+                if (Enum.TryParse<CelestialType>(t.ToUpper(), out var type)) return type;
+                return CelestialType.PLANET; // Fallback
+            }).ToList();
+
             so.allowedFactions = new List<string>(tpl.allowedFactions);
 
             var path = Path.Combine(resourcesFolder, $"{SanitizeFileName(so.resourceName)}.asset");
@@ -411,3 +421,4 @@ public static class ConvertAllNativeDataToAssets
     }
 
 }
+#endif

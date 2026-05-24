@@ -5,7 +5,7 @@ using UnityEngine;
 public class StationSO : ScriptableObject, IOrbitable, IHasPrefab
 {
     public string stationName;
-    public ConceptSO allegiance;
+    public OrganizationSO allegiance;
     public string builtBy;
     public float shield;
     public ResistanceProfileSO shieldResistances;

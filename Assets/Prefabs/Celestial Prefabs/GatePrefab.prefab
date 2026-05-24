@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2892679368697630722}
   - component: {fileID: 8275123362336849442}
   - component: {fileID: -1949686829899221235}
-  - component: {fileID: 4940770255810341943}
+  - component: {fileID: 7993819826890386484}
   m_Layer: 0
   m_Name: GatePrefab
   m_TagString: Untagged
@@ -204,7 +204,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &4940770255810341943
+--- !u!114 &7993819826890386484
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -213,7 +213,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6549077639392160837}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca14a4dbc25811c43a9177efe5e92478, type: 3}
+  m_Script: {fileID: 11500000, guid: ef05b821fb3fa114b89bebc5b4c4c7db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GateData
-  data: {fileID: 11400000, guid: d2eea6e54d3568848adf944eeaf4e3c2, type: 2}
+  data: {fileID: 0}
