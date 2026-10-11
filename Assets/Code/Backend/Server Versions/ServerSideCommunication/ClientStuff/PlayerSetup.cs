@@ -28,6 +28,9 @@ public class PlayerSetup : NetworkBehaviour
             return;
         }
 
+        // Fixed-size markers for other players too small or off-screen to see
+        PlayerMarkerOverlay.EnsureExists();
+
         // For the local owner, enable cameras
         var ownerCameras = GetComponentsInChildren<Camera>(true);
         foreach (var cam in ownerCameras)

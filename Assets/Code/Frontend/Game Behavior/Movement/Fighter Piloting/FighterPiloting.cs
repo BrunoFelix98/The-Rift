@@ -3,6 +3,13 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Server-authoritative fighter movement with client-side prediction.
+/// The owner simulates its inputs immediately and sends them to the server, which runs the exact same
+/// deterministic step and publishes the resulting state. The owner reconciles against that state by
+/// replaying the inputs the server hasn't processed yet; other clients smooth towards it.
+/// No physics integration is involved, so the result doesn't depend on frame timing.
+/// </summary>
 public class FighterPiloting : NetworkBehaviour
 {
     [Header("Movement Settings")]
@@ -27,7 +34,6 @@ public class FighterPiloting : NetworkBehaviour
     public InputActionReference brakeAction;
 
     private Rigidbody rb;
-    private float currentSpeed;
 
     private struct InputData : INetworkSerializable
     {
@@ -51,30 +57,47 @@ public class FighterPiloting : NetworkBehaviour
         }
     }
 
-    private List<InputData> inputBuffer = new List<InputData>();
-    private int lastProcessedTick = -1;
+    public struct FighterState : INetworkSerializeByMemcpy
+    {
+        public int tick; // Last input tick folded into this state
+        public Vector3 position;
+        public Quaternion rotation;
+        public Vector3 velocity;
+        public float speed;
+    }
+
+    private NetworkVariable<FighterState> netState = new NetworkVariable<FighterState>(
+        new FighterState { tick = -1, rotation = Quaternion.identity },
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    // Owner: predicted state. Server: authoritative state.
+    private FighterState simState;
+
+    // Owner: inputs the server hasn't acknowledged yet, replayed on every reconcile
+    private readonly List<InputData> pendingInputs = new List<InputData>();
+    private const int MaxPendingInputs = 500;
     private int localTick = 0;
 
-    private NetworkVariable<Vector3> netPosition = new NetworkVariable<Vector3>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<Quaternion> netRotation = new NetworkVariable<Quaternion>(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<Vector3> netVelocity = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // Server: last processed tick plus a budget so a client can't move faster by flooding inputs
+    private int lastProcessedTick = -1;
+    private float inputBudget;
+    private const float MaxInputBurst = 25f;
 
-    private Vector2 lookInput;
-    private float rollInput;
+    // Remote clients: latest server state and when it arrived, for smoothing/extrapolation
+    private FighterState remoteState;
+    private float remoteStateTime;
+    private const float MaxExtrapolation = 0.25f;
+    private const float RemoteSmoothing = 20f;
 
-    private Vector3 lastValidPosition;
-    private Quaternion lastValidRotation;
-
-    private const float MAX_ROTATION_PER_TICK = 360f;
+    private const float ReconcilePositionTolerance = 0.01f;
+    private const float ReconcileAngleTolerance = 0.1f;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        currentSpeed = moveSpeed;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-        lastValidPosition = transform.position;
-        lastValidRotation = transform.rotation;
+        // Pose is driven by code; a dynamic interpolated body made Transform writes timing-dependent
+        rb.isKinematic = true;
+        rb.interpolation = RigidbodyInterpolation.None;
 
         // Ensure we start unfrozen locally
         ignoreServerSync = false;
@@ -82,8 +105,26 @@ public class FighterPiloting : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        netState.OnValueChanged += OnServerStateChanged;
+
+        if (IsServer)
+        {
+            simState = new FighterState
+            {
+                tick = -1,
+                position = transform.position,
+                rotation = transform.rotation,
+                speed = moveSpeed
+            };
+            netState.Value = simState;
+        }
+
         if (IsOwner)
         {
+            if (!IsServer) simState = netState.Value;
+            simState.speed = moveSpeed;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+
             moveAction.action.Enable();
             verticalStrafe.action.Enable();
             rollAction.action.Enable();
@@ -99,8 +140,8 @@ public class FighterPiloting : NetworkBehaviour
             {
                 JumpManager.Instance.OnJumpStarted += HandleJumpStarted;
                 JumpManager.Instance.OnJumpCompleted += HandleJumpCompleted;
-                
-                // If we spawned and no jump is actually happening in the visualizer, 
+
+                // If we spawned and no jump is actually happening in the visualizer,
                 // ensure we are unfrozen.
                 if (SystemCenteredVisualizer.Instance != null && SystemCenteredVisualizer.Instance.currentSystemId.Value != 0)
                 {
@@ -109,10 +150,18 @@ public class FighterPiloting : NetworkBehaviour
                 }
             }
         }
+        else if (!IsServer)
+        {
+            remoteState = netState.Value;
+            remoteStateTime = Time.time;
+            transform.SetPositionAndRotation(remoteState.position, remoteState.rotation);
+        }
     }
 
     public override void OnNetworkDespawn()
     {
+        netState.OnValueChanged -= OnServerStateChanged;
+
         if (IsOwner)
         {
             if (JumpManager.Instance != null)
@@ -137,12 +186,20 @@ public class FighterPiloting : NetworkBehaviour
     private void HandleJumpCompleted(ulong id) => SetIgnoreServerSync(false);
 
     private Vector2 accumulatedLookInput;
-    private float accumulatedRollInput;
     private float safetyTimeout = 0f;
 
     private void Update()
     {
-        if (!IsOwner) return;
+        if (IsServer)
+        {
+            inputBudget = Mathf.Min(inputBudget + Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
+        }
+
+        if (!IsOwner)
+        {
+            if (!IsServer) FollowRemoteState();
+            return;
+        }
 
         // Safety fallback: if we've been frozen for more than 10s, auto-unfreeze
         if (ignoreServerSync && Time.time > safetyTimeout)
@@ -154,13 +211,11 @@ public class FighterPiloting : NetworkBehaviour
         if (ignoreServerSync)
         {
             accumulatedLookInput = Vector2.zero;
-            accumulatedRollInput = 0f;
             return;
         }
 
-        // Accumulate input every frame for maximum precision
+        // Mouse delta is per frame, so it must be summed until the next simulation tick
         accumulatedLookInput += lookAction.action.ReadValue<Vector2>();
-        accumulatedRollInput += rollAction.action.ReadValue<float>();
     }
 
     private bool ignoreServerSync = false;
@@ -169,119 +224,175 @@ public class FighterPiloting : NetworkBehaviour
     {
         Debug.Log($"[Fighter] SetIgnoreServerSync({ignore}) for {gameObject.name}");
         ignoreServerSync = ignore;
-        if (rb != null) 
+        if (!ignore)
         {
-            rb.isKinematic = ignore;
-            if (!ignore)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-                currentSpeed = 0f; // Reset speed after jump
-            }
+            simState.velocity = Vector3.zero;
+            simState.speed = moveSpeed; // Reset speed after jump, matches ServerTeleport
         }
-        if (ignore)
+        else
         {
             accumulatedLookInput = Vector2.zero;
-            accumulatedRollInput = 0f;
             safetyTimeout = Time.time + 10f; // 10 second safety cap
         }
     }
 
     private void FixedUpdate()
     {
-        if (!IsOwner)
-        {
-            if (ignoreServerSync) return;
-            // Non-owners follow server state smoothly
-            transform.position = Vector3.Lerp(transform.position, netPosition.Value, 15f * Time.fixedDeltaTime);
-            transform.rotation = Quaternion.Slerp(transform.rotation, netRotation.Value, 15f * Time.fixedDeltaTime);
-            rb.linearVelocity = netVelocity.Value;
-            return;
-        }
-
-        if (ignoreServerSync) return;
+        if (!IsOwner || ignoreServerSync) return;
 
         localTick++;
 
-        // Consume the accumulated input for this simulation tick
         InputData input = new InputData
         {
             look = accumulatedLookInput,
-            roll = accumulatedRollInput,
+            // Held keys are sampled per tick; summing them per frame made roll speed depend on frame rate
+            roll = rollAction.action.ReadValue<float>(),
             strafe = moveAction.action.ReadValue<float>(),
             strafeV = verticalStrafe.action.ReadValue<float>(),
             accelerate = accelerateAction.action.IsPressed(),
             brake = brakeAction.action.IsPressed(),
             tick = localTick
         };
-
-        // Reset accumulation for the next tick
         accumulatedLookInput = Vector2.zero;
-        accumulatedRollInput = 0f;
 
-        // Perform simulation
-        ApplyRotation(input.look, input.roll, Time.fixedDeltaTime);
-        HandleMovement(input);
+        simState = Step(simState, input, Time.fixedDeltaTime);
+        MovePose(simState);
 
-        // Sync to server for parsing
+        if (IsServer)
+        {
+            // Host: its own ship is authoritative already, an RPC to itself would simulate twice
+            lastProcessedTick = input.tick;
+            netState.Value = simState;
+            return;
+        }
+
+        pendingInputs.Add(input);
+        if (pendingInputs.Count > MaxPendingInputs) pendingInputs.RemoveAt(0);
+
         SendInputToServerRpc(input);
     }
 
-    private void ApplyRotation(Vector2 look, float roll, float deltaTime)
+    // Shared by owner prediction, server simulation and reconcile replay; must stay deterministic
+    private FighterState Step(FighterState state, InputData input, float dt)
     {
-        float pitchDelta = -look.y * pitchSpeed * mouseSensitivity * deltaTime;
-        float yawDelta = look.x * yawSpeed * mouseSensitivity * deltaTime;
-        float rollDelta = roll * rollSpeed * deltaTime;
+        float pitchDelta = -input.look.y * pitchSpeed * mouseSensitivity * dt;
+        float yawDelta = input.look.x * yawSpeed * mouseSensitivity * dt;
+        float rollDelta = input.roll * rollSpeed * dt;
+        state.rotation = (state.rotation * Quaternion.Euler(pitchDelta, yawDelta, rollDelta)).normalized;
 
-        transform.Rotate(new Vector3(pitchDelta, yawDelta, rollDelta), Space.Self);
-    }
-
-    private void HandleMovement(InputData input)
-    {
         if (input.accelerate)
-            currentSpeed = Mathf.Min(currentSpeed + acceleration * Time.fixedDeltaTime, maxForwardSpeed);
+            state.speed = Mathf.Min(state.speed + acceleration * dt, maxForwardSpeed);
         else if (input.brake)
-            currentSpeed = Mathf.Max(currentSpeed - deceleration * Time.fixedDeltaTime, maxBackwardSpeed);
+            state.speed = Mathf.Max(state.speed - deceleration * dt, maxBackwardSpeed);
         else
-            currentSpeed = Mathf.MoveTowards(currentSpeed, moveSpeed, deceleration * Time.fixedDeltaTime);
+            state.speed = Mathf.MoveTowards(state.speed, moveSpeed, deceleration * dt);
 
-        Vector3 moveDir = transform.forward * currentSpeed +
-                          transform.right * input.strafe * strafeSpeed +
-                          transform.up * input.strafeV * strafeSpeed;
-
-        rb.linearVelocity = moveDir;
+        state.velocity = state.rotation * Vector3.forward * state.speed +
+                         state.rotation * Vector3.right * (input.strafe * strafeSpeed) +
+                         state.rotation * Vector3.up * (input.strafeV * strafeSpeed);
+        state.position += state.velocity * dt;
+        state.tick = input.tick;
+        return state;
     }
 
     [ServerRpc(RequireOwnership = false)]
     private void SendInputToServerRpc(InputData input, ServerRpcParams rpcParams = default)
     {
+        if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
         if (input.tick <= lastProcessedTick) return;
+
+        // Dropped inputs show up as a correction on the owner instead of extra speed
+        if (inputBudget < 1f) return;
+        inputBudget -= 1f;
+
         lastProcessedTick = input.tick;
-
-        // Server-side authoritative simulation (The "Parsing")
-        ApplyRotation(input.look, input.roll, Time.fixedDeltaTime);
-        HandleMovement(input);
-
-        // Update the NetworkVariables that other clients (and the owner) use
-        netPosition.Value = transform.position;
-        netRotation.Value = transform.rotation;
-        netVelocity.Value = rb.linearVelocity;
+        simState = Step(simState, input, Time.fixedDeltaTime);
+        SnapPose(simState);
+        netState.Value = simState;
     }
 
-    // Removed RotationAckClientRpc's owner-side snapping logic to eliminate "drag"
+    private void OnServerStateChanged(FighterState previous, FighterState current)
+    {
+        if (IsServer) return;
 
-    // Moves the authoritative copy; without this non-owners keep following the old netPosition
+        if (IsOwner)
+        {
+            Reconcile(current);
+        }
+        else
+        {
+            remoteState = current;
+            remoteStateTime = Time.time;
+        }
+    }
+
+    private void Reconcile(FighterState serverState)
+    {
+        pendingInputs.RemoveAll(i => i.tick <= serverState.tick);
+
+        FighterState replayed = serverState;
+        foreach (var input in pendingInputs)
+        {
+            replayed = Step(replayed, input, Time.fixedDeltaTime);
+        }
+        replayed.tick = simState.tick;
+
+        bool positionOff = Vector3.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
+        bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
+        if (positionOff || rotationOff)
+        {
+            simState = replayed;
+            MovePose(simState);
+        }
+    }
+
+    private void FollowRemoteState()
+    {
+        float age = Mathf.Min(Time.time - remoteStateTime, MaxExtrapolation);
+        Vector3 target = remoteState.position + remoteState.velocity * age;
+        float t = 1f - Mathf.Exp(-RemoteSmoothing * Time.deltaTime);
+
+        transform.SetPositionAndRotation(
+            Vector3.Lerp(transform.position, target, t),
+            Quaternion.Slerp(transform.rotation, remoteState.rotation, t));
+    }
+
+    // Interpolated move for the owner's smooth rendering
+    private void MovePose(FighterState state)
+    {
+        rb.MovePosition(state.position);
+        rb.MoveRotation(state.rotation);
+    }
+
+    // Instant placement without interpolating through the gap
+    private void SnapPose(FighterState state)
+    {
+        transform.SetPositionAndRotation(state.position, state.rotation);
+        rb.position = state.position;
+        rb.rotation = state.rotation;
+    }
+
     public void ServerTeleport(Vector3 position, Quaternion rotation)
     {
         if (!IsServer) return;
 
-        transform.SetPositionAndRotation(position, rotation);
-        rb.position = position;
-        rb.rotation = rotation;
-        rb.linearVelocity = Vector3.zero;
-        currentSpeed = moveSpeed;
-        netPosition.Value = position;
-        netRotation.Value = rotation;
-        netVelocity.Value = Vector3.zero;
+        // Keep the tick: the owner replays its unacknowledged inputs from the new pose
+        simState.position = position;
+        simState.rotation = rotation;
+        simState.velocity = Vector3.zero;
+        simState.speed = moveSpeed;
+        SnapPose(simState);
+        netState.Value = simState;
+    }
+
+    public void OwnerTeleport(Vector3 position, Quaternion rotation)
+    {
+        if (!IsOwner) return;
+
+        simState.position = position;
+        simState.rotation = rotation;
+        simState.velocity = Vector3.zero;
+        simState.speed = moveSpeed;
+        SnapPose(simState);
     }
 }

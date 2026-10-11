@@ -405,12 +405,20 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClient?.PlayerObject != null)
         {
             GameObject player = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
-            player.transform.SetPositionAndRotation(position, rotation);
-            if (player.TryGetComponent(out Rigidbody body))
+            if (player.TryGetComponent(out FighterPiloting fighter))
             {
-                body.position = position;
-                body.rotation = rotation;
-                body.linearVelocity = Vector3.zero;
+                // Resets the predicted state too, otherwise the next tick moves it straight back
+                fighter.OwnerTeleport(position, rotation);
+            }
+            else
+            {
+                player.transform.SetPositionAndRotation(position, rotation);
+                if (player.TryGetComponent(out Rigidbody body))
+                {
+                    body.position = position;
+                    body.rotation = rotation;
+                    if (!body.isKinematic) body.linearVelocity = Vector3.zero;
+                }
             }
             playerTeleported = true;
             Debug.Log($"[SystemCentered] Local player teleported to {position}");
