@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>
 /// Renders the real neighbouring star systems as points in the sky.
 /// The mesh stores each star's position relative to the current system (and, with the full map, its
-/// orbital drift); the SystemStars shader aims at it from the viewer's actual position every frame.
-/// So the sky moves smoothly with the player and with orbits, and the mesh only needs rebuilding when
-/// the data changes (or every few seconds on a host, to re-anchor the drift).
+/// orbital drift). Stars are treated as infinitely far away, so moving within the system doesn't shift
+/// them; the shader extrapolates the drift so orbits turn the sky smoothly, and the mesh only needs
+/// rebuilding when the data changes (or every few seconds on a host, to re-anchor the drift).
 /// </summary>
 public class DynamicSkyboxManager : MonoBehaviour
 {
@@ -30,7 +30,6 @@ public class DynamicSkyboxManager : MonoBehaviour
     [Tooltip("Seconds between re-anchoring orbital drift (full map only); motion in between is extrapolated.")]
     public float updateInterval;
 
-    private static readonly int ViewerOffsetId = Shader.PropertyToID("_ViewerOffset");
     private static readonly int ElapsedId = Shader.PropertyToID("_Elapsed");
     private static readonly int SkyRadiusId = Shader.PropertyToID("_SkyRadius");
     private static readonly int StarSizeId = Shader.PropertyToID("_StarSize");
@@ -248,8 +247,6 @@ public class DynamicSkyboxManager : MonoBehaviour
         if (starMesh.vertexCount == 0 || starMaterial == null) return;
 
         Vector3 camPos = cam.transform.position;
-        // System-space viewer position: parallax as the player flies through the system
-        starProperties.SetVector(ViewerOffsetId, FloatingOrigin.ToWorld(camPos).ToVector3());
         starProperties.SetFloat(ElapsedId, (float)(GalacticTime - builtAtGalacticTime));
         starProperties.SetFloat(SkyRadiusId, skyboxRadius);
         starProperties.SetFloat(StarSizeId, starSize);

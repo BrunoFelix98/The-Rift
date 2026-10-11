@@ -1,8 +1,9 @@
 // Neighbouring star systems, drawn by DynamicSkyboxManager centred on the camera.
 // Each star's four vertices carry its position relative to the current system (positionOS), its
-// orbital drift per second (uv1) and its quad corner (uv0). The vertex shader aims at the star from
-// the viewer's actual position every frame, so the sky shifts smoothly with movement and orbits,
-// and builds a camera-facing quad pushed to the far plane: everything in the scene covers it.
+// orbital drift per second (uv1) and its quad corner (uv0). The stars are treated as infinitely far
+// away: only their direction from the current system matters (no parallax from moving around inside
+// it), and orbital drift is extrapolated so the sky turns smoothly. The vertex shader builds a
+// camera-facing quad pushed to the far plane: everything in the scene covers it.
 // Vertex colour = star tint, alpha = brightness.
 Shader "TheRift/Space/SystemStars"
 {
@@ -13,7 +14,6 @@ Shader "TheRift/Space/SystemStars"
         _Halo ("Halo Strength", Range(0, 1)) = 0.25
         _SkyRadius ("Sky Radius", Float) = 90000
         _StarSize ("Star Size", Float) = 500
-        _ViewerOffset ("Viewer Position (system space)", Vector) = (0, 0, 0, 0)
         _Elapsed ("Seconds Since Positions Were Built", Float) = 0
     }
 
@@ -43,7 +43,6 @@ Shader "TheRift/Space/SystemStars"
                 float _Halo;
                 float _SkyRadius;
                 float _StarSize;
-                float4 _ViewerOffset;
                 float _Elapsed;
             CBUFFER_END
 
@@ -66,7 +65,7 @@ Shader "TheRift/Space/SystemStars"
             {
                 Varyings output;
 
-                float3 relative = input.positionOS.xyz + input.drift * _Elapsed - _ViewerOffset.xyz;
+                float3 relative = input.positionOS.xyz + input.drift * _Elapsed;
                 float len = length(relative);
                 float3 dir = len > 1e-3 ? relative / len : float3(0, 0, 1);
 
