@@ -326,8 +326,8 @@ MonoBehaviour:
   moveSpeed: 0
   maxForwardSpeed: 1000
   maxBackwardSpeed: -100
-  acceleration: 50
-  deceleration: 50
+  secondsToMaxSpeed: 2
+  secondsToStop: 2
   strafeSpeed: 20
   pitchSpeed: 20
   yawSpeed: 20

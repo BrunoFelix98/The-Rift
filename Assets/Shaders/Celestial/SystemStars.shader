@@ -1,6 +1,8 @@
-// Neighbouring star systems drawn by DynamicSkyboxManager as camera-centred quads. The quads are
-// pushed to the far plane in the vertex shader, so anything in the scene (planets, stations, ships)
-// always covers them, and they are drawn after the skybox so it can't paint over them.
+// Neighbouring star systems, drawn by DynamicSkyboxManager centred on the camera.
+// Each star's four vertices carry its position relative to the current system (positionOS), its
+// orbital drift per second (uv1) and its quad corner (uv0). The vertex shader aims at the star from
+// the viewer's actual position every frame, so the sky shifts smoothly with movement and orbits,
+// and builds a camera-facing quad pushed to the far plane: everything in the scene covers it.
 // Vertex colour = star tint, alpha = brightness.
 Shader "TheRift/Space/SystemStars"
 {
@@ -9,6 +11,10 @@ Shader "TheRift/Space/SystemStars"
         _Intensity ("Intensity", Range(0, 10)) = 2.5
         _Core ("Core Sharpness", Range(4, 60)) = 22
         _Halo ("Halo Strength", Range(0, 1)) = 0.25
+        _SkyRadius ("Sky Radius", Float) = 90000
+        _StarSize ("Star Size", Float) = 500
+        _ViewerOffset ("Viewer Position (system space)", Vector) = (0, 0, 0, 0)
+        _Elapsed ("Seconds Since Positions Were Built", Float) = 0
     }
 
     SubShader
@@ -35,12 +41,17 @@ Shader "TheRift/Space/SystemStars"
                 float _Intensity;
                 float _Core;
                 float _Halo;
+                float _SkyRadius;
+                float _StarSize;
+                float4 _ViewerOffset;
+                float _Elapsed;
             CBUFFER_END
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float2 uv : TEXCOORD0;
+                float2 corner : TEXCOORD0;
+                float3 drift : TEXCOORD1;
                 float4 color : COLOR;
             };
 
@@ -54,14 +65,23 @@ Shader "TheRift/Space/SystemStars"
             Varyings vert(Attributes input)
             {
                 Varyings output;
-                float4 positionCS = TransformObjectToHClip(input.positionOS.xyz);
+
+                float3 relative = input.positionOS.xyz + input.drift * _Elapsed - _ViewerOffset.xyz;
+                float len = length(relative);
+                float3 dir = len > 1e-3 ? relative / len : float3(0, 0, 1);
+
+                // Object space is centred on the camera (DrawMesh at the camera position)
+                float3 centerVS = TransformWorldToView(TransformObjectToWorld(dir * _SkyRadius));
+                float size = _StarSize * lerp(0.7, 1.4, saturate(input.color.a / 1.6));
+                float4 positionCS = TransformWViewToHClip(centerVS + float3(input.corner * size, 0.0));
                 #if UNITY_REVERSED_Z
                     positionCS.z = positionCS.w * 1e-6;
                 #else
                     positionCS.z = positionCS.w * (1.0 - 1e-6);
                 #endif
+
                 output.positionCS = positionCS;
-                output.uv = input.uv * 2.0 - 1.0;
+                output.uv = input.corner;
                 output.color = input.color;
                 return output;
             }

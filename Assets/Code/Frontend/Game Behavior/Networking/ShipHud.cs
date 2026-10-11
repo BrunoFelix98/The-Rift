@@ -213,8 +213,8 @@ public class ShipHud : MonoBehaviour
         float right = Screen.width * 0.5f + ladderLineWidth * 2.4f;
         float y = Screen.height * 0.5f - 40f;
 
-        GUI.Label(new Rect(left, y, 140f, 24f), $"SPD {speed,6:0}", labelStyle);
-        GUI.Label(new Rect(left, y + 26f, 140f, 24f), "m/s", labelStyle);
+        GUI.Label(new Rect(left, y, 160f, 24f), $"SPD {speed / DistanceFormat.UnitsPerAU:0.0000}", labelStyle);
+        GUI.Label(new Rect(left, y + 26f, 160f, 24f), "AU/s", labelStyle);
 
         GUI.Label(new Rect(right, y, 160f, 24f), $"ELV {position.y,7:+0;-0;0}", labelStyle);
         GUI.Label(new Rect(right, y + 26f, 160f, 24f), $"PIT {pitch,4:+0;-0;0}°", labelStyle);

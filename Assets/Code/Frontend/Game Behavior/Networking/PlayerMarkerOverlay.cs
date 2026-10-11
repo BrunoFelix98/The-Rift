@@ -26,7 +26,6 @@ public class PlayerMarkerOverlay : MonoBehaviour
     private readonly List<Marker> markers = new List<Marker>();
     private readonly Dictionary<NetworkObject, Renderer[]> rendererCache = new Dictionary<NetworkObject, Renderer[]>();
     private GUIStyle labelStyle;
-    private GUIStyle shadowStyle;
 
     public static void EnsureExists()
     {
@@ -133,8 +132,6 @@ public class PlayerMarkerOverlay : MonoBehaviour
         {
             labelStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
             labelStyle.normal.textColor = markerColor;
-            shadowStyle = new GUIStyle(labelStyle);
-            shadowStyle.normal.textColor = new Color(0f, 0f, 0f, 0.8f);
         }
 
         Color previous = GUI.color;
@@ -144,10 +141,7 @@ public class PlayerMarkerOverlay : MonoBehaviour
             if (marker.offScreen) DrawDiamond(marker.guiPosition, markerSize * 0.6f);
             else DrawBrackets(marker.guiPosition, markerSize);
 
-            var labelRect = new Rect(marker.guiPosition.x - 100f, marker.guiPosition.y + markerSize * 0.5f + 2f, 200f, 24f);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(labelRect.x + 1f, labelRect.y + 1f, labelRect.width, labelRect.height), marker.label, shadowStyle);
-            GUI.Label(labelRect, marker.label, labelStyle);
+            HudLabel.Draw(new Vector2(marker.guiPosition.x, marker.guiPosition.y + markerSize * 0.5f + 4f), marker.label, labelStyle, markerColor);
         }
         GUI.color = previous;
     }

@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Manages the dynamic rendering of distant star systems in the skybox.
-/// Instead of a static texture, this script generates a procedural mesh where each star 
-/// represents a real system in the 'universeMap', correctly positioned relative to the player's current system.
+/// Renders the real neighbouring star systems as points in the sky.
+/// The mesh stores each star's position relative to the current system (and, with the full map, its
+/// orbital drift); the SystemStars shader aims at it from the viewer's actual position every frame.
+/// So the sky moves smoothly with the player and with orbits, and the mesh only needs rebuilding when
+/// the data changes (or every few seconds on a host, to re-anchor the drift).
 /// </summary>
 public class DynamicSkyboxManager : MonoBehaviour
 {
@@ -13,33 +15,43 @@ public class DynamicSkyboxManager : MonoBehaviour
     [Header("Skybox Visual Settings")]
     [Tooltip("Distance from the camera where stars are rendered.")]
     public float skyboxRadius;
-    
+
     [Tooltip("Visual size of each distant star quad.")]
     public float starSize;
-    
+
     [Tooltip("Systems at this distance or further get the dimmest, smallest stars.")]
     public float farSystemDistance = 120000f;
-
-    // Additive point-star shader drawn at the far plane (Resources/Celestial/SystemStars)
-    private Material starMaterial;
 
     [Header("Dependencies")]
     [Tooltip("Reference to the SystemCenteredVisualizer to get current system data.")]
     public SystemCenteredVisualizer visualizer;
 
     [Header("Update Performance")]
-    [Tooltip("Time interval (in seconds) between skybox position updates.")]
+    [Tooltip("Seconds between re-anchoring orbital drift (full map only); motion in between is extrapolated.")]
     public float updateInterval;
-    
-    // Internal state
+
+    private static readonly int ViewerOffsetId = Shader.PropertyToID("_ViewerOffset");
+    private static readonly int ElapsedId = Shader.PropertyToID("_Elapsed");
+    private static readonly int SkyRadiusId = Shader.PropertyToID("_SkyRadius");
+    private static readonly int StarSizeId = Shader.PropertyToID("_StarSize");
+
+    // Additive point-star shader drawn at the far plane (Resources/Celestial/SystemStars)
+    private Material starMaterial;
+    private MaterialPropertyBlock starProperties;
+
     private float nextUpdateTime = 0f;
+    private double builtAtGalacticTime;
     private ulong currentSystemId;
     private Vector3d currentSystemAbsolutePosition;
     private Mesh starMesh;
     private List<SystemMetadata> _cachedSystems = new List<SystemMetadata>();
     private HashSet<ulong> _cachedSystemIds = new HashSet<ulong>();
-    // Metadata arrives in many RPC batches; rebuild once per frame at most instead of once per batch
+    // Metadata can arrive in parts; rebuild once per frame at most
     private bool _starsDirty;
+
+    private readonly List<Vector3> starPositions = new List<Vector3>();
+    private readonly List<Vector3> starDrifts = new List<Vector3>();
+    private readonly List<Color> starColors = new List<Color>();
 
     public int StarCount => starMesh != null ? starMesh.vertexCount / 4 : 0;
 
@@ -55,11 +67,11 @@ public class DynamicSkyboxManager : MonoBehaviour
             return;
         }
 
-        // Initialize the mesh for star rendering
         starMesh = new Mesh();
         starMesh.name = "DynamicSkybox_Stars";
         starMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         starMaterial = CelestialVisuals.GetMaterial("SystemStars");
+        starProperties = new MaterialPropertyBlock();
     }
 
     private void OnDestroy()
@@ -67,10 +79,7 @@ public class DynamicSkyboxManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    /// <summary>
-    /// Sets the entire universe map and triggers a visual update.
-    /// Usually called by SystemCenteredVisualizer on the Server or on local file load.
-    /// </summary>
+    /// <summary>Sets the full universe map (server/host) and triggers a rebuild.</summary>
     public void SetUniverseMap(UniverseMapDataV2 map)
     {
         if (visualizer != null) visualizer.universeMap = map;
@@ -79,10 +88,7 @@ public class DynamicSkyboxManager : MonoBehaviour
         _starsDirty = true;
     }
 
-    /// <summary>
-    /// Synchronizes a list of system metadata (IDs and Absolute Positions).
-    /// Used by Clients who don't have the full 'UniverseMap.bin' yet.
-    /// </summary>
+    /// <summary>System metadata (IDs and absolute positions) for clients without the map.</summary>
     public void SyncAllSystems(List<SystemMetadata> systems)
     {
         // The full map (server/host) already has every system
@@ -98,9 +104,6 @@ public class DynamicSkyboxManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Updates the player's current system location and refreshes the relative star positions.
-    /// </summary>
     public void SetCurrentSystem(ulong systemId, Vector3d absolutePosition)
     {
         currentSystemId = systemId;
@@ -108,74 +111,63 @@ public class DynamicSkyboxManager : MonoBehaviour
         _starsDirty = true;
     }
 
-    /// <summary>
-    /// Re-calculates the relative positions of all star systems and rebuilds the star mesh.
-    /// </summary>
-    private void UpdateStarPositions()
-    {
-        double time = GalacticTimeManager.Instance != null ? GalacticTimeManager.Instance.GalacticTime : 0;
-        List<Vector3> positions = new List<Vector3>();
-        List<Color> colors = new List<Color>();
+    private static double GalacticTime => GalacticTimeManager.Instance != null ? GalacticTimeManager.Instance.GalacticTime : 0;
 
-        // Scenario A: Full Universe Map is available (Server or Local Load)
+    private void RebuildStars()
+    {
+        double time = GalacticTime;
+        starPositions.Clear();
+        starDrifts.Clear();
+        starColors.Clear();
+
         if (visualizer != null && visualizer.universeMap != null)
         {
-            // 1. Refresh our own absolute position based on current galactic time
+            // Full map: positions now and one second later give the drift the shader extrapolates
+            Vector3d currentNow = currentSystemAbsolutePosition;
+            Vector3d currentNext = currentSystemAbsolutePosition;
             foreach (var galaxy in visualizer.universeMap.galaxies)
             {
-                Vector3d galaxyPos = galaxy.GetAbsolutePosition(time);
                 foreach (var system in galaxy.systems)
                 {
-                    if (system.id == currentSystemId)
-                    {
-                        currentSystemAbsolutePosition = system.GetAbsolutePosition(time, galaxyPos);
-                        break;
-                    }
+                    if (system.id != currentSystemId) continue;
+                    currentNow = system.GetAbsolutePosition(time, galaxy.GetAbsolutePosition(time));
+                    currentNext = system.GetAbsolutePosition(time + 1.0, galaxy.GetAbsolutePosition(time + 1.0));
                 }
             }
+            currentSystemAbsolutePosition = currentNow;
 
-            // 2. Calculate relative directions for all OTHER systems
             foreach (var galaxy in visualizer.universeMap.galaxies)
             {
-                Vector3d galaxyPos = galaxy.GetAbsolutePosition(time);
+                Vector3d galaxyNow = galaxy.GetAbsolutePosition(time);
+                Vector3d galaxyNext = galaxy.GetAbsolutePosition(time + 1.0);
                 foreach (var system in galaxy.systems)
                 {
                     if (system.id == currentSystemId) continue;
-
-                    Vector3d systemPos = system.GetAbsolutePosition(time, galaxyPos);
-                    AddStar(positions, colors, system.id, systemPos - currentSystemAbsolutePosition);
+                    Vector3d now = system.GetAbsolutePosition(time, galaxyNow) - currentNow;
+                    Vector3d next = system.GetAbsolutePosition(time + 1.0, galaxyNext) - currentNext;
+                    AddStar(system.id, now, (next - now).ToVector3());
                 }
             }
         }
-        // Scenario B: Only metadata is available (Client awaiting full sync)
-        else if (_cachedSystems != null && _cachedSystems.Count > 0)
+        else if (_cachedSystems.Count > 0)
         {
-             var mySystem = _cachedSystems.Find(x => x.id == currentSystemId);
-             if (mySystem.id != 0) 
-             {
-                 currentSystemAbsolutePosition = mySystem.absolutePosition;
-             }
+            // Metadata is a snapshot, so no drift
+            var mySystem = _cachedSystems.Find(x => x.id == currentSystemId);
+            if (mySystem.id != 0) currentSystemAbsolutePosition = mySystem.absolutePosition;
 
-             foreach (var system in _cachedSystems)
-             {
+            foreach (var system in _cachedSystems)
+            {
                 if (system.id == currentSystemId) continue;
-
-                AddStar(positions, colors, system.id, system.absolutePosition - currentSystemAbsolutePosition);
-             }
+                AddStar(system.id, system.absolutePosition - currentSystemAbsolutePosition, Vector3.zero);
+            }
         }
 
-        if (positions.Count == 0) 
-        {
-            if (starMesh != null) starMesh.Clear();
-            return;
-        }
-
-        // Rebuild the mesh with billboarding quads for each star
-        BuildStarMesh(positions, colors);
+        builtAtGalacticTime = time;
+        BuildStarMesh();
     }
 
     // Tint from the system id (same on every client), brightness and size from distance
-    private void AddStar(List<Vector3> positions, List<Color> colors, ulong id, Vector3d offset)
+    private void AddStar(ulong id, Vector3d offset, Vector3 drift)
     {
         double distance = offset.magnitude;
         if (distance < 1e-3) return;
@@ -188,51 +180,39 @@ public class DynamicSkyboxManager : MonoBehaviour
             : Color.Lerp(new Color(1.00f, 0.97f, 0.92f), new Color(1.00f, 0.68f, 0.42f), (temperature - 0.5f) * 2f);
         tint.a = Mathf.Lerp(0.25f, 1.6f, near * near) * rng.Range(0.7f, 1.3f);
 
-        positions.Add((offset * (1.0 / distance)).ToVector3() * skyboxRadius);
-        colors.Add(tint);
+        starPositions.Add(offset.ToVector3());
+        starDrifts.Add(drift);
+        starColors.Add(tint);
     }
 
-    private void BuildStarMesh(List<Vector3> positions, List<Color> colors)
+    private void BuildStarMesh()
     {
         starMesh.Clear();
-        Vector3[] vertices = new Vector3[positions.Count * 4];
-        Vector2[] uvs = new Vector2[positions.Count * 4];
-        Color[] vertexColors = new Color[positions.Count * 4];
-        int[] tris = new int[positions.Count * 6];
+        int count = starPositions.Count;
+        if (count == 0) return;
 
-        for (int i = 0; i < positions.Count; i++)
+        var vertices = new Vector3[count * 4];
+        var corners = new Vector2[count * 4];
+        var drifts = new Vector3[count * 4];
+        var colors = new Color[count * 4];
+        var tris = new int[count * 6];
+
+        for (int i = 0; i < count; i++)
         {
             int v = i * 4;
             int t = i * 6;
-            Vector3 pos = positions[i];
-            
-            // Quad math: each quad faces the origin (0,0,0) where the camera will be
-            Vector3 normal = pos.normalized;
-            Vector3 up = Vector3.up;
-            Vector3 right = Vector3.Cross(normal, up).normalized;
-            if (right.sqrMagnitude < 0.01f)
+            for (int k = 0; k < 4; k++)
             {
-                up = Vector3.forward;
-                right = Vector3.Cross(normal, up).normalized;
+                vertices[v + k] = starPositions[i];
+                drifts[v + k] = starDrifts[i];
+                colors[v + k] = starColors[i];
             }
-            up = Vector3.Cross(right, normal).normalized;
 
-            // Brighter (closer) systems also get a slightly larger glow
-            Color c = colors[i];
-            float size = starSize * Mathf.Lerp(0.7f, 1.4f, Mathf.Clamp01(c.a / 1.6f));
-            vertices[v + 0] = pos + (-right - up) * size;
-            vertices[v + 1] = pos + (right - up) * size;
-            vertices[v + 2] = pos + (right + up) * size;
-            vertices[v + 3] = pos + (-right + up) * size;
-            vertexColors[v + 0] = c;
-            vertexColors[v + 1] = c;
-            vertexColors[v + 2] = c;
-            vertexColors[v + 3] = c;
-
-            uvs[v + 0] = new Vector2(0, 0);
-            uvs[v + 1] = new Vector2(1, 0);
-            uvs[v + 2] = new Vector2(1, 1);
-            uvs[v + 3] = new Vector2(0, 1);
+            // Quad corners; the shader expands them facing the camera
+            corners[v + 0] = new Vector2(-1f, -1f);
+            corners[v + 1] = new Vector2(1f, -1f);
+            corners[v + 2] = new Vector2(1f, 1f);
+            corners[v + 3] = new Vector2(-1f, 1f);
 
             tris[t + 0] = v + 0;
             tris[t + 1] = v + 2;
@@ -243,32 +223,36 @@ public class DynamicSkyboxManager : MonoBehaviour
         }
 
         starMesh.vertices = vertices;
-        starMesh.uv = uvs;
-        starMesh.colors = vertexColors;
+        starMesh.uv = corners;
+        starMesh.SetUVs(1, drifts);
+        starMesh.colors = colors;
         starMesh.triangles = tris;
-        starMesh.bounds = new Bounds(Vector3.zero, Vector3.one * skyboxRadius * 2.5f);
+        // Vertices hold system-space positions, not where they are drawn; never cull the sky
+        starMesh.bounds = new Bounds(Vector3.zero, Vector3.one * 1e7f);
     }
 
     void LateUpdate()
     {
         // Nothing to render without a camera (dedicated server)
-        if (Camera.main == null) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
 
-        // Orbits only move stars when the full map drives them; metadata positions are static
         bool hasFullMap = visualizer != null && visualizer.universeMap != null;
         if (_starsDirty || (hasFullMap && Time.time >= nextUpdateTime))
         {
-            UpdateStarPositions();
+            RebuildStars();
             _starsDirty = false;
-            nextUpdateTime = Time.time + updateInterval;
+            nextUpdateTime = Time.time + Mathf.Max(updateInterval, 0.5f);
         }
 
-        // Render the stars centered on the main camera
-        if (starMesh != null && starMesh.vertexCount > 0 && starMaterial != null)
-        {
-            // Lock the skybox mesh to the camera's position
-            Vector3 camPos = Camera.main.transform.position;
-            Graphics.DrawMesh(starMesh, camPos, Quaternion.identity, starMaterial, 0);
-        }
+        if (starMesh.vertexCount == 0 || starMaterial == null) return;
+
+        Vector3 camPos = cam.transform.position;
+        // System-space viewer position: parallax as the player flies through the system
+        starProperties.SetVector(ViewerOffsetId, FloatingOrigin.ToWorld(camPos).ToVector3());
+        starProperties.SetFloat(ElapsedId, (float)(GalacticTime - builtAtGalacticTime));
+        starProperties.SetFloat(SkyRadiusId, skyboxRadius);
+        starProperties.SetFloat(StarSizeId, starSize);
+        Graphics.DrawMesh(starMesh, camPos, Quaternion.identity, starMaterial, 0, null, 0, starProperties);
     }
 }

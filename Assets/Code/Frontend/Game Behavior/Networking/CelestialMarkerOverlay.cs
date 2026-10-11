@@ -32,7 +32,6 @@ public class CelestialMarkerOverlay : MonoBehaviour
     private readonly List<Marker> markers = new List<Marker>();
     private readonly Dictionary<ulong, string> nameCache = new Dictionary<ulong, string>();
     private GUIStyle labelStyle;
-    private GUIStyle shadowStyle;
 
     private static readonly Color StarColor = new Color(1f, 0.85f, 0.4f, 0.9f);
     private static readonly Color PlanetColor = new Color(0.55f, 0.85f, 1f, 0.9f);
@@ -147,8 +146,6 @@ public class CelestialMarkerOverlay : MonoBehaviour
         if (labelStyle == null)
         {
             labelStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperCenter };
-            shadowStyle = new GUIStyle(labelStyle);
-            shadowStyle.normal.textColor = new Color(0f, 0f, 0f, 0.8f);
         }
 
         Color previous = GUI.color;
@@ -159,11 +156,10 @@ public class CelestialMarkerOverlay : MonoBehaviour
             DrawDiamondOutline(marker.guiPosition, size);
             if (marker.label == null) continue;
 
-            var labelRect = new Rect(marker.guiPosition.x - 120f, marker.guiPosition.y + size * 0.5f + 4f, 240f, 24f);
-            GUI.color = Color.white;
-            labelStyle.normal.textColor = marker.color;
-            GUI.Label(new Rect(labelRect.x + 1f, labelRect.y + 1f, labelRect.width, labelRect.height), marker.label, shadowStyle);
-            GUI.Label(labelRect, marker.label, labelStyle);
+            // Opaque text: the marker colours are partly transparent and would wash out on the backdrop
+            Color textColor = marker.color;
+            textColor.a = 1f;
+            HudLabel.Draw(new Vector2(marker.guiPosition.x, marker.guiPosition.y + size * 0.5f + 5f), marker.label, labelStyle, textColor);
         }
         GUI.color = previous;
     }

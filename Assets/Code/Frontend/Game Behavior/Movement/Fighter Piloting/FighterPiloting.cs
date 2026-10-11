@@ -17,8 +17,10 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     public float moveSpeed = 0f;
     public float maxForwardSpeed = 100f; // Restored to original
     public float maxBackwardSpeed = -100f; // Restored to original
-    public float acceleration = 50f; // Restored to original
-    public float deceleration = 50f; // Restored to original
+    [Tooltip("Seconds from standstill to max forward speed.")]
+    public float secondsToMaxSpeed = 2f;
+    [Tooltip("Seconds from max forward speed to a stop (braking or letting go of the throttle).")]
+    public float secondsToStop = 2f;
     public float strafeSpeed = 20f; // Restored to original
     public float pitchSpeed = 20f; // Restored to original (prefab value)
     public float yawSpeed = 20f; // Restored to original (prefab value)
@@ -308,6 +310,9 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         state.rotation = input.rotation;
 
+        // Rates derive from the top speed, so changing it keeps the same feel
+        float acceleration = maxForwardSpeed / Mathf.Max(secondsToMaxSpeed, 0.01f);
+        float deceleration = maxForwardSpeed / Mathf.Max(secondsToStop, 0.01f);
         if (input.accelerate)
             state.speed = Mathf.Min(state.speed + acceleration * dt, maxForwardSpeed);
         else if (input.brake)
