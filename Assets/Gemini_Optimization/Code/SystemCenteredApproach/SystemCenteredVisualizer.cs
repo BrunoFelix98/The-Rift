@@ -351,41 +351,65 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         }
     }
 
+    private const float SpawnRingRadius = 20f;
+    private const float SpawnRingSpacing = 10f;
+    private const int SpawnSlotsPerRing = 8;
+    // Clients 1 and 2 (first two joiners on a dedicated server) land opposite each other, facing each other
+    private static readonly int[] SpawnSlotOrder = { 2, 0, 4, 6, 1, 5, 3, 7 };
+
     private void TeleportPlayerToCenter(ulong clientId)
     {
         if (!IsServer) return;
         
         // Offset slightly from zero to avoid being stuck inside the sun
-        Vector3 targetPos = Vector3.zero + Vector3.up * 500f; 
+        Vector3 spawnCenter = Vector3.zero + Vector3.up * 500f; 
+        GetSpawnPose(clientId, spawnCenter, out Vector3 targetPos, out Quaternion targetRot);
 
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client) && client.PlayerObject != null)
         {
             GameObject player = client.PlayerObject.gameObject;
             if (player.TryGetComponent(out FighterPiloting fighter))
             {
-                fighter.ServerTeleport(targetPos);
+                fighter.ServerTeleport(targetPos, targetRot);
             }
             else
             {
-                player.transform.position = targetPos;
-                if (player.TryGetComponent(out Rigidbody body)) body.position = targetPos;
+                player.transform.SetPositionAndRotation(targetPos, targetRot);
+                if (player.TryGetComponent(out Rigidbody body))
+                {
+                    body.position = targetPos;
+                    body.rotation = targetRot;
+                }
             }
         }
         
         ClientRpcParams rpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
-        TeleportPlayerClientRpc(targetPos, rpcParams);
+        TeleportPlayerClientRpc(targetPos, targetRot, rpcParams);
+    }
+
+    // Players spawning on one point end up inside each other's hulls; spread them on rings facing the middle
+    private static void GetSpawnPose(ulong clientId, Vector3 center, out Vector3 position, out Quaternion rotation)
+    {
+        int ring = (int)(clientId / SpawnSlotsPerRing);
+        int slot = SpawnSlotOrder[clientId % SpawnSlotsPerRing];
+        float angle = slot * (360f / SpawnSlotsPerRing) + ring * (180f / SpawnSlotsPerRing);
+        float radius = SpawnRingRadius + ring * SpawnRingSpacing;
+
+        position = center + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * radius;
+        rotation = Quaternion.LookRotation(center - position, Vector3.up);
     }
 
     [ClientRpc]
-    private void TeleportPlayerClientRpc(Vector3 position, ClientRpcParams rpcParams = default)
+    private void TeleportPlayerClientRpc(Vector3 position, Quaternion rotation, ClientRpcParams rpcParams = default)
     {
         if (NetworkManager.Singleton.LocalClient?.PlayerObject != null)
         {
             GameObject player = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
-            player.transform.position = position;
+            player.transform.SetPositionAndRotation(position, rotation);
             if (player.TryGetComponent(out Rigidbody body))
             {
                 body.position = position;
+                body.rotation = rotation;
                 body.linearVelocity = Vector3.zero;
             }
             playerTeleported = true;

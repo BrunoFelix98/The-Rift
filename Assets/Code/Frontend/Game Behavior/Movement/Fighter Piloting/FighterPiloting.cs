@@ -271,15 +271,17 @@ public class FighterPiloting : NetworkBehaviour
     // Removed RotationAckClientRpc's owner-side snapping logic to eliminate "drag"
 
     // Moves the authoritative copy; without this non-owners keep following the old netPosition
-    public void ServerTeleport(Vector3 position)
+    public void ServerTeleport(Vector3 position, Quaternion rotation)
     {
         if (!IsServer) return;
 
-        transform.position = position;
+        transform.SetPositionAndRotation(position, rotation);
         rb.position = position;
+        rb.rotation = rotation;
         rb.linearVelocity = Vector3.zero;
         currentSpeed = moveSpeed;
         netPosition.Value = position;
+        netRotation.Value = rotation;
         netVelocity.Value = Vector3.zero;
     }
 }
