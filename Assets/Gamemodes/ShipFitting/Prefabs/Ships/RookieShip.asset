@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ae7d677a5d8abd4cb416440a654bc1d, type: 3}
+  m_Name: RookieShip
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSO
+  shipName: Rookie Ship
+  builtBy: Governmental Handout Program
+  currentOwner: None
+  weightClass: 0
+  weaponSlotCount: 3
+  defensiveSlotCount: 4
+  propulsionSlotCount: 2
+  modificationSlotCount: 3
+  capitalShipModuleSlotCount: 0
+  targettingResolutionStrength: 1000
+  targetCount: 5
+  shieldHP: 500
+  shieldResistances: {fileID: 11400000, guid: e97b19ced3e7a044cb71f89fcab88567, type: 2}
+  armorHP: 500
+  armorResistances: {fileID: 11400000, guid: 13362095de9aac44c9291d0c78e34c68, type: 2}
+  speed: 300
+  warpSpeed: 4
+  tonnage: 150
+  fuelAmount: 200
+  computationalPower: 150
+  powergridPower: 300
+  cargoCapacity: 300
+  longAxisLength: 50
+  blueprint: {fileID: 11400000, guid: 7d2bcca43bf46304bb3b07ef05b23a57, type: 2}
+  weaponSlots:
+  - {fileID: 11400000, guid: fbb70a3d45bc2164d8ca7ee070ce5349, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  propulsionSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  defensiveSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  shipModificationSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  capitalSlotModules: []

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e21c4be62ea0e54aa301520af61d5e3, type: 3}
+  m_Name: Light_Laser_I 1
+  m_EditorClassIdentifier: Assembly-CSharp::RevisedModuleData
+  moduleName: Light Laser II
+  moduleDescription: A small laser, built for the fleets of the army
+  moduleCategory: 2
+  slotCategory: 0
+  craftingBlueprint: {fileID: 11400000, guid: e43bf65a4b253564ca3891f90046f82f, type: 2}
+  fuelUsage: 7
+  cpuUsage: 5
+  powerGridUsage: 20

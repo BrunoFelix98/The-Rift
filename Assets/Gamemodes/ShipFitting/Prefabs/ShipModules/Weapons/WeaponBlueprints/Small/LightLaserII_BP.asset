@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632f5f05ab121094ead3e918c74c4a7e, type: 3}
+  m_Name: LightLaserII_BP
+  m_EditorClassIdentifier: Assembly-CSharp::RevisedBlueprintData
+  blueprintName: Light Laser II Blueprint
+  blueprintDescription: Blueprint for the Light Laser II
+  isOriginal: 0
+  numberOfUses: 5000
+  usesPerRun: 3
+  requiredResources:
+  - resource: {fileID: 11400000, guid: cb61c7335459ecb46a8c1e9ad119c40d, type: 2}
+    quantity: 6
+  - resource: {fileID: 11400000, guid: 882a8682062e4c34eb77ad5bc83a26fb, type: 2}
+    quantity: 20
+  advancedResources: []
+  materialEfficiency: 0
+  timeEfficiency: 0
+  currencyCost: 200
+  innovationChance: 25
+  innovationEfficiency: 15
+  nextTierBlueprint: {fileID: 11400000, guid: c735dd3d77d238b4586c221830e47d05, type: 2}

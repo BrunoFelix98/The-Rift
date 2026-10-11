@@ -12,7 +12,7 @@ public class ShipRuntimeData
     public float tonnage;
     public float cargoCapacity;
     public float longAxisLength;
-    public BlueprintSO blueprint;
+    public RevisedBlueprintData blueprint;
 
     // You can add runtime-specific properties here,
     // e.g., current shield HP, armor HP, cooldown timers, etc.

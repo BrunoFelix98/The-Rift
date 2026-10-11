@@ -11,6 +11,7 @@ public class BlueprintSO : ScriptableObject
 
     // Resources needed to construct this entity
     public List<ResourceSO> resourceRequirements = new List<ResourceSO>();
+    public List<int> resourceQuantityNeeded = new List<int>();
 
     public float buildTimeSeconds; // Optional build time
 }

@@ -27,14 +27,18 @@ public class ShipSO : ScriptableObject
     public float warpSpeed;
     public float tonnage;                      // weight
 
+    public float fuelAmount; // Capacitor/fuel
+    public float computationalPower; // CPU
+    public float powergridPower; // Powergrid
+
     public float cargoCapacity;
     public float longAxisLength;
 
-    public BlueprintSO blueprint;
+    public RevisedBlueprintData blueprint;
 
-    public List<ModuleSO> weaponSlots = new List<ModuleSO>();
-    public List<ModuleSO> propulsionSlots = new List<ModuleSO>();
-    public List<ModuleSO> defensiveSlots = new List<ModuleSO>();
-    public List<ModuleSO> shipModificationSlots = new List<ModuleSO>();
-    public List<ModuleSO> capitalSlotModules = new List<ModuleSO>();
+    public List<RevisedModuleData> weaponSlots = new List<RevisedModuleData>();
+    public List<RevisedModuleData> propulsionSlots = new List<RevisedModuleData>();
+    public List<RevisedModuleData> defensiveSlots = new List<RevisedModuleData>();
+    public List<RevisedModuleData> shipModificationSlots = new List<RevisedModuleData>();
+    public List<RevisedModuleData> capitalSlotModules = new List<RevisedModuleData>();
 }
