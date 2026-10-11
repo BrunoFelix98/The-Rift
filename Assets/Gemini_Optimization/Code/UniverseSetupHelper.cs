@@ -1,9 +1,9 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
 public class UniverseSetupHelper : MonoBehaviour
 {
     [MenuItem("The Rift/Setup Universe Scene")]
@@ -13,42 +13,10 @@ public class UniverseSetupHelper : MonoBehaviour
         GameObject mgr = GameObject.Find("UniverseManager");
         if (mgr == null) mgr = new GameObject("UniverseManager");
 
-        // 2. Add NetworkManager
-        var netMgr = GameObject.FindObjectOfType<NetworkManager>();
-        if (netMgr == null)
+        // 2. Networking lives in Assets/Scenes/Bootstrap.unity; a NetworkManager in the gameplay scene would duplicate it
+        if (GameObject.FindObjectOfType<NetworkManager>() != null)
         {
-            // Second check by name just in case FindObjectOfType missed it
-            GameObject existing = GameObject.Find("NetworkManager");
-            if (existing != null) netMgr = existing.GetComponent<NetworkManager>();
-
-            if (netMgr == null)
-            {
-                GameObject nObj = new GameObject("NetworkManager");
-                netMgr = nObj.AddComponent<NetworkManager>();
-            }
-        }
-
-        // Ensure persistence and singleton behavior
-        if (netMgr.GetComponent<NetworkManagerPersistence>() == null)
-        {
-            netMgr.gameObject.AddComponent<NetworkManagerPersistence>();
-        }
-
-        // Add AutoStart script
-        if (mgr.GetComponent<NetworkAutoStart>() == null) mgr.AddComponent<NetworkAutoStart>();
-
-        // 3. Configure NetworkManager
-        string playerPath = "Assets/Prefabs/Player Prefabs/PlayerFighterPiloting.prefab";
-        GameObject playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(playerPath);
-        if (playerPrefab != null)
-        {
-            netMgr.NetworkConfig.PlayerPrefab = playerPrefab;
-        }
-
-        // Add Transport if missing (Standard Unity Transport)
-        if (netMgr.GetComponent<Unity.Netcode.Transports.UTP.UnityTransport>() == null)
-        {
-            netMgr.gameObject.AddComponent<Unity.Netcode.Transports.UTP.UnityTransport>();
+            Debug.LogWarning("[Setup] This scene contains a NetworkManager. Networking belongs in Assets/Scenes/Bootstrap.unity; remove it from the gameplay scene.");
         }
 
         // 4. Add Components
@@ -95,7 +63,6 @@ public class UniverseSetupHelper : MonoBehaviour
 
         EditorUtility.SetDirty(registry);
         EditorUtility.SetDirty(pool);
-        EditorUtility.SetDirty(netMgr);
 
         Debug.Log("Scene 'GalaxyBuilder' setup complete! Please check the UniverseManager object in the Inspector.");
         Selection.activeObject = mgr;

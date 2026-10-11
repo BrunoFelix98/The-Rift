@@ -1,23 +1,35 @@
+using Unity.Multiplayer;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NetworkAutoStart : MonoBehaviour
 {
     [Header("Default Settings")]
-    public bool autoStart = false;
-    public bool isServer = true;
+    public bool autoStart = true;
+    [Tooltip("Fallback role when neither -server/-client nor a Multiplayer Role decides it.")]
+    public bool isServer = false;
     public ushort port = 30000;
+    [Tooltip("Address clients connect to in builds. The editor uses 127.0.0.1 unless -address is passed.")]
     public string address = "127.0.0.1";
+
+    [Header("Scenes")]
+    [Tooltip("Loaded by the server through NGO scene management; clients follow automatically.")]
+    public string gameplaySceneName = "MainGameScene";
 
     [Header("Player Prefabs")]
     public GameObject fpsCrewPlayerPrefab;
     public GameObject fighterPlayerPrefab;
     public GameObject bigShipPlayerPrefab;
 
+    private bool addressFromCommandLine;
+
     private void Start()
     {
+        ApplyMultiplayerRole();
         ParseCommandLineArguments();
+        if (Application.isEditor && !addressFromCommandLine) address = "127.0.0.1";
 
         if (autoStart)
         {
@@ -26,13 +38,21 @@ public class NetworkAutoStart : MonoBehaviour
     }
 
     [ContextMenu("Start Host")]
-    public void StartHostInspector() => StartNetworking(true, address, port);
+    public void StartHostInspector() => StartHost(address, port);
 
     [ContextMenu("Start Client")]
     public void StartClientInspector() => StartNetworking(false, address, port);
 
     [ContextMenu("Start Server Only")]
     public void StartServerInspector() => StartNetworking(true, address, port);
+
+    private void ApplyMultiplayerRole()
+    {
+        // ClientAndServer means roles don't decide (e.g. a regular editor session), keep the inspector value
+        MultiplayerRoleFlags role = MultiplayerRolesManager.ActiveMultiplayerRoleMask;
+        if (role == MultiplayerRoleFlags.Server) isServer = true;
+        else if (role == MultiplayerRoleFlags.Client) isServer = false;
+    }
 
     private void ParseCommandLineArguments()
     {
@@ -58,6 +78,7 @@ public class NetworkAutoStart : MonoBehaviour
             if (args[i] == "-address" && i + 1 < args.Length)
             {
                 address = args[i + 1];
+                addressFromCommandLine = true;
             }
             if (args[i] == "-port" && i + 1 < args.Length && ushort.TryParse(args[i + 1], out ushort p))
             {
@@ -93,6 +114,7 @@ public class NetworkAutoStart : MonoBehaviour
             if (asServer)
             {
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+                NetworkManager.Singleton.OnServerStarted += LoadGameplayScene;
                 NetworkManager.Singleton.StartServer();
             }
             else
@@ -106,6 +128,40 @@ public class NetworkAutoStart : MonoBehaviour
         }
     }
 
+    public void StartHost(string targetAddress, ushort targetPort)
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("[NetworkAutoStart] No NetworkManager found!");
+            return;
+        }
+
+        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        if (transport != null)
+        {
+            transport.ConnectionData.Address = targetAddress;
+            transport.ConnectionData.Port = targetPort;
+            transport.ConnectionData.ServerListenAddress = "0.0.0.0";
+        }
+
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnServerStarted += LoadGameplayScene;
+        NetworkManager.Singleton.StartHost();
+    }
+
+    private void LoadGameplayScene()
+    {
+        NetworkManager.Singleton.OnServerStarted -= LoadGameplayScene;
+
+        if (SceneManager.GetActiveScene().name == gameplaySceneName) return;
+
+        var status = NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+        if (status != SceneEventProgressStatus.Started)
+        {
+            Debug.LogError($"[NetworkAutoStart] Failed to load '{gameplaySceneName}': {status}. Is it in Build Settings?");
+        }
+    }
+
     private void OnClientConnected(ulong clientId)
     {
         Debug.Log($"Client connected: {clientId}");
@@ -114,7 +170,10 @@ public class NetworkAutoStart : MonoBehaviour
     private void OnDestroy()
     {
         if (NetworkManager.Singleton != null)
+        {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnServerStarted -= LoadGameplayScene;
+        }
     }
 
     public void SwitchPlayerPrefab(ulong clientId, ControllerType newShipType)
@@ -124,12 +183,12 @@ public class NetworkAutoStart : MonoBehaviour
         NetworkObject currentPlayer = client.PlayerObject;
         if (currentPlayer == null) return;
 
+        GameObject newPrefab = GetPrefabForShipType(newShipType);
+        if (newPrefab == null) return;
+
         Vector3 position = currentPlayer.transform.position;
         Quaternion rotation = currentPlayer.transform.rotation;
         currentPlayer.Despawn();
-
-        GameObject newPrefab = GetPrefabForShipType(newShipType);
-        if (newPrefab == null) return;
 
         GameObject newPlayerObj = Instantiate(newPrefab, position, rotation);
         NetworkObject newNetworkObj = newPlayerObj.GetComponent<NetworkObject>();

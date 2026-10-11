@@ -40,7 +40,6 @@ public class DynamicSkyboxManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -52,6 +51,11 @@ public class DynamicSkyboxManager : MonoBehaviour
         starMesh = new Mesh();
         starMesh.name = "DynamicSkybox_Stars";
         starMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     /// <summary>

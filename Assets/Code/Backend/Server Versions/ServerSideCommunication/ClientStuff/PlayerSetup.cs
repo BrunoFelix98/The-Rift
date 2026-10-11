@@ -6,9 +6,9 @@ public class PlayerSetup : NetworkBehaviour
 {
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
+        if (IsServer && !IsClient)
         {
-            // Disable cameras on server
+            // Disable cameras on a dedicated server; a host renders its own player below
             var cameras = GetComponentsInChildren<Camera>();
             foreach (var cam in cameras)
             {

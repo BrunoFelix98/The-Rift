@@ -28,16 +28,24 @@ public class TestSwitchShips : NetworkBehaviour
     void RequestSwitchShipServerRpc(ControllerType shipType, ServerRpcParams rpcParams = default)
     {
         Debug.Log($"ServerRpc received for ship type: {shipType}");
+        ulong clientID = rpcParams.Receive.SenderClientId;
         ServerManager serverManager = FindAnyObjectByType<ServerManager>();
         if (serverManager != null)
         {
             Debug.Log("ServerManager found, calling SwitchPlayerPrefab");
-            ulong clientID = rpcParams.Receive.SenderClientId;
             serverManager.SwitchPlayerPrefab(clientID, shipType);
+            return;
+        }
+
+        // Bootstrap scene setup: NetworkAutoStart sits on the persistent NetworkManager object
+        NetworkAutoStart autoStart = FindAnyObjectByType<NetworkAutoStart>();
+        if (autoStart != null)
+        {
+            autoStart.SwitchPlayerPrefab(clientID, shipType);
         }
         else
         {
-            Debug.LogWarning("ServerManager not found in scene.");
+            Debug.LogWarning("Neither ServerManager nor NetworkAutoStart found.");
         }
     }
 }

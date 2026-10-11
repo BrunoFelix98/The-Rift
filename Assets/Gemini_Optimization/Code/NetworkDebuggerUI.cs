@@ -23,7 +23,8 @@ public class NetworkDebuggerUI : MonoBehaviour
         _autoStart = Object.FindAnyObjectByType<NetworkAutoStart>();
         
         // Load the last used IP from memory
-        _targetAddress = PlayerPrefs.GetString("LastUsedIP", _autoStart != null ? _autoStart.address : "0.0.0.0");
+        string defaultAddress = Application.isEditor ? "127.0.0.1" : (_autoStart != null ? _autoStart.address : "127.0.0.1");
+        _targetAddress = PlayerPrefs.GetString("LastUsedIP", defaultAddress);
         _targetPort = _autoStart != null ? _autoStart.port.ToString() : "30000";
     }
 
@@ -173,6 +174,12 @@ public class NetworkDebuggerUI : MonoBehaviour
     {
         if (ushort.TryParse(_targetPort, out ushort port))
         {
+            if (_autoStart != null)
+            {
+                _autoStart.StartHost(_targetAddress, port);
+                return;
+            }
+
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             if (transport != null)
             {

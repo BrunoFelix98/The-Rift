@@ -25,11 +25,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   ```
 
 **Editor utilities (menu items)**
-- `The Rift → Setup Universe Scene` – creates or finds a `UniverseManager` GameObject, adds a `NetworkManager` (with `NetworkAutoStart`), configures pools, registers celestial templates, and creates material assets for stars and nebulae. Run this once before generating or playing the game.
+- `The Rift → Setup Universe Scene` – creates or finds a `UniverseManager` GameObject, configures pools, registers celestial templates, and creates material assets for stars and nebulae. It no longer adds a `NetworkManager`; networking lives in `Assets/Scenes/Bootstrap.unity`.
 - `Tools → Universe → Bake Universe (Jobs)` – launches the `RevisedUniverseBakerEditor` workflow. It parses JSON files under `Assets/Code/Backend/DataSets/Behavior/JSONData`, runs a burst‑compiled `RevisedGenerateSystemsJob` to compute system layout, then creates ScriptableObject assets (galaxies, systems, stars, planets, moons, asteroid belts, gates, etc.) under `Assets/RuleBasedGeneratedGalaxy`.
 
 **Play testing**
-- Press **Play** in the Unity editor after running the *Setup Universe Scene* menu. The scene will automatically spawn a `NetworkManager` and instantiate pooled celestial prefabs.
+- Start from `Assets/Scenes/Bootstrap.unity` (build index 0). It holds the only `NetworkManager` plus `NetworkAutoStart` and `NetworkDebuggerUI`, all persisted across scene loads.
+- The server loads `MainGameScene` through `NetworkManager.SceneManager`; clients follow via NGO scene sync. Never put a `NetworkManager` or a second copy of the gameplay scene elsewhere.
+- Role: `-server` / `-client` CLI flags, else the Multiplayer Role (Play Mode scenarios `Assets/Settings/PlayMode/Server.asset` = server editor + client Player 2), else `NetworkAutoStart.isServer`.
+- Address: `-address <ip>` / `-port <n>`; the editor defaults clients to `127.0.0.1`, builds use `NetworkAutoStart.address`.
 
 ## Architecture Overview
 
@@ -57,7 +60,7 @@ The project follows a strict data‑logic / visual‑frontend split.
 ## Key Build / Run Flow
 1. **Setup** – Run *The Rift → Setup Universe Scene* to create the manager hierarchy and asset folders.
 2. **Generate** – Choose *Tools → Universe → Bake Universe (Jobs)* to read JSON, run the burst job, and produce the full galaxy asset hierarchy.
-3. **Play** – Press the Unity Play button; the `NetworkManager` spawns a host, the pooling system pulls prefabs from `Assets/RuleBasedGeneratedGalaxy/Prefabs`, and the visualization system renders the generated galaxy.
+3. **Play** – Open `Bootstrap.unity` (or run a Play Mode scenario) and press Play; the server loads `MainGameScene`, the pooling system pulls prefabs from `Assets/RuleBasedGeneratedGalaxy/Prefabs`, and the visualization system renders the current system.
 4. **Iterate** – Edit JSON files, re‑run the bake menu, then restart Play.
 
 ## Development Tips Specific to This Repo
