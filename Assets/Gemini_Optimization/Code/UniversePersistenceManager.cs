@@ -10,7 +10,8 @@ using UnityEngine;
 /// </summary>
 public static class UniversePersistenceManager
 {
-    private static string GetPath()
+    // Touches Application paths, so call on the main thread and pass the result to background loads
+    public static string GetPath()
     {
         // 1. Check StreamingAssets (Primary for Builds)
         string streamingPath = Path.Combine(Application.streamingAssetsPath, "UniverseMap.bin");
@@ -52,9 +53,9 @@ public static class UniversePersistenceManager
     /// <summary>
     /// Loads the flat list of celestial data from the binary file.
     /// </summary>
-    public static List<CelestialPersistenceData> Load()
+    public static List<CelestialPersistenceData> Load(string path = null)
     {
-        string path = GetPath();
+        path ??= GetPath();
         if (!File.Exists(path))
         {
             // Fallback to legacy JSON if binary doesn't exist
@@ -95,9 +96,9 @@ public static class UniversePersistenceManager
     /// <summary>
     /// Loads the binary data and converts it into the hierarchical UniverseMapDataV2 structure.
     /// </summary>
-    public static UniverseMapDataV2 LoadAndConvertV2()
+    public static UniverseMapDataV2 LoadAndConvertV2(string path = null)
     {
-        List<CelestialPersistenceData> flatData = Load();
+        List<CelestialPersistenceData> flatData = Load(path);
         if (flatData == null || flatData.Count == 0) return null;
 
         Dictionary<ulong, CelestialPersistenceData> allObjectsMap = flatData.ToDictionary(d => d.orbit.NetworkId, d => d);

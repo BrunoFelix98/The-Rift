@@ -34,6 +34,9 @@ public class DynamicSkyboxManager : MonoBehaviour
     private Vector3d currentSystemAbsolutePosition;
     private Mesh starMesh;
     private List<SystemMetadata> _cachedSystems = new List<SystemMetadata>();
+    private HashSet<ulong> _cachedSystemIds = new HashSet<ulong>();
+    // Metadata arrives in many RPC batches; rebuild once per frame at most instead of once per batch
+    private bool _starsDirty;
 
     void Awake()
     {
@@ -65,8 +68,9 @@ public class DynamicSkyboxManager : MonoBehaviour
     public void SetUniverseMap(UniverseMapDataV2 map)
     {
         if (visualizer != null) visualizer.universeMap = map;
-        _cachedSystems.Clear(); 
-        UpdateStarPositions();
+        _cachedSystems.Clear();
+        _cachedSystemIds.Clear();
+        _starsDirty = true;
     }
 
     /// <summary>
@@ -75,14 +79,17 @@ public class DynamicSkyboxManager : MonoBehaviour
     /// </summary>
     public void SyncAllSystems(List<SystemMetadata> systems)
     {
+        // The full map (server/host) already has every system
+        if (visualizer != null && visualizer.universeMap != null) return;
+
         foreach (var s in systems)
         {
-            if (!_cachedSystems.Exists(x => x.id == s.id))
+            if (_cachedSystemIds.Add(s.id))
             {
                 _cachedSystems.Add(s);
+                _starsDirty = true;
             }
         }
-        UpdateStarPositions();
     }
 
     /// <summary>
@@ -92,7 +99,7 @@ public class DynamicSkyboxManager : MonoBehaviour
     {
         currentSystemId = systemId;
         currentSystemAbsolutePosition = absolutePosition;
-        UpdateStarPositions();
+        _starsDirty = true;
     }
 
     /// <summary>
@@ -215,15 +222,20 @@ public class DynamicSkyboxManager : MonoBehaviour
 
     void LateUpdate()
     {
-        // Throttled update of relative star positions
-        if (Time.time >= nextUpdateTime)
+        // Nothing to render without a camera (dedicated server)
+        if (Camera.main == null) return;
+
+        // Orbits only move stars when the full map drives them; metadata positions are static
+        bool hasFullMap = visualizer != null && visualizer.universeMap != null;
+        if (_starsDirty || (hasFullMap && Time.time >= nextUpdateTime))
         {
             UpdateStarPositions();
+            _starsDirty = false;
             nextUpdateTime = Time.time + updateInterval;
         }
 
         // Render the stars centered on the main camera
-        if (Camera.main != null && starMesh != null && starMesh.vertexCount > 0)
+        if (starMesh != null && starMesh.vertexCount > 0)
         {
             if (starMaterial == null)
             {

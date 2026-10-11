@@ -39,17 +39,18 @@ public class ResourcePersistenceData : INetworkSerializable
         writer.Write(rarity ?? "");
     }
 
+    // ~3M strings in UniverseMap.bin but only ~31 distinct values; interning keeps one copy each
     public static ResourcePersistenceData ReadBinary(BinaryReader reader)
     {
         return new ResourcePersistenceData
         {
             id = reader.ReadInt32(),
-            name = reader.ReadString(),
+            name = string.Intern(reader.ReadString()),
             quantity = reader.ReadInt32(),
             minQuantity = reader.ReadInt32(),
             maxQuantity = reader.ReadInt32(),
             weight = reader.ReadSingle(),
-            rarity = reader.ReadString()
+            rarity = string.Intern(reader.ReadString())
         };
     }
 }
@@ -87,11 +88,11 @@ public class OwnershipPersistenceData : INetworkSerializable
     {
         return new OwnershipPersistenceData
         {
-            factionName = reader.ReadString(),
-            corporationName = reader.ReadString(),
-            leaderName = reader.ReadString(),
+            factionName = string.Intern(reader.ReadString()),
+            corporationName = string.Intern(reader.ReadString()),
+            leaderName = string.Intern(reader.ReadString()),
             factionId = reader.ReadInt32(),
-            factionColor = reader.ReadString()
+            factionColor = string.Intern(reader.ReadString())
         };
     }
 }
@@ -212,7 +213,7 @@ public class CelestialPersistenceData : INetworkSerializable
 
         int modCount = reader.ReadInt32();
         data.modules = new List<string>(modCount);
-        for (int i = 0; i < modCount; i++) data.modules.Add(reader.ReadString());
+        for (int i = 0; i < modCount; i++) data.modules.Add(string.Intern(reader.ReadString()));
 
         data.destinationId = reader.ReadUInt64();
 

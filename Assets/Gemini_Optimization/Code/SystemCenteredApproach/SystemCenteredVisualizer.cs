@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using System.Linq;
@@ -23,9 +25,9 @@ public class SystemCenteredVisualizer : NetworkBehaviour
     [Tooltip("Visual scales and multipliers for celestial bodies.")]
     public UniverseVisualizationSettings settings;
 
-    [Header("Universe Data (Editor Visible)")]
-    [Tooltip("The entire universe map structure, loaded from UniverseMap.bin.")]
-    public UniverseMapDataV2 universeMap;
+    // Server only. ~230k objects: serializing it would hang the Inspector and bloat the scene
+    [NonSerialized] public UniverseMapDataV2 universeMap;
+    private bool universeLoaded;
     
     [Header("Network State")]
     [Tooltip("The ID of the star system currently being visualized.")]
@@ -61,9 +63,6 @@ public class SystemCenteredVisualizer : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // 1. Load the universe map on both server and client (if local file exists)
-        LoadUniverseData();
-
         if (IsClient)
         {
             // Register for detailed system data messages from the server
@@ -71,37 +70,62 @@ public class SystemCenteredVisualizer : NetworkBehaviour
             
             // Re-sync whenever we finish loading a scene
             NetworkManager.Singleton.SceneManager.OnSceneEvent += OnClientSceneEvent;
-            
-            // Initial request if the server already has a system active
-            if (currentSystemId.Value != 0)
-            {
-                RequestSystemSyncServerRpc();
-            }
         }
 
         if (IsServer)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-
-            // Default to 'Lorynth' system if no system is active
-            if (currentSystemId.Value == 0)
-            {
-                ulong lorynthId = FindSystemIdByName("Lorynth");
-                if (lorynthId != 0)
-                {
-                    currentSystemId.Value = lorynthId;
-                    Debug.Log($"[SystemCentered] Defaulting to Lorynth System ({lorynthId})");
-                }
-                else if (universeMap != null && universeMap.galaxies.Count > 0 && universeMap.galaxies[0].systems.Count > 0)
-                {
-                    // Fallback to first system found
-                    currentSystemId.Value = universeMap.galaxies[0].systems[0].id;
-                }
-            }
-            
-            // Initialize the server's local visual state
-            if (currentSystemId.Value != 0) SwitchSystem(currentSystemId.Value);
+            LoadUniverseDataAsync();
         }
+    }
+
+    // Only the server needs the full map; clients get their current system and the skybox metadata pushed
+    private async void LoadUniverseDataAsync()
+    {
+        string path = UniversePersistenceManager.GetPath();
+        UniverseMapDataV2 map = null;
+        try
+        {
+            map = await Task.Run(() => UniversePersistenceManager.LoadAndConvertV2(path));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SystemCentered] Universe map load failed: {e}");
+        }
+
+        if (this == null || !IsSpawned) return;
+
+        ApplyUniverseData(map);
+        InitializeServerSystem();
+        universeLoaded = true;
+
+        // Clients that connected while the map was loading haven't received anything yet
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.ClientId != NetworkManager.ServerClientId) SendInitialSync(client.ClientId);
+        }
+    }
+
+    private void InitializeServerSystem()
+    {
+        // Default to 'Lorynth' system if no system is active
+        if (currentSystemId.Value == 0)
+        {
+            ulong lorynthId = FindSystemIdByName("Lorynth");
+            if (lorynthId != 0)
+            {
+                currentSystemId.Value = lorynthId;
+                Debug.Log($"[SystemCentered] Defaulting to Lorynth System ({lorynthId})");
+            }
+            else if (universeMap != null && universeMap.galaxies.Count > 0 && universeMap.galaxies[0].systems.Count > 0)
+            {
+                // Fallback to first system found
+                currentSystemId.Value = universeMap.galaxies[0].systems[0].id;
+            }
+        }
+        
+        // Initialize the server's local visual state
+        if (currentSystemId.Value != 0) SwitchSystem(currentSystemId.Value);
     }
 
     private void OnClientSceneEvent(SceneEvent sceneEvent)
@@ -131,19 +155,25 @@ public class SystemCenteredVisualizer : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        // 1. Proactively send universe metadata to the new client so their skybox works immediately
-        SendUniverseMetadataToClient(clientId);
+        // The host's own client renders from the server state directly; others wait for the map load to finish
+        if (clientId == NetworkManager.ServerClientId || !universeLoaded) return;
+        SendInitialSync(clientId);
+    }
 
-        // 2. Proactively send full data for the CURRENT system so they sync visuals upon arrival
+    private void SendInitialSync(ulong clientId)
+    {
+        // System data first: metadata shares the same ordered reliable channel and would delay it
         if (currentSystemId.Value != 0)
         {
             var data = FindSystemById(currentSystemId.Value);
             if (data != null)
             {
-                Debug.Log($"[SystemCentered] Server: Proactively sending system '{data.name}' details to new client {clientId}.");
+                Debug.Log($"[SystemCentered] Server: Sending system '{data.name}' details to client {clientId}.");
                 SendSystemDataViaCustomMessage(clientId, data);
             }
         }
+
+        SendUniverseMetadataToClient(clientId);
     }
 
     /// <summary>
@@ -193,21 +223,8 @@ public class SystemCenteredVisualizer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RequestSystemSyncServerRpc(ServerRpcParams rpcParams = default)
     {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        
-        // 1. Send global metadata for the skybox
-        SendUniverseMetadataToClient(clientId);
-
-        // 2. Send detailed data for the CURRENT system
-        if (currentSystemId.Value != 0)
-        {
-            var data = FindSystemById(currentSystemId.Value);
-            if (data != null)
-            {
-                Debug.Log($"[SystemCentered] Server: Sending system '{data.name}' details to client {clientId}.");
-                SendSystemDataViaCustomMessage(clientId, data);
-            }
-        }
+        if (!universeLoaded) return;
+        SendInitialSync(rpcParams.Receive.SenderClientId);
     }
 
     private void SendSystemDataViaCustomMessage(ulong clientId, SystemPersistenceData data)
@@ -243,24 +260,24 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         var data = FindSystemById(systemId);
         if (data == null) return;
 
+        // Metadata is static, clients already have it from their initial sync
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
-            SendUniverseMetadataToClient(client.ClientId);
+            if (client.ClientId == NetworkManager.ServerClientId) continue;
             SendSystemDataViaCustomMessage(client.ClientId, data);
         }
     }
 
-    private void LoadUniverseData()
+    private void ApplyUniverseData(UniverseMapDataV2 map)
     {
-        // Prefer loading and converting the binary map via the persistence manager
-        universeMap = UniversePersistenceManager.LoadAndConvertV2();
+        universeMap = map;
         
         if (universeMap != null)
         {
             Debug.Log($"[SystemCentered] Universe Map loaded successfully from binary.");
             if (DynamicSkyboxManager.Instance != null)
             {
-                DynamicSkyboxManager.Instance.visualizer.universeMap = universeMap;
+                DynamicSkyboxManager.Instance.SetUniverseMap(universeMap);
             }
         }
         else

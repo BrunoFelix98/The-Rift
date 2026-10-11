@@ -56,8 +56,10 @@ public class NetworkDebuggerUI : MonoBehaviour
         if (SystemCenteredVisualizer.Instance != null)
         {
             ulong sysId = SystemCenteredVisualizer.Instance.currentSystemId.Value;
-            bool hasMap = SystemCenteredVisualizer.Instance.universeMap != null;
-            visualizerInfo = $"\nVisualizer: Active, SysID: {sysId}, Map: {(hasMap ? "OK" : "MISSING")}";
+            // Clients never load the map; the server pushes their system and skybox data
+            string mapState = !NetworkManager.Singleton.IsServer ? "server-side"
+                : SystemCenteredVisualizer.Instance.universeMap != null ? "OK" : "LOADING/MISSING";
+            visualizerInfo = $"\nVisualizer: Active, SysID: {sysId}, Map: {mapState}";
         }
         else
         {
