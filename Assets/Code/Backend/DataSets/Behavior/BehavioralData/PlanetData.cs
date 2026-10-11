@@ -8,5 +8,9 @@ public class PlanetData : MonoBehaviour
     {
         data = template; 
         GetComponent<NetworkedPlanetData>()?.Reinitialize(template, node);
+
+        var visuals = GetComponent<CelestialBodyVisuals>();
+        if (visuals == null) visuals = gameObject.AddComponent<CelestialBodyVisuals>();
+        visuals.Apply(node.Params, isMoon: false);
     }
 }

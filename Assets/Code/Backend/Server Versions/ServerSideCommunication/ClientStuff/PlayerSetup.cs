@@ -28,8 +28,10 @@ public class PlayerSetup : NetworkBehaviour
             return;
         }
 
-        // Fixed-size markers for other players too small or off-screen to see
+        // Fixed-size markers for other players and celestials too small or off-screen to see
         PlayerMarkerOverlay.EnsureExists();
+        CelestialMarkerOverlay.EnsureExists();
+        if (TryGetComponent(out IShipHudSource hudSource)) ShipHud.Attach(hudSource);
 
         // For the local owner, enable cameras
         var ownerCameras = GetComponentsInChildren<Camera>(true);
@@ -51,6 +53,11 @@ public class PlayerSetup : NetworkBehaviour
 
         // Set cursor based on ship type
         SetCursorForShipType();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner && TryGetComponent(out IShipHudSource hudSource)) ShipHud.Detach(hudSource);
     }
 
     private void SetCursorForShipType()

@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Bootstrap.unity
     guid: 17bd60a6eaed471b91782dedb28b4c98
   - enabled: 1
-    path: Assets/Gemini_Optimization/Code/SystemCenteredApproach/MainGameScene.unity
+    path: Assets/Scenes/MainGameScene.unity
     guid: 944882c28bffb1b41aa748332d644638
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity

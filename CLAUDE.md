@@ -51,11 +51,19 @@ The project follows a strict data‑logic / visual‑frontend split.
 - **Visualization** – `GalaxyVisualizer`, `SystemCenteredVisualizer`, `DynamicSkyboxManager` instantiate prefabs for celestial bodies, apply materials, and manage camera/skybox transitions.
 - **Movement & input** – Player piloting scripts (`FighterPiloting`, `BigShipMovement`, `PlayerMovement`, `PlayerLook`) inherit from `NetworkBehaviour` and use `NetworkVariable` for server‑authoritative state. Input actions are wired via the Unity Input System (`InputActionReference`).
 - **Networking wrappers** – `NetworkedAsteroidData`, `NetworkedPlanetData`, `NetworkedStationData`, `NetworkedCelestial` expose the data components that need to be synchronised across clients.
-- **Object pooling** – `NetworkedObjectPoolManager`, `CelestialPool`, `SectorManager`, `SpaceObjectManager` recycle instantiated GameObjects to keep runtime allocations low.
+- **Object pooling** – `NetworkedObjectPoolManager`, `CelestialPool`, `SpaceObjectManager` recycle instantiated GameObjects to keep runtime allocations low.
 - **Utility systems** – `JumpManager`/`PlayerJumpController` handle fast‑travel between systems, `GalacticTimeManager` tracks simulation time, and `SpaceEnvironmentManager` applies environmental effects.
 
-### Editor‑only support (`Assets/Gemini_Optimization/Code/`)
-- Performance‑focused helpers such as `NetworkDebuggerUI`, `SystemCenteredVisualizer`, `UniverseGenerator`, and `UniverseSetupHelper` (menu item for scene creation). These live in `#if UNITY_EDITOR` blocks and are not included in builds.
+### Universe runtime (`Assets/Code/Universe/`)
+- `SystemCenteredApproach/SystemCenteredVisualizer` – server tracks each player's system (gates move one player), pushes system data + skybox metadata via named messages, hides players in other systems, spawns players near the station.
+- `UniversePersistenceManager` loads `Assets/StreamingAssets/UniverseMap.bin` (server only, on a worker thread).
+- `NetworkAutoStart`, `NetworkDebuggerUI` live on the Bootstrap scene's NetworkManager.
+- `UniverseSetupHelper`, `SystemCenteredSetupHelper` and `Editor/` are editor-only menu tools (`#if UNITY_EDITOR`).
+
+### Player movement
+- `FighterPiloting`, `BigShipMovement`, `PlayerMovement` share one model: the owner simulates each tick's input with a deterministic `Step`, the server runs the same step and publishes a state `NetworkVariable`, the owner reconciles by replaying unacknowledged inputs, other clients smooth toward the state. Move players only through `ITeleportable`.
+- HUD and markers (`ShipHud`, `PlayerMarkerOverlay`, `CelestialMarkerOverlay`) are IMGUI overlays created by `PlayerSetup` for the local player.
+- Celestial looks come from `Assets/Shaders/Celestial` via `CelestialBodyVisuals` / `StarData`.
 
 ## Key Build / Run Flow
 1. **Setup** – Run *The Rift → Setup Universe Scene* to create the manager hierarchy and asset folders.

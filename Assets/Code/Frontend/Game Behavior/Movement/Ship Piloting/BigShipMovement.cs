@@ -1,7 +1,13 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class BigShipMovement : NetworkBehaviour
+/// <summary>
+/// Click-to-move big ship with the same prediction model as FighterPiloting: the owner simulates
+/// every tick and sends the tick's input, the server runs the identical deterministic step and
+/// publishes the state, the owner reconciles by replaying unacknowledged inputs.
+/// </summary>
+public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
 {
     [Header("Movement Settings")]
     public Camera mainCamera;
@@ -13,153 +19,272 @@ public class BigShipMovement : NetworkBehaviour
     private float lastClickTime = -10f;
     private float targetDistance = 150f;
 
-    // Server-authoritative target position and rotation, synced to all clients
-    private NetworkVariable<Vector3> targetPosition = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<bool> hasTargetPosition = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<Quaternion> shipRotation = new NetworkVariable<Quaternion>(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private struct InputData : INetworkSerializable
+    {
+        public int tick;
+        public bool hasNewTarget;
+        public Vector3 newTarget;
 
-    private Vector3 clientTargetPosition;
-    private bool clientHasTargetPosition;
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref tick);
+            serializer.SerializeValue(ref hasNewTarget);
+            serializer.SerializeValue(ref newTarget);
+        }
+    }
 
-    [Header("Sync Settings")]
-    public float positionLerpSpeed = 10f;
-    public float rotationLerpSpeed = 10f;
-    private Vector3 targetNetPosition;
+    public struct ShipState : INetworkSerializeByMemcpy
+    {
+        public int tick;
+        public Vector3 position;
+        public Quaternion rotation; // Applied to shipModel; the root only translates
+        public Vector3 velocity;
+        public Vector3 target;
+        public bool hasTarget;
+    }
+
+    private NetworkVariable<ShipState> netState = new NetworkVariable<ShipState>(
+        new ShipState { tick = -1, rotation = Quaternion.identity },
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private ShipState simState;
+    private readonly List<InputData> pendingInputs = new List<InputData>();
+    private const int MaxPendingInputs = 500;
+    private int localTick = 0;
+    private bool hasQueuedTarget;
+    private Vector3 queuedTarget;
+
+    private int lastProcessedTick = -1;
+    private float inputBudget;
+    private const float MaxInputBurst = 25f;
+
+    private ShipState remoteState;
+    private float remoteStateTime;
+    private const float MaxExtrapolation = 0.25f;
+    private const float RemoteSmoothing = 15f;
+
+    private const float ReconcilePositionTolerance = 0.01f;
+    private const float ReconcileAngleTolerance = 0.1f;
+
+    private Transform RotationTarget => shipModel != null ? shipModel : transform;
+
+    public Transform HudTransform => RotationTarget;
+    public Vector3 HudVelocity => IsOwner ? simState.velocity : remoteState.velocity;
+
+    private void Awake()
+    {
+        // The model's rigidbody would otherwise simulate on its own under the moving root
+        foreach (var body in GetComponentsInChildren<Rigidbody>())
+        {
+            body.isKinematic = true;
+            body.interpolation = RigidbodyInterpolation.None;
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        netState.OnValueChanged += OnServerStateChanged;
+
+        if (IsServer)
+        {
+            simState = new ShipState { tick = -1, position = transform.position, rotation = RotationTarget.rotation };
+            netState.Value = simState;
+        }
+
+        if (IsOwner)
+        {
+            if (!IsServer) simState = netState.Value;
+        }
+        else if (!IsServer)
+        {
+            remoteState = netState.Value;
+            remoteStateTime = Time.time;
+            ApplyPose(remoteState.position, remoteState.rotation);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        netState.OnValueChanged -= OnServerStateChanged;
+    }
 
     private void Update()
     {
-        if (IsOwner && Application.isFocused)
+        if (IsServer)
         {
-            HandleInput();
-            ClientMove();
+            inputBudget = Mathf.Min(inputBudget + Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
         }
-        else if (!IsOwner)
+
+        if (!IsOwner)
         {
-            // Smoothly interpolate position and rotation for other clients
-            if (targetNetPosition != Vector3.zero)
-            {
-                transform.position = Vector3.Lerp(transform.position, targetNetPosition, positionLerpSpeed * Time.deltaTime);
-            }
-            
-            if (shipModel != null)
-            {
-                shipModel.rotation = Quaternion.Slerp(shipModel.rotation, shipRotation.Value, rotationLerpSpeed * Time.deltaTime);
-            }
+            if (!IsServer) FollowRemoteState();
+            return;
         }
+
+        if (Application.isFocused) HandleInput();
     }
 
     private void HandleInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!Input.GetMouseButtonDown(0) || mainCamera == null) return;
+
+        if (Time.time - lastClickTime <= doubleClickThreshold)
         {
-            if (Time.time - lastClickTime <= doubleClickThreshold)
-            {
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-                Vector3 destination = ray.origin + ray.direction * targetDistance;
-
-                // Send target position to server for authoritative movement
-                SetTargetPositionServerRpc(destination);
-
-                // Update client-side prediction
-                clientTargetPosition = destination;
-                clientHasTargetPosition = true;
-            }
-            lastClickTime = Time.time;
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            queuedTarget = ray.origin + ray.direction * targetDistance;
+            hasQueuedTarget = true;
         }
-    }
-
-    private void ClientMove()
-    {
-        if (!clientHasTargetPosition)
-            return;
-
-        Vector3 direction = clientTargetPosition - transform.position;
-        if (direction.magnitude <= stopDistance)
-        {
-            clientHasTargetPosition = false; // Clear the target
-        }
-        else
-        {
-            float angleToTarget = 0f;
-            if (shipModel != null)
-            {
-                Vector3 currentForward = shipModel.forward;
-                Vector3 targetDir = direction.normalized;
-                angleToTarget = Vector3.Angle(currentForward, targetDir);
-            }
-
-            float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
-            transform.position += direction.normalized * moveSpeed * speedFactor * Time.deltaTime;
-
-            // Handle rotation for owning client
-            if (shipModel != null && direction.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-                shipModel.rotation = Quaternion.RotateTowards(shipModel.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            }
-        }
-    }
-
-    [ServerRpc]
-    private void SetTargetPositionServerRpc(Vector3 target)
-    {
-        targetPosition.Value = target;
-        hasTargetPosition.Value = true;
+        lastClickTime = Time.time;
     }
 
     private void FixedUpdate()
     {
+        if (!IsOwner) return;
+
+        // Idle ticks change nothing, so neither side needs to step them
+        if (!hasQueuedTarget && !simState.hasTarget) return;
+
+        localTick++;
+        InputData input = new InputData { tick = localTick, hasNewTarget = hasQueuedTarget, newTarget = queuedTarget };
+        hasQueuedTarget = false;
+
+        simState = Step(simState, input, Time.fixedDeltaTime);
+        ApplyPose(simState.position, simState.rotation);
+
         if (IsServer)
         {
-            ServerMove();
+            lastProcessedTick = input.tick;
+            netState.Value = simState;
+            return;
         }
+
+        pendingInputs.Add(input);
+        if (pendingInputs.Count > MaxPendingInputs) pendingInputs.RemoveAt(0);
+        SendInputServerRpc(input);
     }
 
-    private void ServerMove()
+    // Shared by owner prediction, server simulation and reconcile replay; must stay deterministic
+    private ShipState Step(ShipState state, InputData input, float dt)
     {
-        if (!hasTargetPosition.Value)
-            return;
-
-        Vector3 direction = targetPosition.Value - transform.position;
-        if (direction.magnitude <= stopDistance)
+        if (input.hasNewTarget)
         {
-            hasTargetPosition.Value = false; // Clear the target
+            state.target = input.newTarget;
+            state.hasTarget = true;
+        }
+
+        state.velocity = Vector3.zero;
+        if (state.hasTarget)
+        {
+            Vector3 direction = state.target - state.position;
+            float distance = direction.magnitude;
+            if (distance <= stopDistance)
+            {
+                state.hasTarget = false;
+            }
+            else
+            {
+                Vector3 dir = direction / distance;
+                float angleToTarget = Vector3.Angle(state.rotation * Vector3.forward, dir);
+                float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
+
+                // Never overshoot the target in one tick
+                float stepLength = Mathf.Min(moveSpeed * speedFactor * dt, distance);
+                state.velocity = dir * (stepLength / dt);
+                state.position += dir * stepLength;
+                state.rotation = Quaternion.RotateTowards(state.rotation, Quaternion.LookRotation(dir, Vector3.up), rotationSpeed * dt);
+            }
+        }
+
+        state.tick = input.tick;
+        return state;
+    }
+
+    [ServerRpc]
+    private void SendInputServerRpc(InputData input)
+    {
+        if (input.tick <= lastProcessedTick) return;
+        if (inputBudget < 1f) return;
+        inputBudget -= 1f;
+
+        lastProcessedTick = input.tick;
+        simState = Step(simState, input, Time.fixedDeltaTime);
+        ApplyPose(simState.position, simState.rotation);
+        netState.Value = simState;
+    }
+
+    private void OnServerStateChanged(ShipState previous, ShipState current)
+    {
+        if (IsServer) return;
+
+        if (IsOwner)
+        {
+            Reconcile(current);
         }
         else
         {
-            float angleToTarget = 0f;
-            if (shipModel != null)
-            {
-                Vector3 currentForward = shipModel.forward;
-                Vector3 targetDir = direction.normalized;
-                angleToTarget = Vector3.Angle(currentForward, targetDir);
-            }
-
-            float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
-            transform.position += direction.normalized * moveSpeed * speedFactor * Time.fixedDeltaTime;
-
-            // Handle rotation on server and sync to all clients
-            if (shipModel != null && direction.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-                shipModel.rotation = Quaternion.RotateTowards(shipModel.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
-
-                // Update the networked rotation variable
-                shipRotation.Value = shipModel.rotation;
-            }
+            remoteState = current;
+            remoteStateTime = Time.time;
         }
-
-        // Synchronize position with all clients (rotation is handled by NetworkVariable)
-        UpdatePositionClientRpc(transform.position);
     }
 
-    [ClientRpc]
-    private void UpdatePositionClientRpc(Vector3 position)
+    private void Reconcile(ShipState serverState)
     {
-        if (!IsOwner)
+        pendingInputs.RemoveAll(i => i.tick <= serverState.tick);
+
+        ShipState replayed = serverState;
+        foreach (var input in pendingInputs)
         {
-            // Update target position for non-owning clients for interpolation in Update()
-            targetNetPosition = position;
+            replayed = Step(replayed, input, Time.fixedDeltaTime);
         }
+        replayed.tick = simState.tick;
+
+        bool positionOff = Vector3.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
+        bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
+        if (positionOff || rotationOff || replayed.hasTarget != simState.hasTarget)
+        {
+            simState = replayed;
+            ApplyPose(simState.position, simState.rotation);
+        }
+    }
+
+    private void FollowRemoteState()
+    {
+        float age = Mathf.Min(Time.time - remoteStateTime, MaxExtrapolation);
+        Vector3 target = remoteState.position + remoteState.velocity * age;
+        float t = 1f - Mathf.Exp(-RemoteSmoothing * Time.deltaTime);
+
+        transform.position = Vector3.Lerp(transform.position, target, t);
+        RotationTarget.rotation = Quaternion.Slerp(RotationTarget.rotation, remoteState.rotation, t);
+    }
+
+    private void ApplyPose(Vector3 position, Quaternion rotation)
+    {
+        transform.position = position;
+        RotationTarget.rotation = rotation;
+    }
+
+    public void ServerTeleport(Vector3 position, Quaternion rotation)
+    {
+        if (!IsServer) return;
+
+        // Keep the tick: the owner replays its unacknowledged inputs from the new pose
+        simState.position = position;
+        simState.rotation = rotation;
+        simState.velocity = Vector3.zero;
+        simState.hasTarget = false;
+        ApplyPose(position, rotation);
+        netState.Value = simState;
+    }
+
+    public void OwnerTeleport(Vector3 position, Quaternion rotation)
+    {
+        if (!IsOwner) return;
+
+        simState.position = position;
+        simState.rotation = rotation;
+        simState.velocity = Vector3.zero;
+        simState.hasTarget = false;
+        hasQueuedTarget = false;
+        ApplyPose(position, rotation);
     }
 }

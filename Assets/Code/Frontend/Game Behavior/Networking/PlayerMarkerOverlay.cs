@@ -53,6 +53,8 @@ public class PlayerMarkerOverlay : MonoBehaviour
         foreach (var netObj in netManager.SpawnManager.SpawnedObjectsList)
         {
             if (netObj == null || !netObj.IsPlayerObject || netObj.OwnerClientId == netManager.LocalClientId) continue;
+            // A host hides players in other systems by disabling their renderers
+            if (netManager.IsServer && !HasVisibleRenderer(netObj)) continue;
 
             Vector3 worldPos = netObj.transform.position;
             float distance = Vector3.Distance(camPos, worldPos);
@@ -73,13 +75,32 @@ public class PlayerMarkerOverlay : MonoBehaviour
         }
     }
 
-    private float GetScreenSize(NetworkObject netObj, float distance, float pixelsPerUnitAtOne)
+    private Renderer[] GetRenderers(NetworkObject netObj)
     {
         if (!rendererCache.TryGetValue(netObj, out var renderers) || renderers == null)
         {
-            renderers = netObj.GetComponentsInChildren<Renderer>();
+            // Hidden/re-shown players come back as new objects; drop entries for destroyed ones
+            if (rendererCache.Count > 64)
+            {
+                var dead = new List<NetworkObject>();
+                foreach (var key in rendererCache.Keys) if (key == null) dead.Add(key);
+                foreach (var key in dead) rendererCache.Remove(key);
+            }
+            renderers = netObj.GetComponentsInChildren<Renderer>(true);
             rendererCache[netObj] = renderers;
         }
+        return renderers;
+    }
+
+    private bool HasVisibleRenderer(NetworkObject netObj)
+    {
+        foreach (var r in GetRenderers(netObj)) if (r != null && r.enabled) return true;
+        return false;
+    }
+
+    private float GetScreenSize(NetworkObject netObj, float distance, float pixelsPerUnitAtOne)
+    {
+        var renderers = GetRenderers(netObj);
 
         float radius = 0f;
         foreach (var r in renderers)

@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 /// replaying the inputs the server hasn't processed yet; other clients smooth towards it.
 /// No physics integration is involved, so the result doesn't depend on frame timing.
 /// </summary>
-public class FighterPiloting : NetworkBehaviour
+public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 {
     [Header("Movement Settings")]
     public float moveSpeed = 0f;
@@ -23,7 +23,7 @@ public class FighterPiloting : NetworkBehaviour
     public float yawSpeed = 20f; // Restored to original (prefab value)
     public float rollSpeed = 50f; // Restored to original (prefab value)
 
-    public float mouseSensitivity = 1.0f; // Restored to original
+    public float mouseSensitivity = 0.6f;
 
     [Header("Input Actions")]
     public InputActionReference moveAction;
@@ -34,6 +34,9 @@ public class FighterPiloting : NetworkBehaviour
     public InputActionReference brakeAction;
 
     private Rigidbody rb;
+
+    public Transform HudTransform => transform;
+    public Vector3 HudVelocity => IsOwner ? simState.velocity : remoteState.velocity;
 
     private struct InputData : INetworkSerializable
     {
@@ -143,7 +146,7 @@ public class FighterPiloting : NetworkBehaviour
 
                 // If we spawned and no jump is actually happening in the visualizer,
                 // ensure we are unfrozen.
-                if (SystemCenteredVisualizer.Instance != null && SystemCenteredVisualizer.Instance.currentSystemId.Value != 0)
+                if (SystemCenteredVisualizer.Instance != null && SystemCenteredVisualizer.Instance.LocalSystemId != 0)
                 {
                     // If we just joined/spawned and data is already there, we should be playable
                     SetIgnoreServerSync(false);
