@@ -33,7 +33,12 @@ public class CelestialHierarchyNode
         switch (Params.Type)
         {
             case CelestialType.STAR: visualRadius = UnityEngine.Random.Range(5000f, 10000f); break;
-            case CelestialType.PLANET: visualRadius = UnityEngine.Random.Range(2000f, 2500f); break;
+            // Gas giants are giants; moons orbit at 4000+ so they stay outside even the largest
+            case CelestialType.PLANET:
+                visualRadius = Params.EnvironmentType == CelestialEnvironment.GAS
+                    ? UnityEngine.Random.Range(4500f, 6500f)
+                    : UnityEngine.Random.Range(2000f, 2500f);
+                break;
             case CelestialType.MOON: visualRadius = UnityEngine.Random.Range(1000f, 1500f); break;
             case CelestialType.ASTEROID: visualRadius = UnityEngine.Random.Range(10f, 150f); break;
             case CelestialType.NEBULA: visualRadius = 200000f; break;
