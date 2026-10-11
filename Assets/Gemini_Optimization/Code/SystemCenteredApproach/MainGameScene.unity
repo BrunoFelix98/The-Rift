@@ -168,126 +168,6 @@ MonoBehaviour:
   starMaterial: {fileID: 2100000, guid: 7f090c4ffd6c09c47b6976dcc391643b, type: 2}
   visualizer: {fileID: 1709085249}
   updateInterval: 2
---- !u!1 &372498405
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 372498408}
-  - component: {fileID: 372498407}
-  - component: {fileID: 372498406}
-  - component: {fileID: 372498409}
-  m_Layer: 0
-  m_Name: NetworkManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &372498406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372498405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Transports.UTP.UnityTransport
-  m_ProtocolType: 0
-  m_UseWebSockets: 0
-  m_UseEncryption: 0
-  m_MaxPacketQueueSize: 128
-  m_MaxPayloadSize: 6144
-  m_HeartbeatTimeoutMS: 500
-  m_ConnectTimeoutMS: 1000
-  m_MaxConnectAttempts: 60
-  m_DisconnectTimeoutMS: 30000
-  ConnectionData:
-    Address: 0.0.0.0
-    Port: 30000
-    WebSocketPath: /
-    ServerListenAddress: 0.0.0.0
-    ClientBindPort: 0
-  DebugSimulator:
-    PacketDelayMS: 0
-    PacketJitterMS: 0
-    PacketDropRate: 0
---- !u!114 &372498407
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372498405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkManager
-  NetworkManagerExpanded: 0
-  NetworkConfig:
-    ProtocolVersion: 0
-    NetworkTransport: {fileID: 372498406}
-    PlayerPrefab: {fileID: 1181918415118748020, guid: d4471b160a5a0cb4fbe458231a81b14f, type: 3}
-    Prefabs:
-      NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 6c34612067d99d649ae0ee1f63be2b6f, type: 2}
-    TickRate: 30
-    ClientConnectionBufferTimeout: 10
-    ConnectionApproval: 0
-    ConnectionData: 
-    EnableTimeResync: 0
-    TimeResyncInterval: 30
-    EnsureNetworkVariableLengthSafety: 0
-    EnableSceneManagement: 1
-    ForceSamePrefabs: 1
-    RecycleNetworkIds: 1
-    NetworkIdRecycleDelay: 120
-    RpcHashSize: 0
-    LoadSceneTimeOut: 120
-    SpawnTimeout: 10
-    EnableNetworkLogs: 1
-    NetworkTopology: 0
-    UseCMBService: 0
-    AutoSpawnPlayerPrefabClientSide: 1
-    NetworkMessageMetrics: 1
-    NetworkProfilingMetrics: 1
-    OldPrefabList: []
-  RunInBackground: 1
-  LogLevel: 1
---- !u!4 &372498408
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372498405}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &372498409
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 372498405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a7bf8fc300c1bb4aaf308475c17db25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NetworkManagerPersistence
 --- !u!1 &1709085247
 GameObject:
   m_ObjectHideFlags: 0
@@ -297,7 +177,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1709085254}
-  - component: {fileID: 1709085253}
   - component: {fileID: 1709085252}
   - component: {fileID: 1709085251}
   - component: {fileID: 1709085248}
@@ -306,7 +185,6 @@ GameObject:
   - component: {fileID: 1709085259}
   - component: {fileID: 1709085258}
   - component: {fileID: 1709085257}
-  - component: {fileID: 1709085260}
   m_Layer: 0
   m_Name: SystemCenteredUniverseManager
   m_TagString: Untagged
@@ -444,25 +322,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d2eea6e54d3568848adf944eeaf4e3c2, type: 2}
   nebulaTemplates:
   - {fileID: 11400000, guid: be70cb43f15f5674498ba744e5f5e20c, type: 2}
---- !u!114 &1709085253
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1709085247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c808e1df419c0994997f20d8c1b61e05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NetworkAutoStart
-  autoStart: 1
-  isServer: 0
-  port: 30000
-  address: 46.189.248.32
-  fpsCrewPlayerPrefab: {fileID: 3173229439167831745, guid: eeda449acf59bd04389bd3f5df7378ec, type: 3}
-  fighterPlayerPrefab: {fileID: 1181918415118748020, guid: d4471b160a5a0cb4fbe458231a81b14f, type: 3}
-  bigShipPlayerPrefab: {fileID: 5425038381815344191, guid: 151477605a83027479e224a008bf3eb6, type: 3}
 --- !u!4 &1709085254
 Transform:
   m_ObjectHideFlags: 0
@@ -522,7 +381,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpManager
   ShowTopMostFoldoutHeaderGroup: 1
-  systemSceneName: MainGameScene_Client
 --- !u!114 &1709085259
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -537,22 +395,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GalacticTimeManager
   ShowTopMostFoldoutHeaderGroup: 1
   timeMultiplier: 1
---- !u!114 &1709085260
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1709085247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9e6a7a44d248144e93ef1e46f13f2b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NetworkDebuggerUI
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 214136949}
   - {fileID: 1709085254}
-  - {fileID: 372498408}

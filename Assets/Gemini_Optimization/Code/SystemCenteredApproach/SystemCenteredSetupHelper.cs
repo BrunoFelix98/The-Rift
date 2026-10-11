@@ -1,9 +1,9 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
 public static class SystemCenteredSetupHelper
 {
     [MenuItem("The Rift/Setup System-Centered Scene")]
@@ -39,32 +39,13 @@ public static class SystemCenteredSetupHelper
         brain.enabled = true;
         mainCam.farClipPlane = 1000000f; // High far clip for the dynamic skybox
 
-        // 3. Add NetworkManager if missing
-        var netMgr = GameObject.FindObjectOfType<NetworkManager>();
-        if (netMgr == null)
+        // 3. Networking lives in Assets/Scenes/Bootstrap.unity; a NetworkManager in the gameplay scene would duplicate it
+        if (GameObject.FindObjectOfType<NetworkManager>() != null)
         {
-            // Second check by name just in case FindObjectOfType missed it
-            GameObject existing = GameObject.Find("NetworkManager");
-            if (existing != null) netMgr = existing.GetComponent<NetworkManager>();
-            
-            if (netMgr == null)
-            {
-                GameObject nObj = new GameObject("NetworkManager");
-                netMgr = nObj.AddComponent<NetworkManager>();
-            }
-        }
-        
-        // Ensure persistence and singleton behavior
-        if (netMgr.GetComponent<NetworkManagerPersistence>() == null)
-        {
-            netMgr.gameObject.AddComponent<NetworkManagerPersistence>();
+            Debug.LogWarning("[Setup] This scene contains a NetworkManager. Networking belongs in Assets/Scenes/Bootstrap.unity; remove it from the gameplay scene.");
         }
 
-        // Add AutoStart and Debugger scripts
-        if (mgr.GetComponent<NetworkAutoStart>() == null) mgr.AddComponent<NetworkAutoStart>();
-        if (mgr.GetComponent<NetworkDebuggerUI>() == null) mgr.AddComponent<NetworkDebuggerUI>();
-
-        // 4. Configure NetworkManager Player Prefab
+        // 4. Configure Player Prefabs
         string playerPath = "Assets/Prefabs/Player Prefabs/PlayerFighterPiloting.prefab";
         string bigShipPath = "Assets/Prefabs/Player Prefabs/PlayerBigShipPiloting.prefab";
         
@@ -86,18 +67,12 @@ public static class SystemCenteredSetupHelper
 
         if (playerPrefab != null)
         {
-            netMgr.NetworkConfig.PlayerPrefab = playerPrefab;
             var networkPrefabs = AssetDatabase.LoadAssetAtPath<NetworkPrefabsList>("Assets/DefaultNetworkPrefabs.asset");
             if (networkPrefabs != null && !networkPrefabs.Contains(playerPrefab))
             {
                 networkPrefabs.Add(new NetworkPrefab { Prefab = playerPrefab });
                 EditorUtility.SetDirty(networkPrefabs);
             }
-        }
-
-        if (netMgr.GetComponent<Unity.Netcode.Transports.UTP.UnityTransport>() == null)
-        {
-            netMgr.gameObject.AddComponent<Unity.Netcode.Transports.UTP.UnityTransport>();
         }
 
         // 5. Add System-Centered Components
@@ -190,7 +165,6 @@ public static class SystemCenteredSetupHelper
         EditorUtility.SetDirty(mgr);
         EditorUtility.SetDirty(pool);
         EditorUtility.SetDirty(registry);
-        EditorUtility.SetDirty(netMgr);
 
         Debug.Log("System-Centered Scene Setup Complete! \nPlease click 'Generate Universe V2' on the Generator.");
         Selection.activeObject = mgr;

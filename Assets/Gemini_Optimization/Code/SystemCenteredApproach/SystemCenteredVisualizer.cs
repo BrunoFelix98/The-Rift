@@ -45,13 +45,18 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
             return;
         }
+    }
+
+    public override void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        base.OnDestroy();
     }
 
     public override void OnNetworkSpawn()
@@ -73,14 +78,6 @@ public class SystemCenteredVisualizer : NetworkBehaviour
                 RequestSystemSyncServerRpc();
             }
         }
-
-        // Clients automatically request new data when the server switches systems
-        currentSystemId.OnValueChanged += (oldVal, newVal) => {
-            if (IsClient && !IsServer && newVal != 0) 
-            {
-                RequestSystemSyncServerRpc();
-            }
-        };
 
         if (IsServer)
         {

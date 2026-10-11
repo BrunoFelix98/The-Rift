@@ -1,13 +1,10 @@
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class JumpManager : NetworkBehaviour
 {
     public static JumpManager Instance { get; private set; }
 
-    [SerializeField] private string systemSceneName = "MainGameScene"; // The template scene
-    
     public delegate void JumpEvent(ulong systemId);
     public event JumpEvent OnJumpStarted;
     public event JumpEvent OnJumpCompleted;
@@ -17,12 +14,17 @@ public class JumpManager : NetworkBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    public override void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        base.OnDestroy();
     }
 
     public override void OnNetworkSpawn()
@@ -106,14 +108,12 @@ public class JumpManager : NetworkBehaviour
         // 1. Notify all clients to start warp effect
         StartWarpClientRpc(targetSystemId);
 
-        // 3. Load the scene
+        // 2. Swap the system in place; reloading the scene would destroy the in-scene NetworkObject
         if (SystemCenteredVisualizer.Instance != null)
         {
-            SystemCenteredVisualizer.Instance.currentSystemId.Value = targetSystemId;
+            SystemCenteredVisualizer.Instance.SwitchSystem(targetSystemId);
             SystemCenteredVisualizer.Instance.ForceSyncSystem(targetSystemId);
         }
-
-        NetworkManager.SceneManager.LoadScene(systemSceneName, LoadSceneMode.Single);
     }
 
     [ClientRpc]

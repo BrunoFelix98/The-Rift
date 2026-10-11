@@ -22,7 +22,7 @@ MonoBehaviour:
     - Main Editor|0_deploy
     m_Role: 2
     m_PlayerTag: 
-    m_InitialScene: {fileID: 102900000, guid: d2fabaca64f61fd409499180067e4ec4, type: 3}
+    m_InitialScene: {fileID: 102900000, guid: 17bd60a6eaed471b91782dedb28b4c98, type: 3}
     PlayerInstanceIndex: 0
   m_EditorInstances:
   - Name: Player 2
@@ -32,7 +32,7 @@ MonoBehaviour:
     - Player 2|1_deploy
     m_Role: 1
     m_PlayerTag: 
-    m_InitialScene: {fileID: 0}
+    m_InitialScene: {fileID: 102900000, guid: 17bd60a6eaed471b91782dedb28b4c98, type: 3}
     PlayerInstanceIndex: 1
     m_AdvancedConfiguration:
       StreamLogsToMainEditor: 0

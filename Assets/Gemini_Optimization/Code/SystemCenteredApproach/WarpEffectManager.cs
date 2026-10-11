@@ -16,7 +16,6 @@ public class WarpEffectManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -25,6 +24,11 @@ public class WarpEffectManager : MonoBehaviour
 
         if (starTunnelParticles != null) starTunnelParticles.Stop();
         if (warpOverlayUI != null) warpOverlayUI.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     public void PlayWarpEffect()
