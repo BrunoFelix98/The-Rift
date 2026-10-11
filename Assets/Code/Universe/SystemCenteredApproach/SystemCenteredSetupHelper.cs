@@ -151,7 +151,6 @@ public static class SystemCenteredSetupHelper
         };
 
         // 7. Link References
-        skybox.starMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Prefabs/Celestial Prefabs/Materials/Stars/WhiteDwarf.mat");
         skybox.visualizer = visualizer; 
 
         // 8. Cleanup Scene

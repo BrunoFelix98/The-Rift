@@ -19,7 +19,12 @@ Shader "TheRift/Celestial/Star"
         Pass
         {
             Name "ForwardStar"
-            Tags { "LightMode" = "UniversalForward" }
+            // ForwardOnly: the renderer is in Deferred mode, where plain UniversalForward opaques
+            // never reach the depth buffer and everything drawn later paints over them
+            Tags { "LightMode" = "UniversalForwardOnly" }
+            ZWrite On
+            ZTest LEqual
+            Cull Back
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -87,6 +92,40 @@ Shader "TheRift/Celestial/Star"
                 brightness *= lerp(0.45, 1.0, limb);
 
                 return half4(baseColor * brightness * _Intensity, 1.0);
+            }
+            ENDHLSL
+        }
+
+        // Depth for the prepass / depth texture; deferred and forward renderers both use it
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode" = "DepthOnly" }
+            ZWrite On
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma vertex vertDepth
+            #pragma fragment fragDepth
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                float _Seed;
+                float4 _CoreColor;
+                float4 _EdgeColor;
+                float _Intensity;
+                float _Speed;
+                float _SpotAmount;
+            CBUFFER_END
+
+            float4 vertDepth(float4 positionOS : POSITION) : SV_POSITION
+            {
+                return TransformObjectToHClip(positionOS.xyz);
+            }
+
+            half4 fragDepth() : SV_Target
+            {
+                return 0;
             }
             ENDHLSL
         }

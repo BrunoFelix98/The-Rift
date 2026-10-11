@@ -87,8 +87,12 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
     // Server: last processed tick plus a budget so a client can't move faster by flooding inputs
     private int lastProcessedTick = -1;
-    private float inputBudget;
-    private const float MaxInputBurst = 25f;
+    // Refills a bit faster than the tick rate: an exact match hovered near zero and dropped legit
+    // inputs whenever packets arrived bunched, which the owner then saw as rubberbanding
+    private const float MaxInputBurst = 50f;
+    private const float InputRateAllowance = 1.25f;
+    private float inputBudget = MaxInputBurst;
+    private float nextDropWarning;
 
     // Remote clients: latest server state and when it arrived, for smoothing/extrapolation
     private FighterState remoteState;
@@ -212,7 +216,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         if (IsServer)
         {
-            inputBudget = Mathf.Min(inputBudget + Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
+            inputBudget = Mathf.Min(inputBudget + InputRateAllowance * Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
         }
 
         if (!IsOwner)
@@ -333,7 +337,15 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         if (input.tick <= lastProcessedTick) return;
 
         // Dropped inputs show up as a correction on the owner instead of extra speed
-        if (inputBudget < 1f) return;
+        if (inputBudget < 1f)
+        {
+            if (Time.time > nextDropWarning)
+            {
+                nextDropWarning = Time.time + 5f;
+                Debug.LogWarning($"[Fighter] Dropping inputs from client {OwnerClientId}: sending faster than {InputRateAllowance:0.##}x the tick rate.");
+            }
+            return;
+        }
         inputBudget -= 1f;
 
         lastProcessedTick = input.tick;

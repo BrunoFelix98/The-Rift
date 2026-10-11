@@ -32,7 +32,9 @@ Shader "TheRift/Celestial/Planet"
         Pass
         {
             Name "ForwardLit"
-            Tags { "LightMode" = "UniversalForward" }
+            // ForwardOnly: the renderer is in Deferred mode, where plain UniversalForward opaques
+            // never reach the depth buffer and everything drawn later paints over them
+            Tags { "LightMode" = "UniversalForwardOnly" }
             ZWrite On
             ZTest LEqual
             Cull Back

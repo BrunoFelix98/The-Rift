@@ -1,6 +1,7 @@
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class PlayerSetup : NetworkBehaviour
 {
@@ -42,6 +43,9 @@ public class PlayerSetup : NetworkBehaviour
             cam.enabled = true;
             // Ensure we can see the massive systems (1 million units far clip)
             cam.farClipPlane = 1000000f;
+            // Post-processing (bloom on stars, corona and lava) is off in the prefab
+            var cameraData = cam.GetUniversalAdditionalCameraData();
+            if (cameraData != null) cameraData.renderPostProcessing = true;
 
             if (cam.gameObject.name.Contains("Main") || ownerCameras.Length == 1)
             {

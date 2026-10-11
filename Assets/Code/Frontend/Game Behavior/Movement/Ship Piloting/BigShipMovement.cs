@@ -58,8 +58,11 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     private Quaternion prevRotation = Quaternion.identity;
 
     private int lastProcessedTick = -1;
-    private float inputBudget;
-    private const float MaxInputBurst = 25f;
+    // Refills a bit faster than the tick rate: an exact match hovered near zero and dropped legit
+    // inputs whenever packets arrived bunched, which the owner then saw as rubberbanding
+    private const float MaxInputBurst = 50f;
+    private const float InputRateAllowance = 1.25f;
+    private float inputBudget = MaxInputBurst;
 
     private ShipState remoteState;
     private float remoteStateTime;
@@ -127,7 +130,7 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         if (IsServer)
         {
-            inputBudget = Mathf.Min(inputBudget + Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
+            inputBudget = Mathf.Min(inputBudget + InputRateAllowance * Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
         }
 
         if (!IsOwner)
