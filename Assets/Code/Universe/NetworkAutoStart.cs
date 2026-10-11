@@ -14,6 +14,9 @@ public class NetworkAutoStart : MonoBehaviour
     [Tooltip("Address clients connect to in builds. The editor uses 127.0.0.1 unless -address is passed.")]
     public string address = "127.0.0.1";
 
+    [Tooltip("Frame cap for a dedicated server. Uncapped it pins a CPU core, and the resulting stalls hit every client at once.")]
+    public int serverFrameRate = 60;
+
     [Header("Scenes")]
     [Tooltip("Loaded by the server through NGO scene management; clients follow automatically.")]
     public string gameplaySceneName = "MainGameScene";
@@ -115,6 +118,11 @@ public class NetworkAutoStart : MonoBehaviour
             {
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
                 NetworkManager.Singleton.OnServerStarted += LoadGameplayScene;
+                if (!Application.isEditor)
+                {
+                    QualitySettings.vSyncCount = 0;
+                    Application.targetFrameRate = serverFrameRate;
+                }
                 NetworkManager.Singleton.StartServer();
             }
             else

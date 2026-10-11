@@ -80,25 +80,6 @@ public static class SystemCenteredSetupHelper
         var pool = mgr.GetComponent<CelestialPool>() ?? mgr.AddComponent<CelestialPool>();
         var visualizer = mgr.GetComponent<SystemCenteredVisualizer>() ?? mgr.AddComponent<SystemCenteredVisualizer>();
         
-        // CLEANUP: Remove accidental components that shouldn't be on the manager
-        System.Type[] accidentalTypes = new System.Type[] {
-            System.Type.GetType("NetworkedCelestial"),
-            System.Type.GetType("NetworkedPlanetData"),
-            System.Type.GetType("NetworkedMoonData"),
-            System.Type.GetType("NetworkedAsteroidData"),
-            System.Type.GetType("NetworkedStationData")
-        };
-
-        foreach (var type in accidentalTypes)
-        {
-            if (type == null) continue;
-            var component = mgr.GetComponent(type);
-            if (component != null) 
-            {
-                Object.DestroyImmediate(component);
-                Debug.Log($"[Setup] Removed accidental {type.Name} from UniverseManager");
-            }
-        }
         
         // New Components for Scene-per-System
         if (mgr.GetComponent<GalacticTimeManager>() == null) mgr.AddComponent<GalacticTimeManager>();

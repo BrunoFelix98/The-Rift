@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Server-authoritative fighter movement with client-side prediction.
-/// The owner simulates its inputs immediately and sends them to the server, which runs the exact same
-/// deterministic step and publishes the resulting state. The owner reconciles against that state by
-/// replaying the inputs the server hasn't processed yet; other clients smooth towards it.
+/// Fighter movement with client-side prediction. Facing is owner-authoritative: the owner turns the
+/// ship from its mouse input and sends the resulting rotation with every tick's input, so the server
+/// never corrects where the player is looking. Position is server-authoritative: the server runs the
+/// same deterministic step and publishes the state, the owner reconciles position by replaying the
+/// inputs the server hasn't processed yet; other clients smooth towards it.
 /// No physics integration is involved, so the result doesn't depend on frame timing.
 /// </summary>
 public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
@@ -43,8 +44,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         public float strafe;
         public float strafeV;
-        public float roll;
-        public Vector2 look;
+        public Quaternion rotation; // The owner's facing after this tick's mouse/roll input
         public bool accelerate;
         public bool brake;
         public int tick;
@@ -53,8 +53,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         {
             serializer.SerializeValue(ref strafe);
             serializer.SerializeValue(ref strafeV);
-            serializer.SerializeValue(ref roll);
-            serializer.SerializeValue(ref look);
+            serializer.SerializeValue(ref rotation);
             serializer.SerializeValue(ref accelerate);
             serializer.SerializeValue(ref brake);
             serializer.SerializeValue(ref tick);
@@ -85,14 +84,9 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     private const int MaxPendingInputs = 500;
     private int localTick = 0;
 
-    // Server: last processed tick plus a budget so a client can't move faster by flooding inputs
+    // Server: inputs are applied strictly in tick order, every one of them. Dropping any (e.g. a rate
+    // limit after a server hitch delivered a backlog) desyncs every client at once
     private int lastProcessedTick = -1;
-    // Refills a bit faster than the tick rate: an exact match hovered near zero and dropped legit
-    // inputs whenever packets arrived bunched, which the owner then saw as rubberbanding
-    private const float MaxInputBurst = 50f;
-    private const float InputRateAllowance = 1.25f;
-    private float inputBudget = MaxInputBurst;
-    private float nextDropWarning;
 
     // Remote clients: latest server state and when it arrived, for smoothing/extrapolation
     private FighterState remoteState;
@@ -101,7 +95,6 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     private const float RemoteSmoothing = 20f;
 
     private const float ReconcilePositionTolerance = 0.01f;
-    private const float ReconcileAngleTolerance = 0.1f;
 
     private void Awake()
     {
@@ -214,11 +207,6 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
     private void Update()
     {
-        if (IsServer)
-        {
-            inputBudget = Mathf.Min(inputBudget + InputRateAllowance * Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
-        }
-
         if (!IsOwner)
         {
             if (!IsServer) FollowRemoteState();
@@ -276,11 +264,11 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
         localTick++;
 
+        // Held keys are sampled per tick; summing them per frame made roll speed depend on frame rate
+        float roll = rollAction.action.ReadValue<float>();
         InputData input = new InputData
         {
-            look = accumulatedLookInput,
-            // Held keys are sampled per tick; summing them per frame made roll speed depend on frame rate
-            roll = rollAction.action.ReadValue<float>(),
+            rotation = ApplyLook(simState.rotation, accumulatedLookInput, roll, Time.fixedDeltaTime),
             strafe = moveAction.action.ReadValue<float>(),
             strafeV = verticalStrafe.action.ReadValue<float>(),
             accelerate = accelerateAction.action.IsPressed(),
@@ -307,13 +295,18 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         SendInputToServerRpc(input);
     }
 
+    private Quaternion ApplyLook(Quaternion rotation, Vector2 look, float roll, float dt)
+    {
+        float pitchDelta = -look.y * pitchSpeed * mouseSensitivity * dt;
+        float yawDelta = look.x * yawSpeed * mouseSensitivity * dt;
+        float rollDelta = roll * rollSpeed * dt;
+        return (rotation * Quaternion.Euler(pitchDelta, yawDelta, rollDelta)).normalized;
+    }
+
     // Shared by owner prediction, server simulation and reconcile replay; must stay deterministic
     private FighterState Step(FighterState state, InputData input, float dt)
     {
-        float pitchDelta = -input.look.y * pitchSpeed * mouseSensitivity * dt;
-        float yawDelta = input.look.x * yawSpeed * mouseSensitivity * dt;
-        float rollDelta = input.roll * rollSpeed * dt;
-        state.rotation = (state.rotation * Quaternion.Euler(pitchDelta, yawDelta, rollDelta)).normalized;
+        state.rotation = input.rotation;
 
         if (input.accelerate)
             state.speed = Mathf.Min(state.speed + acceleration * dt, maxForwardSpeed);
@@ -336,17 +329,11 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
         if (input.tick <= lastProcessedTick) return;
 
-        // Dropped inputs show up as a correction on the owner instead of extra speed
-        if (inputBudget < 1f)
-        {
-            if (Time.time > nextDropWarning)
-            {
-                nextDropWarning = Time.time + 5f;
-                Debug.LogWarning($"[Fighter] Dropping inputs from client {OwnerClientId}: sending faster than {InputRateAllowance:0.##}x the tick rate.");
-            }
-            return;
-        }
-        inputBudget -= 1f;
+        // A malformed rotation would poison the state for everyone watching this ship
+        float qLen = input.rotation.x * input.rotation.x + input.rotation.y * input.rotation.y
+                   + input.rotation.z * input.rotation.z + input.rotation.w * input.rotation.w;
+        if (float.IsNaN(qLen) || qLen < 0.5f) input.rotation = simState.rotation;
+        else input.rotation = input.rotation.normalized;
 
         lastProcessedTick = input.tick;
         simState = Step(simState, input, Time.fixedDeltaTime);
@@ -380,10 +367,10 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         }
         replayed.tick = simState.tick;
 
-        bool positionOff = Vector3d.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
-        bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
-        if (positionOff || rotationOff)
+        // Position only: the facing is the owner's own and must never be pulled around
+        if (Vector3d.Distance(replayed.position, simState.position) > ReconcilePositionTolerance)
         {
+            replayed.rotation = simState.rotation;
             simState = replayed;
         }
     }

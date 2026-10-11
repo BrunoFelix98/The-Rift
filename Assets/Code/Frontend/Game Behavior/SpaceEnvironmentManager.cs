@@ -14,7 +14,7 @@ public class SpaceEnvironmentManager : MonoBehaviour
 
     [Header("Ambient Settings")]
     public AmbientMode ambientMode = AmbientMode.Flat;
-    public Color ambientColor = new Color(0.05f, 0.05f, 0.05f, 1f);
+    public Color ambientColor = new Color(0.008f, 0.008f, 0.01f, 1f);
 
     [Tooltip("Seconds between checks for the local player's camera.")]
     public float cameraCheckInterval = 0.5f;

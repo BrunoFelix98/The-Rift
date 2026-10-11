@@ -20,7 +20,7 @@ Shader "TheRift/Celestial/Planet"
         [HDR] _RimColor ("Atmosphere Rim Color", Color) = (0.3, 0.55, 1, 1)
         _RimStrength ("Atmosphere Rim Strength", Range(0, 4)) = 0.8
         _EmissionStrength ("Emission Strength", Range(0, 8)) = 2
-        _Ambient ("Ambient", Range(0, 0.3)) = 0.035
+        _Ambient ("Ambient", Range(0, 0.3)) = 0.003
         _CityLights ("City Lights", Range(0, 1)) = 0
         _BumpStrength ("Relief Strength", Range(0, 0.05)) = 0.012
     }
@@ -411,8 +411,8 @@ Shader "TheRift/Celestial/Planet"
 
                 float ndlSmooth = dot(N, L);
                 float ndl = dot(Ns, L);
-                // Soft terminator instead of a hard Lambert cut
-                float diffuse = smoothstep(-0.1, 0.5, ndl) * saturate(ndl * 0.5 + 0.6);
+                // Narrow soft terminator; the night side gets essentially no direct light
+                float diffuse = smoothstep(-0.04, 0.45, ndl) * saturate(ndl * 0.6 + 0.4);
                 float daylight = smoothstep(-0.15, 0.2, ndlSmooth);
 
                 float shadow = 1.0 - s.cloudShadow * 0.55 * (1.0 - s.clouds);
@@ -423,7 +423,7 @@ Shader "TheRift/Celestial/Planet"
                 color += spec * lightColor * 0.6;
 
                 // Clouds, lit with the smooth normal, slightly brighter at the terminator edge
-                float3 cloudLit = (smoothstep(-0.1, 0.45, ndlSmooth) * lightColor + _Ambient) * 0.95;
+                float3 cloudLit = (smoothstep(-0.04, 0.45, ndlSmooth) * lightColor + _Ambient) * 0.95;
                 color = lerp(color, cloudLit, s.clouds);
 
                 color += s.emission;
@@ -431,7 +431,7 @@ Shader "TheRift/Celestial/Planet"
 
                 // Atmospheric scattering at the limb, brighter on the day side
                 float rim = pow(1.0 - saturate(dot(N, V)), 3.0);
-                float dayRim = saturate(ndlSmooth * 0.8 + 0.35);
+                float dayRim = smoothstep(-0.2, 0.4, ndlSmooth);
                 color += _RimColor.rgb * rim * _RimStrength * dayRim;
 
                 return half4(color, 1.0);

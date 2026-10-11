@@ -7,6 +7,5 @@ public class AsteroidData : MonoBehaviour
     public void Initialize(AsteroidSO template, CelestialHierarchyNode node)
     {
         data = template; 
-        GetComponent<NetworkedAsteroidData>()?.Reinitialize(template, node);
     }
 }

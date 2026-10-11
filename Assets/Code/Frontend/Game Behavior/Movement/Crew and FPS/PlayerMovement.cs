@@ -5,8 +5,9 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// FPS crew movement with the same prediction model as FighterPiloting. Each tick's input
-/// (move, jump, yaw delta) is simulated by the owner and the server with the same step;
-/// the owner reconciles against the server state by replaying unacknowledged inputs.
+/// (move, jump, the owner's yaw) is simulated by the owner and the server with the same step;
+/// the owner reconciles position against the server state by replaying unacknowledged inputs.
+/// Yaw is owner-authoritative, so the server never turns the player's view.
 /// </summary>
 public class PlayerMovement : NetworkBehaviour, ITeleportable
 {
@@ -33,14 +34,14 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         public int tick;
         public Vector2 move;
         public bool jump;
-        public float yawDelta;
+        public float yaw; // Owner's facing after this tick's mouse input
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref tick);
             serializer.SerializeValue(ref move);
             serializer.SerializeValue(ref jump);
-            serializer.SerializeValue(ref yawDelta);
+            serializer.SerializeValue(ref yaw);
         }
     }
 
@@ -64,12 +65,8 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     private const int MaxPendingInputs = 500;
     private int localTick = 0;
 
+    // Every input is applied in tick order; dropping any desyncs the owner
     private int lastProcessedTick = -1;
-    // Refills a bit faster than the tick rate: an exact match hovered near zero and dropped legit
-    // inputs whenever packets arrived bunched, which the owner then saw as rubberbanding
-    private const float MaxInputBurst = 50f;
-    private const float InputRateAllowance = 1.25f;
-    private float inputBudget = MaxInputBurst;
 
     private CrewState remoteState;
     private float remoteStateTime;
@@ -141,11 +138,6 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
 
     void Update()
     {
-        if (IsServer)
-        {
-            inputBudget = Mathf.Min(inputBudget + InputRateAllowance * Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
-        }
-
         if (!IsOwner)
         {
             if (!IsServer) FollowRemoteState();
@@ -174,7 +166,7 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
             tick = localTick,
             move = Application.isFocused ? moveAction.action.ReadValue<Vector2>() : Vector2.zero,
             jump = jumpRequested,
-            yawDelta = playerLook != null ? playerLook.ConsumeYawDelta() : 0f
+            yaw = Mathf.Repeat(simState.yaw + (playerLook != null ? playerLook.ConsumeYawDelta() : 0f), 360f)
         };
 
         simState = Step(simState, input, Time.fixedDeltaTime);
@@ -200,7 +192,7 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         Vector3 startRender = FloatingOrigin.ToRender(state.position);
         if ((transform.position - startRender).sqrMagnitude > 1e-6f) SetControllerPosition(startRender);
 
-        state.yaw = Mathf.Repeat(state.yaw + input.yawDelta, 360f);
+        state.yaw = input.yaw;
         Quaternion rotation = Quaternion.Euler(0f, state.yaw, 0f);
 
         int graceTicks = Mathf.CeilToInt(groundedGracePeriod / dt);
@@ -236,8 +228,7 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     void SendInputServerRpc(InputData input)
     {
         if (input.tick <= lastProcessedTick) return;
-        if (inputBudget < 1f) return;
-        inputBudget -= 1f;
+        if (float.IsNaN(input.yaw)) input.yaw = simState.yaw;
 
         lastProcessedTick = input.tick;
         simState = Step(simState, input, Time.fixedDeltaTime);
@@ -274,9 +265,12 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         }
         replayed.tick = simState.tick;
 
-        bool off = Vector3d.Distance(replayed.position, shownPosition) > ReconcilePositionTolerance
-                   || Mathf.Abs(Mathf.DeltaAngle(replayed.yaw, simState.yaw)) > 0.1f;
-        simState = off ? replayed : simState;
+        // Position only: the view direction is the owner's own
+        if (Vector3d.Distance(replayed.position, shownPosition) > ReconcilePositionTolerance)
+        {
+            replayed.yaw = simState.yaw;
+            simState = replayed;
+        }
         SetControllerPosition(FloatingOrigin.ToRender(simState.position));
     }
 

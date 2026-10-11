@@ -57,12 +57,8 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     private Vector3d prevPosition;
     private Quaternion prevRotation = Quaternion.identity;
 
+    // Every input is applied in tick order; dropping any desyncs the owner
     private int lastProcessedTick = -1;
-    // Refills a bit faster than the tick rate: an exact match hovered near zero and dropped legit
-    // inputs whenever packets arrived bunched, which the owner then saw as rubberbanding
-    private const float MaxInputBurst = 50f;
-    private const float InputRateAllowance = 1.25f;
-    private float inputBudget = MaxInputBurst;
 
     private ShipState remoteState;
     private float remoteStateTime;
@@ -70,7 +66,6 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     private const float RemoteSmoothing = 15f;
 
     private const float ReconcilePositionTolerance = 0.01f;
-    private const float ReconcileAngleTolerance = 0.1f;
 
     private Transform RotationTarget => shipModel != null ? shipModel : transform;
 
@@ -128,11 +123,6 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
 
     private void Update()
     {
-        if (IsServer)
-        {
-            inputBudget = Mathf.Min(inputBudget + InputRateAllowance * Time.deltaTime / Time.fixedDeltaTime, MaxInputBurst);
-        }
-
         if (!IsOwner)
         {
             if (!IsServer) FollowRemoteState();
@@ -228,8 +218,6 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     private void SendInputServerRpc(InputData input)
     {
         if (input.tick <= lastProcessedTick) return;
-        if (inputBudget < 1f) return;
-        inputBudget -= 1f;
 
         lastProcessedTick = input.tick;
         simState = Step(simState, input, Time.fixedDeltaTime);
@@ -263,10 +251,11 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         }
         replayed.tick = simState.tick;
 
+        // Position and target only; the owner's view of its ship's facing is never pulled around
         bool positionOff = Vector3d.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
-        bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
-        if (positionOff || rotationOff || replayed.hasTarget != simState.hasTarget)
+        if (positionOff || replayed.hasTarget != simState.hasTarget)
         {
+            replayed.rotation = simState.rotation;
             simState = replayed;
         }
     }

@@ -9,7 +9,7 @@ Shader "TheRift/Celestial/Ring"
         _RingColorA ("Color A", Color) = (0.85, 0.8, 0.7, 1)
         _RingColorB ("Color B", Color) = (0.55, 0.48, 0.4, 1)
         _Opacity ("Opacity", Range(0, 1)) = 0.85
-        _Ambient ("Ambient", Range(0, 0.5)) = 0.06
+        _Ambient ("Ambient", Range(0, 0.5)) = 0.01
     }
 
     SubShader

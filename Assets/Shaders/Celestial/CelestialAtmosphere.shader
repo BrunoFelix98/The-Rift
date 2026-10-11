@@ -8,7 +8,7 @@ Shader "TheRift/Celestial/Atmosphere"
         [HDR] _AtmoColor ("Atmosphere Color", Color) = (0.3, 0.55, 1, 1)
         _AtmoStrength ("Strength", Range(0, 4)) = 1.2
         _AtmoPower ("Falloff Power", Range(1, 8)) = 3
-        _NightLevel ("Night Side Level", Range(0, 1)) = 0.05
+        _NightLevel ("Night Side Level", Range(0, 1)) = 0.01
     }
 
     SubShader
@@ -73,7 +73,8 @@ Shader "TheRift/Celestial/Atmosphere"
                 // Faint haze over the planet disc itself
                 glow += 0.06 * (1.0 - rim);
 
-                float day = saturate(dot(N, L) * 0.9 + 0.3);
+                // The scattering glow wraps a little past the terminator, then the night side goes dark
+                float day = smoothstep(-0.25, 0.35, dot(N, L));
                 float lit = lerp(_NightLevel, 1.0, day);
                 // Backlit planets get a bright ring when the star is behind them
                 float forward = pow(saturate(dot(-V, L)), 6.0) * rim * 1.5;

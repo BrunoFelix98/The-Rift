@@ -7,6 +7,5 @@ public class StationData : MonoBehaviour
     public void Initialize(StationSO template, CelestialHierarchyNode node)
     {
         data = template;
-        GetComponent<NetworkedStationData>()?.Reinitialize(template, node);
     }
 }
