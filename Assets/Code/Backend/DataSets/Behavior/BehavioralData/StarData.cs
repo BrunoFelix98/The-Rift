@@ -111,16 +111,19 @@ public class StarData : MonoBehaviour
         }
 
         _coronaBlock ??= new MaterialPropertyBlock();
-        var coronaRenderer = CelestialVisuals.EnsureChild(transform, "Corona", CelestialVisuals.QuadMesh, CelestialVisuals.GetMaterial("CelestialCorona"));
+        // Shell around the star: the star's own sphere scaled to the corona size
+        var starFilter = GetComponent<MeshFilter>();
+        Mesh shell = starFilter != null ? starFilter.sharedMesh : null;
+        var coronaRenderer = CelestialVisuals.EnsureChild(transform, "Corona", shell, CelestialVisuals.GetMaterial("CelestialCorona"));
         coronaRenderer.transform.localPosition = Vector3.zero;
         coronaRenderer.transform.localRotation = Quaternion.identity;
-        coronaRenderer.transform.localScale = Vector3.one;
+        coronaRenderer.transform.localScale = Vector3.one * coronaSize;
         _coronaBlock.Clear();
         _coronaBlock.SetFloat(SeedId, rng.Next());
         _coronaBlock.SetColor(CoronaColorId, corona);
         _coronaBlock.SetFloat(SizeId, coronaSize);
         coronaRenderer.SetPropertyBlock(_coronaBlock);
-        coronaRenderer.enabled = true;
+        coronaRenderer.enabled = shell != null;
 
         PublishStarGlobals();
     }

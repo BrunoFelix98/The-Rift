@@ -69,7 +69,7 @@ public class ShipHud : MonoBehaviour
         DrawRollScale(center, roll);
         DrawHeadingTape(new Vector2(center.x, 48f), heading);
         DrawFlightPathMarker(cam, ship.position);
-        DrawReadouts(ship.position, pitch, heading, roll);
+        DrawReadouts(FloatingOrigin.ToWorld(ship.position).ToVector3(), pitch, heading, roll);
 
         GUI.color = previous;
     }

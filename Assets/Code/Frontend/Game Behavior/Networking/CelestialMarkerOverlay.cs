@@ -2,20 +2,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Fixed-size location markers for celestials in the current system that are too small to see.
-/// Stations and gates (navigation targets) also get an edge marker when off-screen.
-/// Asteroids and nebulae are left out to keep the view readable.
+/// Fixed-size location markers for every celestial in the current system until you are close to it.
+/// Stations and gates (navigation targets) also get an edge marker when off-screen. Asteroids get
+/// small markers, labelled only at short range so dozens of them stay readable. Nebulae are skipped.
 /// </summary>
 public class CelestialMarkerOverlay : MonoBehaviour
 {
     private static CelestialMarkerOverlay instance;
 
-    [Tooltip("Celestials smaller than this on screen (pixels) get a marker.")]
-    public float minVisiblePixels = 24f;
+    [Tooltip("Markers hide once you are within this many body radii of the surface (at least closeDistance).")]
+    public float closeRadii = 1.5f;
+    public float closeDistance = 1500f;
+    public float asteroidCloseDistance = 400f;
+    [Tooltip("Asteroid labels only show within this distance.")]
+    public float asteroidLabelRange = 5000f;
     public float markerSize = 10f;
+    public float asteroidMarkerSize = 5f;
     public float edgeMargin = 48f;
-    [Tooltip("Moons further away than this are not marked, there are many of them.")]
-    public float moonMarkerRange = 100000f;
 
     private struct Marker
     {
@@ -23,6 +26,7 @@ public class CelestialMarkerOverlay : MonoBehaviour
         public bool offScreen;
         public Color color;
         public string label;
+        public float size;
     }
 
     private readonly List<Marker> markers = new List<Marker>();
@@ -35,6 +39,7 @@ public class CelestialMarkerOverlay : MonoBehaviour
     private static readonly Color MoonColor = new Color(0.75f, 0.75f, 0.8f, 0.75f);
     private static readonly Color StationColor = new Color(1f, 0.6f, 0.25f, 0.95f);
     private static readonly Color GateColor = new Color(0.9f, 0.45f, 1f, 0.95f);
+    private static readonly Color AsteroidColor = new Color(0.7f, 0.62f, 0.5f, 0.7f);
 
     public static void EnsureExists()
     {
@@ -60,42 +65,35 @@ public class CelestialMarkerOverlay : MonoBehaviour
 
         float scaleMultiplier = visualizer.settings != null ? visualizer.settings.modelScaleMultiplier : 1f;
         Vector3 camPos = cam.transform.position;
-        float pixelsPerUnitAtOne = Screen.height / (2f * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad));
 
         foreach (var node in visualizer.CurrentNodes)
         {
             CelestialType type = node.Params.Type;
             if (!TryGetStyle(type, out Color color, out bool edgeWhenOffScreen)) continue;
 
-            Vector3 worldPos = node.CurrentWorldPosition;
+            Vector3 worldPos = node.RenderPosition;
             float distance = Vector3.Distance(camPos, worldPos);
-            if (type == CelestialType.MOON && distance > moonMarkerRange) continue;
 
             // Unit-sphere meshes scaled by visualRadius
             float worldRadius = node.visualRadius * scaleMultiplier * 0.5f;
-            if (distance <= worldRadius) continue;
+            bool asteroid = type == CelestialType.ASTEROID;
+            float close = asteroid ? Mathf.Max(worldRadius * 2f, asteroidCloseDistance) : Mathf.Max(worldRadius * closeRadii, closeDistance);
+            if (distance - worldRadius <= close) continue;
 
             Vector3 screen = cam.WorldToScreenPoint(worldPos);
             bool behind = screen.z < 0f;
             bool onScreen = !behind && screen.x >= 0f && screen.x <= Screen.width && screen.y >= 0f && screen.y <= Screen.height;
-
-            if (onScreen)
-            {
-                float pixels = 2f * worldRadius / distance * pixelsPerUnitAtOne;
-                if (pixels >= minVisiblePixels) continue;
-            }
-            else if (!edgeWhenOffScreen)
-            {
-                continue;
-            }
+            if (!onScreen && !edgeWhenOffScreen) continue;
 
             Vector2 pos = onScreen ? new Vector2(screen.x, screen.y) : ClampToScreenEdge(screen, behind);
+            bool labelled = !asteroid || distance <= asteroidLabelRange;
             markers.Add(new Marker
             {
                 guiPosition = new Vector2(pos.x, Screen.height - pos.y),
                 offScreen = !onScreen,
                 color = color,
-                label = $"{GetName(node)}  {FormatDistance(distance)}"
+                size = asteroid ? asteroidMarkerSize : (onScreen ? markerSize : markerSize * 1.3f),
+                label = labelled ? $"{GetName(node)}  {DistanceFormat.Format(distance)}" : null
             });
         }
     }
@@ -110,6 +108,7 @@ public class CelestialMarkerOverlay : MonoBehaviour
             case CelestialType.MOON: color = MoonColor; return true;
             case CelestialType.STATION: color = StationColor; edgeWhenOffScreen = true; return true;
             case CelestialType.GATE: color = GateColor; edgeWhenOffScreen = true; return true;
+            case CelestialType.ASTEROID: color = AsteroidColor; return true;
             default: color = Color.clear; return false;
         }
     }
@@ -140,10 +139,6 @@ public class CelestialMarkerOverlay : MonoBehaviour
         return center + dir * scale;
     }
 
-    private static string FormatDistance(float distance)
-    {
-        return distance < 1000f ? $"{distance:0} m" : $"{distance / 1000f:0.0} km";
-    }
 
     private void OnGUI()
     {
@@ -160,8 +155,9 @@ public class CelestialMarkerOverlay : MonoBehaviour
         foreach (var marker in markers)
         {
             GUI.color = marker.color;
-            float size = marker.offScreen ? markerSize * 1.3f : markerSize;
+            float size = marker.size;
             DrawDiamondOutline(marker.guiPosition, size);
+            if (marker.label == null) continue;
 
             var labelRect = new Rect(marker.guiPosition.x - 120f, marker.guiPosition.y + size * 0.5f + 4f, 240f, 24f);
             GUI.color = Color.white;

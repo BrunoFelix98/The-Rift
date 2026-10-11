@@ -62,7 +62,11 @@ public class JumpManager : NetworkBehaviour
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client) && client.PlayerObject != null
             && visualizer.TryGetCelestialWorldPosition(currentSystem, gateId, out Vector3 gatePos))
         {
-            float distance = Vector3.Distance(client.PlayerObject.transform.position, gatePos);
+            // Simulated world position: on a host the transform is offset by the floating origin
+            Vector3d playerPos = client.PlayerObject.TryGetComponent(out ITeleportable mover)
+                ? mover.WorldPosition
+                : FloatingOrigin.ToWorld(client.PlayerObject.transform.position);
+            float distance = (float)Vector3d.Distance(playerPos, new Vector3d(gatePos));
             if (distance > maxGateUseDistance)
             {
                 Debug.LogWarning($"[JumpManager] Server: Client {clientId} is {distance:0} away from gate '{gate.orbit.Name}', too far.");

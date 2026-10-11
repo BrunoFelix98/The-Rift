@@ -12,7 +12,6 @@ public static class CelestialVisuals
 
     private static readonly Dictionary<string, Material> materials = new Dictionary<string, Material>();
     private static Mesh ringMesh;
-    private static Mesh quadMesh;
 
     public const float RingInnerRadius = 0.65f; // planet mesh radius is 0.5
     public const float RingOuterRadius = 1.3f;
@@ -106,26 +105,6 @@ public static class CelestialVisuals
             ringMesh.triangles = tris;
             ringMesh.RecalculateBounds();
             return ringMesh;
-        }
-    }
-
-    /// <summary>Quad for the camera-facing corona; bounds cover the shader's view-space expansion.</summary>
-    public static Mesh QuadMesh
-    {
-        get
-        {
-            if (quadMesh != null) return quadMesh;
-
-            quadMesh = new Mesh { name = "CelestialCoronaQuad" };
-            quadMesh.vertices = new[]
-            {
-                new Vector3(-1f, -1f, 0f), new Vector3(1f, -1f, 0f),
-                new Vector3(1f, 1f, 0f), new Vector3(-1f, 1f, 0f)
-            };
-            quadMesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
-            // Corona _Size is in star radii (0.5 local units); 8 radii => 4 local units each way
-            quadMesh.bounds = new Bounds(Vector3.zero, Vector3.one * 10f);
-            return quadMesh;
         }
     }
 

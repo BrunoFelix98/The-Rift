@@ -165,7 +165,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DynamicSkyboxManager
   skyboxRadius: 90000
   starSize: 500
-  starMaterial: {fileID: 2100000, guid: 7f090c4ffd6c09c47b6976dcc391643b, type: 2}
   visualizer: {fileID: 1709085249}
   updateInterval: 2
 --- !u!1 &1709085247
@@ -350,7 +349,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpaceEnvironmentManager
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  disableSkybox: 1
   ambientMode: 3
   ambientColor: {r: 0.05, g: 0.05, b: 0.05, a: 1}
 --- !u!114 &1709085257

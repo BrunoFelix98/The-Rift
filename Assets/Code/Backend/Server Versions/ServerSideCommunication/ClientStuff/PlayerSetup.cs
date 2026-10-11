@@ -31,6 +31,8 @@ public class PlayerSetup : NetworkBehaviour
         // Fixed-size markers for other players and celestials too small or off-screen to see
         PlayerMarkerOverlay.EnsureExists();
         CelestialMarkerOverlay.EnsureExists();
+        // Keeps rendering near the origin so far-out coordinates don't jitter
+        FloatingOrigin.EnsureExists();
         if (TryGetComponent(out IShipHudSource hudSource)) ShipHud.Attach(hudSource);
 
         // For the local owner, enable cameras

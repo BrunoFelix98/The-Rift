@@ -24,6 +24,8 @@ public class CelestialBodyVisuals : MonoBehaviour
     private static readonly int RingColorAId = Shader.PropertyToID("_RingColorA");
     private static readonly int RingColorBId = Shader.PropertyToID("_RingColorB");
     private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
+    private static readonly int CityLightsId = Shader.PropertyToID("_CityLights");
+    private static readonly int BumpStrengthId = Shader.PropertyToID("_BumpStrength");
 
     private const float AtmosphereScale = 1.07f;
 
@@ -70,6 +72,8 @@ public class CelestialBodyVisuals : MonoBehaviour
         surfaceBlock.SetFloat(SeaLevelId, 0.52f);
         surfaceBlock.SetFloat(CloudAmountId, 0f);
         surfaceBlock.SetFloat(EmissionStrengthId, 0f);
+        surfaceBlock.SetFloat(CityLightsId, 0f);
+        surfaceBlock.SetFloat(BumpStrengthId, 0.012f);
 
         Color atmoColor = Color.black;
         float atmoStrength = 0f;
@@ -86,6 +90,9 @@ public class CelestialBodyVisuals : MonoBehaviour
                 surfaceBlock.SetColor(ColorDId, CelestialVisuals.Vary(new Color(0.05f, 0.30f, 0.46f), ref rng, 0.15f));
                 surfaceBlock.SetFloat(SeaLevelId, arid ? rng.Range(0.40f, 0.46f) : rng.Range(0.48f, 0.56f));
                 surfaceBlock.SetFloat(CloudAmountId, rng.Range(0.5f, 0.95f));
+                // Some temperate worlds are inhabited and glow on their night side
+                surfaceBlock.SetFloat(CityLightsId, rng.Chance(0.5f) ? rng.Range(0.5f, 1f) : 0f);
+                surfaceBlock.SetFloat(BumpStrengthId, 0.008f);
                 atmoColor = new Color(0.30f, 0.55f, 1.0f);
                 atmoStrength = 1.3f;
                 ringChance = 0.1f;
@@ -99,6 +106,7 @@ public class CelestialBodyVisuals : MonoBehaviour
                 surfaceBlock.SetColor(ColorCId, CelestialVisuals.Vary(palette[2], ref rng, 0.05f));
                 surfaceBlock.SetColor(ColorDId, CelestialVisuals.Vary(palette[3], ref rng, 0.08f));
                 atmoColor = Color.Lerp(palette[0], Color.white, 0.35f);
+                surfaceBlock.SetFloat(BumpStrengthId, 0.002f);
                 atmoStrength = 0.9f;
                 ringChance = 0.65f;
                 break;
@@ -108,6 +116,7 @@ public class CelestialBodyVisuals : MonoBehaviour
                 surfaceBlock.SetColor(ColorAId, CelestialVisuals.Vary(new Color(0.86f, 0.92f, 1.0f), ref rng, 0.06f));
                 surfaceBlock.SetColor(ColorBId, CelestialVisuals.Vary(new Color(0.24f, 0.44f, 0.70f), ref rng, 0.15f));
                 surfaceBlock.SetColor(ColorCId, CelestialVisuals.Vary(new Color(0.68f, 0.82f, 0.94f), ref rng, 0.08f));
+                surfaceBlock.SetFloat(BumpStrengthId, 0.01f);
                 if (!isMoon && rng.Chance(0.6f))
                 {
                     atmoColor = new Color(0.60f, 0.85f, 1.0f);
@@ -122,6 +131,7 @@ public class CelestialBodyVisuals : MonoBehaviour
                 surfaceBlock.SetColor(ColorBId, CelestialVisuals.Vary(new Color(0.22f, 0.15f, 0.11f), ref rng, 0.2f));
                 surfaceBlock.SetColor(ColorCId, new Color(1.0f, rng.Range(0.30f, 0.50f), 0.06f));
                 surfaceBlock.SetFloat(EmissionStrengthId, rng.Range(2.5f, 4f));
+                surfaceBlock.SetFloat(BumpStrengthId, 0.014f);
                 if (!isMoon && rng.Chance(0.8f))
                 {
                     atmoColor = new Color(1.0f, 0.40f, 0.15f);
@@ -138,6 +148,7 @@ public class CelestialBodyVisuals : MonoBehaviour
                 surfaceBlock.SetColor(ColorAId, baseColor);
                 surfaceBlock.SetColor(ColorBId, baseColor * 0.45f);
                 surfaceBlock.SetColor(ColorCId, Color.Lerp(baseColor * 1.35f, Color.white * 0.75f, 0.25f));
+                surfaceBlock.SetFloat(BumpStrengthId, isMoon ? 0.02f : 0.016f);
                 if (!isMoon && rng.Chance(0.25f))
                 {
                     atmoColor = new Color(0.75f, 0.62f, 0.50f);

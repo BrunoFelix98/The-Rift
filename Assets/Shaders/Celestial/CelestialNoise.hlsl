@@ -112,6 +112,61 @@ float CelVoronoi(float3 p)
     return sqrt(best);
 }
 
+// Cellular noise returning (F1, F2); F2 - F1 is small along cell borders (plates, cracks, cells)
+float2 CelVoronoi2(float3 p)
+{
+    float3 i = floor(p);
+    float3 f = frac(p);
+    float f1 = 8.0;
+    float f2 = 8.0;
+    for (int z = -1; z <= 1; z++)
+    for (int y = -1; y <= 1; y++)
+    for (int x = -1; x <= 1; x++)
+    {
+        float3 cell = float3(x, y, z);
+        float3 d = cell + CelHash33(i + cell) - f;
+        float dd = dot(d, d);
+        if (dd < f1) { f2 = f1; f1 = dd; }
+        else if (dd < f2) { f2 = dd; }
+    }
+    return float2(sqrt(f1), sqrt(f2));
+}
+
+// Domain warp: offsets p by a smooth noise field, gives swirling, flowing shapes
+float3 CelWarp(float3 p, float strength)
+{
+    float3 q = float3(CelFbm(p + float3(0.0, 0.0, 0.0), 3),
+                      CelFbm(p + float3(5.2, 1.3, 2.8), 3),
+                      CelFbm(p + float3(1.7, 9.2, 4.1), 3));
+    return p + (q - 0.5) * strength;
+}
+
+// Crater height: bowl below 0, raised rim above 0, flat (0) outside. Radius and presence come from
+// the nearest feature point, so craters are whole circles rather than cut at cell borders.
+float CelCraterHeight(float3 p)
+{
+    float3 i = floor(p);
+    float3 f = frac(p);
+    float best = 8.0;
+    float id = 0.0;
+    for (int z = -1; z <= 1; z++)
+    for (int y = -1; y <= 1; y++)
+    for (int x = -1; x <= 1; x++)
+    {
+        float3 cell = float3(x, y, z);
+        float3 d = cell + CelHash33(i + cell) - f;
+        float dd = dot(d, d);
+        if (dd < best) { best = dd; id = CelHash13(i + cell + 0.37); }
+    }
+
+    if (id < 0.4) return 0.0;
+    float radius = lerp(0.15, 0.45, frac(id * 7.13));
+    float r = sqrt(best) / radius;
+    float bowl = r < 1.0 ? (r * r - 1.0) * 0.8 : 0.0;
+    float rim = exp(-((r - 1.0) * 4.0) * ((r - 1.0) * 4.0)) * 0.45;
+    return bowl + rim;
+}
+
 // Crater shading multiplier: dark bowls with bright raised rims
 float CelCraters(float3 p)
 {

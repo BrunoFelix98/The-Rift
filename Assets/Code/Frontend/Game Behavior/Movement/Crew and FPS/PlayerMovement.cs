@@ -47,7 +47,7 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     public struct CrewState : INetworkSerializeByMemcpy
     {
         public int tick;
-        public Vector3 position;
+        public Vector3d position; // World space, double so it stays exact far from the origin
         public float yaw;
         public float verticalVelocity;
         public Vector3 velocity;
@@ -76,6 +76,8 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     private const float ReconcilePositionTolerance = 0.01f;
     private const int JumpCooldownTicks = 5;
 
+    public Vector3d WorldPosition => IsOwner || IsServer ? simState.position : remoteState.position;
+
     void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -85,13 +87,14 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     public override void OnNetworkSpawn()
     {
         netState.OnValueChanged += OnServerStateChanged;
+        FloatingOrigin.Shifted += OnOriginShifted;
 
         if (IsServer)
         {
             simState = new CrewState
             {
                 tick = -1,
-                position = transform.position,
+                position = FloatingOrigin.ToWorld(transform.position),
                 yaw = transform.eulerAngles.y,
                 lastGroundedTick = -1000,
                 lastJumpTick = -1000
@@ -111,13 +114,20 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
             controller.enabled = false;
             remoteState = netState.Value;
             remoteStateTime = Time.time;
-            transform.SetPositionAndRotation(remoteState.position, Quaternion.Euler(0f, remoteState.yaw, 0f));
+            transform.SetPositionAndRotation(FloatingOrigin.ToRender(remoteState.position), Quaternion.Euler(0f, remoteState.yaw, 0f));
         }
+    }
+
+    private void OnOriginShifted(Vector3 delta)
+    {
+        if (IsOwner || IsServer) SetControllerPosition(FloatingOrigin.ToRender(simState.position));
+        else transform.position -= delta;
     }
 
     public override void OnNetworkDespawn()
     {
         netState.OnValueChanged -= OnServerStateChanged;
+        FloatingOrigin.Shifted -= OnOriginShifted;
 
         if (IsOwner)
         {
@@ -180,10 +190,13 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         SendInputServerRpc(input);
     }
 
-    // Shared by owner prediction, server simulation and reconcile replay. Moves the CharacterController,
-    // so callers start it from the state's position.
+    // Shared by owner prediction, server simulation and reconcile replay. Moves the CharacterController
+    // in render space and reads the result back into the world-space state.
     private CrewState Step(CrewState state, InputData input, float dt)
     {
+        Vector3 startRender = FloatingOrigin.ToRender(state.position);
+        if ((transform.position - startRender).sqrMagnitude > 1e-6f) SetControllerPosition(startRender);
+
         state.yaw = Mathf.Repeat(state.yaw + input.yawDelta, 360f);
         Quaternion rotation = Quaternion.Euler(0f, state.yaw, 0f);
 
@@ -209,8 +222,8 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
             if (state.verticalVelocity < 0f) state.verticalVelocity = -1f;
         }
 
-        Vector3 newPosition = transform.position;
-        state.velocity = (newPosition - state.position) / dt;
+        Vector3d newPosition = FloatingOrigin.ToWorld(transform.position);
+        state.velocity = (newPosition - state.position).ToVector3() / dt;
         state.position = newPosition;
         state.tick = input.tick;
         return state;
@@ -248,8 +261,8 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         pendingInputs.RemoveAll(i => i.tick <= serverState.tick);
 
         // Predict the replay without disturbing the shown pose unless it actually differs
-        Vector3 shownPosition = simState.position;
-        SetControllerPosition(serverState.position);
+        Vector3d shownPosition = simState.position;
+        SetControllerPosition(FloatingOrigin.ToRender(serverState.position));
 
         CrewState replayed = serverState;
         foreach (var input in pendingInputs)
@@ -258,16 +271,16 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
         }
         replayed.tick = simState.tick;
 
-        bool off = Vector3.Distance(replayed.position, shownPosition) > ReconcilePositionTolerance
+        bool off = Vector3d.Distance(replayed.position, shownPosition) > ReconcilePositionTolerance
                    || Mathf.Abs(Mathf.DeltaAngle(replayed.yaw, simState.yaw)) > 0.1f;
         simState = off ? replayed : simState;
-        SetControllerPosition(simState.position);
+        SetControllerPosition(FloatingOrigin.ToRender(simState.position));
     }
 
     private void FollowRemoteState()
     {
         float age = Mathf.Min(Time.time - remoteStateTime, MaxExtrapolation);
-        Vector3 target = remoteState.position + remoteState.velocity * age;
+        Vector3 target = FloatingOrigin.ToRender(remoteState.position) + remoteState.velocity * age;
         float t = 1f - Mathf.Exp(-RemoteSmoothing * Time.deltaTime);
 
         transform.SetPositionAndRotation(
@@ -288,11 +301,11 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     {
         if (!IsServer) return;
 
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.yaw = rotation.eulerAngles.y;
         simState.verticalVelocity = 0f;
         simState.velocity = Vector3.zero;
-        SetControllerPosition(position);
+        SetControllerPosition(FloatingOrigin.ToRender(simState.position));
         transform.rotation = Quaternion.Euler(0f, simState.yaw, 0f);
         netState.Value = simState;
     }
@@ -301,11 +314,11 @@ public class PlayerMovement : NetworkBehaviour, ITeleportable
     {
         if (!IsOwner) return;
 
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.yaw = rotation.eulerAngles.y;
         simState.verticalVelocity = 0f;
         simState.velocity = Vector3.zero;
-        SetControllerPosition(position);
+        SetControllerPosition(FloatingOrigin.ToRender(simState.position));
         transform.rotation = Quaternion.Euler(0f, simState.yaw, 0f);
     }
 }

@@ -17,8 +17,11 @@ public class DynamicSkyboxManager : MonoBehaviour
     [Tooltip("Visual size of each distant star quad.")]
     public float starSize;
     
-    [Tooltip("Material used for rendering stars (should be an Unlit/Additive shader).")]
-    public Material starMaterial;
+    [Tooltip("Systems at this distance or further get the dimmest, smallest stars.")]
+    public float farSystemDistance = 120000f;
+
+    // Additive point-star shader drawn at the far plane (Resources/Celestial/SystemStars)
+    private Material starMaterial;
 
     [Header("Dependencies")]
     [Tooltip("Reference to the SystemCenteredVisualizer to get current system data.")]
@@ -56,6 +59,7 @@ public class DynamicSkyboxManager : MonoBehaviour
         starMesh = new Mesh();
         starMesh.name = "DynamicSkybox_Stars";
         starMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        starMaterial = CelestialVisuals.GetMaterial("SystemStars");
     }
 
     private void OnDestroy()
@@ -111,6 +115,7 @@ public class DynamicSkyboxManager : MonoBehaviour
     {
         double time = GalacticTimeManager.Instance != null ? GalacticTimeManager.Instance.GalacticTime : 0;
         List<Vector3> positions = new List<Vector3>();
+        List<Color> colors = new List<Color>();
 
         // Scenario A: Full Universe Map is available (Server or Local Load)
         if (visualizer != null && visualizer.universeMap != null)
@@ -138,10 +143,7 @@ public class DynamicSkyboxManager : MonoBehaviour
                     if (system.id == currentSystemId) continue;
 
                     Vector3d systemPos = system.GetAbsolutePosition(time, galaxyPos);
-                    Vector3d direction = systemPos - currentSystemAbsolutePosition;
-                    
-                    Vector3 dir = direction.ToVector3().normalized;
-                    positions.Add(dir * skyboxRadius);
+                    AddStar(positions, colors, system.id, systemPos - currentSystemAbsolutePosition);
                 }
             }
         }
@@ -158,9 +160,7 @@ public class DynamicSkyboxManager : MonoBehaviour
              {
                 if (system.id == currentSystemId) continue;
 
-                Vector3d direction = system.absolutePosition - currentSystemAbsolutePosition;
-                Vector3 dir = direction.ToVector3().normalized;
-                positions.Add(dir * skyboxRadius);
+                AddStar(positions, colors, system.id, system.absolutePosition - currentSystemAbsolutePosition);
              }
         }
 
@@ -171,14 +171,33 @@ public class DynamicSkyboxManager : MonoBehaviour
         }
 
         // Rebuild the mesh with billboarding quads for each star
-        BuildStarMesh(positions);
+        BuildStarMesh(positions, colors);
     }
 
-    private void BuildStarMesh(List<Vector3> positions)
+    // Tint from the system id (same on every client), brightness and size from distance
+    private void AddStar(List<Vector3> positions, List<Color> colors, ulong id, Vector3d offset)
+    {
+        double distance = offset.magnitude;
+        if (distance < 1e-3) return;
+
+        float near = 1f - Mathf.Clamp01((float)(distance / farSystemDistance));
+        var rng = new CelestialVisuals.Rng(id, 0);
+        float temperature = rng.Next();
+        Color tint = temperature < 0.5f
+            ? Color.Lerp(new Color(0.70f, 0.80f, 1.00f), new Color(1.00f, 0.97f, 0.92f), temperature * 2f)
+            : Color.Lerp(new Color(1.00f, 0.97f, 0.92f), new Color(1.00f, 0.68f, 0.42f), (temperature - 0.5f) * 2f);
+        tint.a = Mathf.Lerp(0.25f, 1.6f, near * near) * rng.Range(0.7f, 1.3f);
+
+        positions.Add((offset * (1.0 / distance)).ToVector3() * skyboxRadius);
+        colors.Add(tint);
+    }
+
+    private void BuildStarMesh(List<Vector3> positions, List<Color> colors)
     {
         starMesh.Clear();
         Vector3[] vertices = new Vector3[positions.Count * 4];
         Vector2[] uvs = new Vector2[positions.Count * 4];
+        Color[] vertexColors = new Color[positions.Count * 4];
         int[] tris = new int[positions.Count * 6];
 
         for (int i = 0; i < positions.Count; i++)
@@ -198,10 +217,17 @@ public class DynamicSkyboxManager : MonoBehaviour
             }
             up = Vector3.Cross(right, normal).normalized;
 
-            vertices[v + 0] = pos + (-right - up) * starSize;
-            vertices[v + 1] = pos + (right - up) * starSize;
-            vertices[v + 2] = pos + (right + up) * starSize;
-            vertices[v + 3] = pos + (-right + up) * starSize;
+            // Brighter (closer) systems also get a slightly larger glow
+            Color c = colors[i];
+            float size = starSize * Mathf.Lerp(0.7f, 1.4f, Mathf.Clamp01(c.a / 1.6f));
+            vertices[v + 0] = pos + (-right - up) * size;
+            vertices[v + 1] = pos + (right - up) * size;
+            vertices[v + 2] = pos + (right + up) * size;
+            vertices[v + 3] = pos + (-right + up) * size;
+            vertexColors[v + 0] = c;
+            vertexColors[v + 1] = c;
+            vertexColors[v + 2] = c;
+            vertexColors[v + 3] = c;
 
             uvs[v + 0] = new Vector2(0, 0);
             uvs[v + 1] = new Vector2(1, 0);
@@ -218,6 +244,7 @@ public class DynamicSkyboxManager : MonoBehaviour
 
         starMesh.vertices = vertices;
         starMesh.uv = uvs;
+        starMesh.colors = vertexColors;
         starMesh.triangles = tris;
         starMesh.bounds = new Bounds(Vector3.zero, Vector3.one * skyboxRadius * 2.5f);
     }
@@ -237,15 +264,8 @@ public class DynamicSkyboxManager : MonoBehaviour
         }
 
         // Render the stars centered on the main camera
-        if (starMesh != null && starMesh.vertexCount > 0)
+        if (starMesh != null && starMesh.vertexCount > 0 && starMaterial != null)
         {
-            if (starMaterial == null)
-            {
-                // Safety fallback material
-                starMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-                starMaterial.color = Color.white;
-            }
-
             // Lock the skybox mesh to the camera's position
             Vector3 camPos = Camera.main.transform.position;
             Graphics.DrawMesh(starMesh, camPos, Quaternion.identity, starMaterial, 0);

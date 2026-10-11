@@ -37,6 +37,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
     public Transform HudTransform => transform;
     public Vector3 HudVelocity => IsOwner ? simState.velocity : remoteState.velocity;
+    public Vector3d WorldPosition => IsOwner || IsServer ? simState.position : remoteState.position;
 
     private struct InputData : INetworkSerializable
     {
@@ -63,7 +64,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     public struct FighterState : INetworkSerializeByMemcpy
     {
         public int tick; // Last input tick folded into this state
-        public Vector3 position;
+        public Vector3d position; // World space, double so it stays exact far from the origin
         public Quaternion rotation;
         public Vector3 velocity;
         public float speed;
@@ -75,6 +76,9 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
     // Owner: predicted state. Server: authoritative state.
     private FighterState simState;
+    // Owner: pose before the last tick, rendered in between so motion is smooth at any frame rate
+    private Vector3d prevPosition;
+    private Quaternion prevRotation = Quaternion.identity;
 
     // Owner: inputs the server hasn't acknowledged yet, replayed on every reconcile
     private readonly List<InputData> pendingInputs = new List<InputData>();
@@ -109,13 +113,14 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     public override void OnNetworkSpawn()
     {
         netState.OnValueChanged += OnServerStateChanged;
+        FloatingOrigin.Shifted += OnOriginShifted;
 
         if (IsServer)
         {
             simState = new FighterState
             {
                 tick = -1,
-                position = transform.position,
+                position = FloatingOrigin.ToWorld(transform.position),
                 rotation = transform.rotation,
                 speed = moveSpeed
             };
@@ -126,7 +131,8 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         {
             if (!IsServer) simState = netState.Value;
             simState.speed = moveSpeed;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            prevPosition = simState.position;
+            prevRotation = simState.rotation;
 
             moveAction.action.Enable();
             verticalStrafe.action.Enable();
@@ -157,13 +163,24 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         {
             remoteState = netState.Value;
             remoteStateTime = Time.time;
-            transform.SetPositionAndRotation(remoteState.position, remoteState.rotation);
+            transform.SetPositionAndRotation(FloatingOrigin.ToRender(remoteState.position), remoteState.rotation);
         }
+    }
+
+    private void OnOriginShifted(Vector3 delta)
+    {
+        // Authoritative/predicted copies are re-placed from their world state; smoothed remote
+        // copies keep their in-between position, just moved with the origin
+        // The owner's pose is rebuilt from world space every frame, nothing to do for it
+        if (IsOwner) return;
+        if (IsServer) SnapPose(simState);
+        else transform.position -= delta;
     }
 
     public override void OnNetworkDespawn()
     {
         netState.OnValueChanged -= OnServerStateChanged;
+        FloatingOrigin.Shifted -= OnOriginShifted;
 
         if (IsOwner)
         {
@@ -204,6 +221,8 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
             return;
         }
 
+        ApplyOwnerPose();
+
         // Safety fallback: if we've been frozen for more than 10s, auto-unfreeze
         if (ignoreServerSync && Time.time > safetyTimeout)
         {
@@ -231,6 +250,8 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         {
             simState.velocity = Vector3.zero;
             simState.speed = moveSpeed; // Reset speed after jump, matches ServerTeleport
+            prevPosition = simState.position;
+            prevRotation = simState.rotation;
         }
         else
         {
@@ -241,7 +262,13 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
 
     private void FixedUpdate()
     {
-        if (!IsOwner || ignoreServerSync) return;
+        if (!IsOwner) return;
+        if (ignoreServerSync)
+        {
+            prevPosition = simState.position;
+            prevRotation = simState.rotation;
+            return;
+        }
 
         localTick++;
 
@@ -258,8 +285,9 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         };
         accumulatedLookInput = Vector2.zero;
 
+        prevPosition = simState.position;
+        prevRotation = simState.rotation;
         simState = Step(simState, input, Time.fixedDeltaTime);
-        MovePose(simState);
 
         if (IsServer)
         {
@@ -293,7 +321,7 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         state.velocity = state.rotation * Vector3.forward * state.speed +
                          state.rotation * Vector3.right * (input.strafe * strafeSpeed) +
                          state.rotation * Vector3.up * (input.strafeV * strafeSpeed);
-        state.position += state.velocity * dt;
+        state.position = state.position + new Vector3d(state.velocity * dt);
         state.tick = input.tick;
         return state;
     }
@@ -340,19 +368,18 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         }
         replayed.tick = simState.tick;
 
-        bool positionOff = Vector3.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
+        bool positionOff = Vector3d.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
         bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
         if (positionOff || rotationOff)
         {
             simState = replayed;
-            MovePose(simState);
         }
     }
 
     private void FollowRemoteState()
     {
         float age = Mathf.Min(Time.time - remoteStateTime, MaxExtrapolation);
-        Vector3 target = remoteState.position + remoteState.velocity * age;
+        Vector3 target = FloatingOrigin.ToRender(remoteState.position) + remoteState.velocity * age;
         float t = 1f - Mathf.Exp(-RemoteSmoothing * Time.deltaTime);
 
         transform.SetPositionAndRotation(
@@ -360,18 +387,24 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
             Quaternion.Slerp(transform.rotation, remoteState.rotation, t));
     }
 
-    // Interpolated move for the owner's smooth rendering
-    private void MovePose(FighterState state)
+    // Between the last two ticks, converted to render space each frame
+    private void ApplyOwnerPose()
     {
-        rb.MovePosition(state.position);
-        rb.MoveRotation(state.rotation);
+        float alpha = Mathf.Clamp01((Time.time - Time.fixedTime) / Time.fixedDeltaTime);
+        Vector3d position = prevPosition + (simState.position - prevPosition) * alpha;
+        Vector3 renderPos = FloatingOrigin.ToRender(position);
+        Quaternion rotation = Quaternion.Slerp(prevRotation, simState.rotation, alpha);
+        transform.SetPositionAndRotation(renderPos, rotation);
+        rb.position = renderPos;
+        rb.rotation = rotation;
     }
 
     // Instant placement without interpolating through the gap
     private void SnapPose(FighterState state)
     {
-        transform.SetPositionAndRotation(state.position, state.rotation);
-        rb.position = state.position;
+        Vector3 renderPos = FloatingOrigin.ToRender(state.position);
+        transform.SetPositionAndRotation(renderPos, state.rotation);
+        rb.position = renderPos;
         rb.rotation = state.rotation;
     }
 
@@ -380,10 +413,12 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
         if (!IsServer) return;
 
         // Keep the tick: the owner replays its unacknowledged inputs from the new pose
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.rotation = rotation;
         simState.velocity = Vector3.zero;
         simState.speed = moveSpeed;
+        prevPosition = simState.position;
+        prevRotation = rotation;
         SnapPose(simState);
         netState.Value = simState;
     }
@@ -392,10 +427,12 @@ public class FighterPiloting : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         if (!IsOwner) return;
 
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.rotation = rotation;
         simState.velocity = Vector3.zero;
         simState.speed = moveSpeed;
+        prevPosition = simState.position;
+        prevRotation = rotation;
         SnapPose(simState);
     }
 }

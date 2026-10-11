@@ -70,7 +70,7 @@ public class PlayerMarkerOverlay : MonoBehaviour
                 // GUI space has y pointing down
                 guiPosition = new Vector2(pos.x, Screen.height - pos.y),
                 offScreen = !onScreen,
-                label = $"P{netObj.OwnerClientId}  {FormatDistance(distance)}"
+                label = $"P{netObj.OwnerClientId}  {DistanceFormat.Format(distance)}"
             });
         }
     }
@@ -124,10 +124,6 @@ public class PlayerMarkerOverlay : MonoBehaviour
         return center + dir * scale;
     }
 
-    private static string FormatDistance(float distance)
-    {
-        return distance < 1000f ? $"{distance:0} m" : $"{distance / 1000f:0.0} km";
-    }
 
     private void OnGUI()
     {

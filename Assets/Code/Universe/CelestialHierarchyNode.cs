@@ -11,6 +11,8 @@ public class CelestialHierarchyNode
     public List<CelestialHierarchyNode> Children = new List<CelestialHierarchyNode>();
     
     public Vector3 CurrentWorldPosition;
+    // Where to draw it on this instance (floating origin applied)
+    public Vector3 RenderPosition => CurrentWorldPosition - FloatingOrigin.OffsetF;
     public GameObject ActiveInstance;
     private bool lastIsVisible = true;
     public float visualRadius;
@@ -95,7 +97,7 @@ public class CelestialHierarchyNode
         bool shouldUpdateVisibility = (frameCounter + (int)Params.NetworkId) % 10 == 0;
         
         bool isVisible = lastIsVisible;
-        float distToPlayer = Vector3.Distance(CurrentWorldPosition, playerPos);
+        float distToPlayer = Vector3.Distance(RenderPosition, playerPos);
 
         if (shouldUpdateVisibility)
         {
@@ -108,7 +110,7 @@ public class CelestialHierarchyNode
                 float checkRadius = baseScale * settings.modelScaleMultiplier;
                 if (Params.Type == CelestialType.PLANET) checkRadius *= 1.5f;
                 
-                Bounds bounds = new Bounds(CurrentWorldPosition, Vector3.one * (checkRadius * 2f));
+                Bounds bounds = new Bounds(RenderPosition, Vector3.one * (checkRadius * 2f));
                 isVisible = GeometryUtility.TestPlanesAABB(frustumPlanes, bounds);
                 
                 if (distToPlayer < checkRadius * 5f) isVisible = true;
@@ -141,7 +143,7 @@ public class CelestialHierarchyNode
 
         if (ActiveInstance != null)
         {
-            ActiveInstance.transform.position = CurrentWorldPosition;
+            ActiveInstance.transform.position = RenderPosition;
             ActiveInstance.transform.rotation = Quaternion.Euler(0, (time * Params.AngularSpeed * settings.orbitSpeedMultiplier + Params.PhaseOffset) * Mathf.Rad2Deg, 0);
             ActiveInstance.transform.localScale = GetBaseScale(Params.Type) * settings.modelScaleMultiplier;
         }

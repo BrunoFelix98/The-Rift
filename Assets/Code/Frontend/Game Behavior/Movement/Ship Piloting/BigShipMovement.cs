@@ -23,7 +23,7 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         public int tick;
         public bool hasNewTarget;
-        public Vector3 newTarget;
+        public Vector3d newTarget; // World space
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -36,10 +36,10 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     public struct ShipState : INetworkSerializeByMemcpy
     {
         public int tick;
-        public Vector3 position;
+        public Vector3d position; // World space, double so it stays exact far from the origin
         public Quaternion rotation; // Applied to shipModel; the root only translates
         public Vector3 velocity;
-        public Vector3 target;
+        public Vector3d target;
         public bool hasTarget;
     }
 
@@ -52,7 +52,10 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     private const int MaxPendingInputs = 500;
     private int localTick = 0;
     private bool hasQueuedTarget;
-    private Vector3 queuedTarget;
+    private Vector3d queuedTarget;
+    // Owner: pose before the last tick, rendered in between
+    private Vector3d prevPosition;
+    private Quaternion prevRotation = Quaternion.identity;
 
     private int lastProcessedTick = -1;
     private float inputBudget;
@@ -70,6 +73,7 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
 
     public Transform HudTransform => RotationTarget;
     public Vector3 HudVelocity => IsOwner ? simState.velocity : remoteState.velocity;
+    public Vector3d WorldPosition => IsOwner || IsServer ? simState.position : remoteState.position;
 
     private void Awake()
     {
@@ -84,16 +88,19 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     public override void OnNetworkSpawn()
     {
         netState.OnValueChanged += OnServerStateChanged;
+        FloatingOrigin.Shifted += OnOriginShifted;
 
         if (IsServer)
         {
-            simState = new ShipState { tick = -1, position = transform.position, rotation = RotationTarget.rotation };
+            simState = new ShipState { tick = -1, position = FloatingOrigin.ToWorld(transform.position), rotation = RotationTarget.rotation };
             netState.Value = simState;
         }
 
         if (IsOwner)
         {
             if (!IsServer) simState = netState.Value;
+            prevPosition = simState.position;
+            prevRotation = simState.rotation;
         }
         else if (!IsServer)
         {
@@ -106,6 +113,14 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     public override void OnNetworkDespawn()
     {
         netState.OnValueChanged -= OnServerStateChanged;
+        FloatingOrigin.Shifted -= OnOriginShifted;
+    }
+
+    private void OnOriginShifted(Vector3 delta)
+    {
+        if (IsOwner) return; // Rebuilt from world space every frame
+        if (IsServer) ApplyPose(simState.position, simState.rotation);
+        else transform.position -= delta;
     }
 
     private void Update()
@@ -121,6 +136,7 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
             return;
         }
 
+        ApplyOwnerPose();
         if (Application.isFocused) HandleInput();
     }
 
@@ -131,7 +147,7 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         if (Time.time - lastClickTime <= doubleClickThreshold)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            queuedTarget = ray.origin + ray.direction * targetDistance;
+            queuedTarget = FloatingOrigin.ToWorld(ray.origin + ray.direction * targetDistance);
             hasQueuedTarget = true;
         }
         lastClickTime = Time.time;
@@ -142,14 +158,20 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         if (!IsOwner) return;
 
         // Idle ticks change nothing, so neither side needs to step them
-        if (!hasQueuedTarget && !simState.hasTarget) return;
+        if (!hasQueuedTarget && !simState.hasTarget)
+        {
+            prevPosition = simState.position;
+            prevRotation = simState.rotation;
+            return;
+        }
 
         localTick++;
         InputData input = new InputData { tick = localTick, hasNewTarget = hasQueuedTarget, newTarget = queuedTarget };
         hasQueuedTarget = false;
 
+        prevPosition = simState.position;
+        prevRotation = simState.rotation;
         simState = Step(simState, input, Time.fixedDeltaTime);
-        ApplyPose(simState.position, simState.rotation);
 
         if (IsServer)
         {
@@ -175,22 +197,22 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         state.velocity = Vector3.zero;
         if (state.hasTarget)
         {
-            Vector3 direction = state.target - state.position;
-            float distance = direction.magnitude;
+            Vector3d direction = state.target - state.position;
+            double distance = direction.magnitude;
             if (distance <= stopDistance)
             {
                 state.hasTarget = false;
             }
             else
             {
-                Vector3 dir = direction / distance;
+                Vector3 dir = (direction * (1.0 / distance)).ToVector3().normalized;
                 float angleToTarget = Vector3.Angle(state.rotation * Vector3.forward, dir);
                 float speedFactor = Mathf.Lerp(1f, 0.3f, angleToTarget / 180f);
 
                 // Never overshoot the target in one tick
-                float stepLength = Mathf.Min(moveSpeed * speedFactor * dt, distance);
+                float stepLength = (float)System.Math.Min(moveSpeed * speedFactor * dt, distance);
                 state.velocity = dir * (stepLength / dt);
-                state.position += dir * stepLength;
+                state.position = state.position + new Vector3d(dir * stepLength);
                 state.rotation = Quaternion.RotateTowards(state.rotation, Quaternion.LookRotation(dir, Vector3.up), rotationSpeed * dt);
             }
         }
@@ -238,28 +260,34 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         }
         replayed.tick = simState.tick;
 
-        bool positionOff = Vector3.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
+        bool positionOff = Vector3d.Distance(replayed.position, simState.position) > ReconcilePositionTolerance;
         bool rotationOff = Quaternion.Angle(replayed.rotation, simState.rotation) > ReconcileAngleTolerance;
         if (positionOff || rotationOff || replayed.hasTarget != simState.hasTarget)
         {
             simState = replayed;
-            ApplyPose(simState.position, simState.rotation);
         }
     }
 
     private void FollowRemoteState()
     {
         float age = Mathf.Min(Time.time - remoteStateTime, MaxExtrapolation);
-        Vector3 target = remoteState.position + remoteState.velocity * age;
+        Vector3 target = FloatingOrigin.ToRender(remoteState.position) + remoteState.velocity * age;
         float t = 1f - Mathf.Exp(-RemoteSmoothing * Time.deltaTime);
 
         transform.position = Vector3.Lerp(transform.position, target, t);
         RotationTarget.rotation = Quaternion.Slerp(RotationTarget.rotation, remoteState.rotation, t);
     }
 
-    private void ApplyPose(Vector3 position, Quaternion rotation)
+    private void ApplyOwnerPose()
     {
-        transform.position = position;
+        float alpha = Mathf.Clamp01((Time.time - Time.fixedTime) / Time.fixedDeltaTime);
+        Vector3d position = prevPosition + (simState.position - prevPosition) * alpha;
+        ApplyPose(position, Quaternion.Slerp(prevRotation, simState.rotation, alpha));
+    }
+
+    private void ApplyPose(Vector3d worldPosition, Quaternion rotation)
+    {
+        transform.position = FloatingOrigin.ToRender(worldPosition);
         RotationTarget.rotation = rotation;
     }
 
@@ -268,11 +296,13 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
         if (!IsServer) return;
 
         // Keep the tick: the owner replays its unacknowledged inputs from the new pose
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.rotation = rotation;
         simState.velocity = Vector3.zero;
         simState.hasTarget = false;
-        ApplyPose(position, rotation);
+        prevPosition = simState.position;
+        prevRotation = rotation;
+        ApplyPose(simState.position, rotation);
         netState.Value = simState;
     }
 
@@ -280,11 +310,13 @@ public class BigShipMovement : NetworkBehaviour, ITeleportable, IShipHudSource
     {
         if (!IsOwner) return;
 
-        simState.position = position;
+        simState.position = new Vector3d(position);
         simState.rotation = rotation;
         simState.velocity = Vector3.zero;
         simState.hasTarget = false;
         hasQueuedTarget = false;
-        ApplyPose(position, rotation);
+        prevPosition = simState.position;
+        prevRotation = rotation;
+        ApplyPose(simState.position, rotation);
     }
 }

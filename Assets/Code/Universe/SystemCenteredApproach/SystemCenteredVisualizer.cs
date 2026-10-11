@@ -400,7 +400,7 @@ public class SystemCenteredVisualizer : NetworkBehaviour
             foreach (var node in rootNodes)
             {
                 if (node.Params.Type != CelestialType.STAR) continue;
-                Shader.SetGlobalVector(CelestialVisuals.StarPosId, node.CurrentWorldPosition);
+                Shader.SetGlobalVector(CelestialVisuals.StarPosId, node.RenderPosition);
                 break;
             }
 
@@ -501,7 +501,7 @@ public class SystemCenteredVisualizer : NetworkBehaviour
             }
             else
             {
-                player.transform.SetPositionAndRotation(targetPos, targetRot);
+                player.transform.SetPositionAndRotation(FloatingOrigin.ToRender(targetPos), targetRot);
             }
         }
 
@@ -542,7 +542,7 @@ public class SystemCenteredVisualizer : NetworkBehaviour
             }
             else
             {
-                player.transform.SetPositionAndRotation(position, rotation);
+                player.transform.SetPositionAndRotation(FloatingOrigin.ToRender(position), rotation);
             }
             Debug.Log($"[SystemCentered] Local player teleported to {position}");
         }

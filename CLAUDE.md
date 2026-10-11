@@ -64,6 +64,9 @@ The project follows a strict data‑logic / visual‑frontend split.
 - `FighterPiloting`, `BigShipMovement`, `PlayerMovement` share one model: the owner simulates each tick's input with a deterministic `Step`, the server runs the same step and publishes a state `NetworkVariable`, the owner reconciles by replaying unacknowledged inputs, other clients smooth toward the state. Move players only through `ITeleportable`.
 - HUD and markers (`ShipHud`, `PlayerMarkerOverlay`, `CelestialMarkerOverlay`) are IMGUI overlays created by `PlayerSetup` for the local player.
 - Celestial looks come from `Assets/Shaders/Celestial` via `CelestialBodyVisuals` / `StarData`.
+- **Floating origin** (`Assets/Code/Universe/FloatingOrigin.cs`): transforms on clients are render space = world - `FloatingOrigin.Offset`, recentred near the local player. Simulation states hold world positions as `Vector3d`; convert with `ToRender`/`ToWorld`. Server logic must use world positions (`ITeleportable.WorldPosition`, `TryGetCelestialWorldPosition`), never transforms. Celestials use `CelestialHierarchyNode.RenderPosition` for drawing.
+- **Sky**: `SpaceEnvironmentManager` sets the procedural `SpaceSkybox` material; `DynamicSkyboxManager` draws the real neighbouring systems with `SystemStars` at the far plane.
+- **Distances** are shown via `DistanceFormat` (m below 1000 units, then AU; 1 AU = 10,000 units).
 
 ## Key Build / Run Flow
 1. **Setup** – Run *The Rift → Setup Universe Scene* to create the manager hierarchy and asset folders.

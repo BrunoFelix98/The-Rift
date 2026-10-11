@@ -6,8 +6,12 @@ using UnityEngine;
 /// </summary>
 public interface ITeleportable
 {
+    // World-space positions (see FloatingOrigin)
     void ServerTeleport(Vector3 position, Quaternion rotation);
     void OwnerTeleport(Vector3 position, Quaternion rotation);
+
+    /// <summary>Simulated world position, independent of this instance's floating origin.</summary>
+    Vector3d WorldPosition { get; }
 }
 
 /// <summary>Data the ship HUD reads from the local player's ship.</summary>
