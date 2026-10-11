@@ -340,6 +340,20 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         
         // Offset slightly from zero to avoid being stuck inside the sun
         Vector3 targetPos = Vector3.zero + Vector3.up * 500f; 
+
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client) && client.PlayerObject != null)
+        {
+            GameObject player = client.PlayerObject.gameObject;
+            if (player.TryGetComponent(out FighterPiloting fighter))
+            {
+                fighter.ServerTeleport(targetPos);
+            }
+            else
+            {
+                player.transform.position = targetPos;
+                if (player.TryGetComponent(out Rigidbody body)) body.position = targetPos;
+            }
+        }
         
         ClientRpcParams rpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } } };
         TeleportPlayerClientRpc(targetPos, rpcParams);
@@ -352,6 +366,11 @@ public class SystemCenteredVisualizer : NetworkBehaviour
         {
             GameObject player = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
             player.transform.position = position;
+            if (player.TryGetComponent(out Rigidbody body))
+            {
+                body.position = position;
+                body.linearVelocity = Vector3.zero;
+            }
             playerTeleported = true;
             Debug.Log($"[SystemCentered] Local player teleported to {position}");
         }

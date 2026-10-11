@@ -71,7 +71,8 @@ public static class UniversePersistenceManager
 
         try
         {
-            using (FileStream fs = new FileStream(path, FileMode.Open))
+            // Read-only + shared so several local instances (server, clients, Play Mode clones) can load at once
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader reader = new BinaryReader(fs))
             {
                 int count = reader.ReadInt32();
