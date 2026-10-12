@@ -299,10 +299,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 2778824278
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -325,13 +327,13 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 0
   maxForwardSpeed: 1000
-  maxBackwardSpeed: -100
+  maxBackwardSpeed: -300
   secondsToMaxSpeed: 2
   secondsToStop: 2
-  strafeSpeed: 20
-  pitchSpeed: 20
-  yawSpeed: 20
-  rollSpeed: 50
+  strafeSpeed: 100
+  pitchSpeed: 100
+  yawSpeed: 100
+  rollSpeed: 150
   mouseSensitivity: 0.6
   moveAction: {fileID: -3732530386356413151, guid: 811d453ab9028f1418eb41ff12792019, type: 3}
   verticalStrafe: {fileID: 8915653419427637869, guid: 811d453ab9028f1418eb41ff12792019, type: 3}
