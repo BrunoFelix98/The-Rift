@@ -1012,7 +1012,7 @@ public static class RevisedUniverseBakerEditor
             AssetDatabase.AddObjectToAsset(neb, sys);
 
             // try to set sys.nebula field if it exists
-            var sysNebField = sys.GetType().GetField("nebula");
+            var sysNebField = sys.GetType().GetField("nebulaData");
             if (sysNebField != null && sysNebField.FieldType.IsAssignableFrom(neb.GetType()))
             {
                 sysNebField.SetValue(sys, neb);

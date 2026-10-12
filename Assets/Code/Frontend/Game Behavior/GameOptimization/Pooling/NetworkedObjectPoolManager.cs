@@ -13,8 +13,8 @@ public class PooledPrefab
     public bool autoExpand = true;
 
     [Header("Pool Info (Read Only)")]
-    [SerializeField] private int activeCount;
-    [SerializeField] private int pooledCount;
+    private int activeCount;
+    private int pooledCount;
 
     public int ActiveCount => activeCount;
     public int PooledCount => pooledCount;
@@ -31,8 +31,7 @@ public class NetworkedObjectPoolManager : NetworkBehaviour
     [Header("Pool Configuration")]
     public List<PooledPrefab> pooledPrefabs = new List<PooledPrefab>();
 
-    [SerializeField]
-    private Dictionary<GameObject, Queue<GameObject>> pools = new Dictionary<GameObject, Queue<GameObject>>();
+        private Dictionary<GameObject, Queue<GameObject>> pools = new Dictionary<GameObject, Queue<GameObject>>();
     private Dictionary<GameObject, PooledPrefab> prefabSettings = new Dictionary<GameObject, PooledPrefab>();
     private Dictionary<GameObject, int> activeCounts = new Dictionary<GameObject, int>();
 
