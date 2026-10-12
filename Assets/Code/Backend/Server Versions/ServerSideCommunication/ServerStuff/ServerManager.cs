@@ -22,7 +22,14 @@ public class ServerManager : MonoBehaviour
                 if (NetworkManager.Singleton != null)
                 {
                     NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-                    NetworkManager.Singleton.StartServer();
+                    if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost)
+        {
+            Debug.LogWarning("NetworkManager already started as server/host. Skipping StartServer.");
+        }
+        else
+        {
+            NetworkManager.Singleton.StartServer();
+        }
                 }
                 else
                 {
