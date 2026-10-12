@@ -1,6 +1,7 @@
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class PlayerSetup : NetworkBehaviour
 {
@@ -28,6 +29,13 @@ public class PlayerSetup : NetworkBehaviour
             return;
         }
 
+        // Fixed-size markers for other players and celestials too small or off-screen to see
+        PlayerMarkerOverlay.EnsureExists();
+        CelestialMarkerOverlay.EnsureExists();
+        // Keeps rendering near the origin so far-out coordinates don't jitter
+        FloatingOrigin.EnsureExists();
+        if (TryGetComponent(out IShipHudSource hudSource)) ShipHud.Attach(hudSource);
+
         // For the local owner, enable cameras
         var ownerCameras = GetComponentsInChildren<Camera>(true);
         foreach (var cam in ownerCameras)
@@ -35,6 +43,9 @@ public class PlayerSetup : NetworkBehaviour
             cam.enabled = true;
             // Ensure we can see the massive systems (1 million units far clip)
             cam.farClipPlane = 1000000f;
+            // Post-processing (bloom on stars, corona and lava) is off in the prefab
+            var cameraData = cam.GetUniversalAdditionalCameraData();
+            if (cameraData != null) cameraData.renderPostProcessing = true;
 
             if (cam.gameObject.name.Contains("Main") || ownerCameras.Length == 1)
             {
@@ -48,6 +59,11 @@ public class PlayerSetup : NetworkBehaviour
 
         // Set cursor based on ship type
         SetCursorForShipType();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner && TryGetComponent(out IShipHudSource hudSource)) ShipHud.Detach(hudSource);
     }
 
     private void SetCursorForShipType()

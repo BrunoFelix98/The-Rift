@@ -326,13 +326,13 @@ MonoBehaviour:
   moveSpeed: 0
   maxForwardSpeed: 1000
   maxBackwardSpeed: -100
-  acceleration: 50
-  deceleration: 50
+  secondsToMaxSpeed: 2
+  secondsToStop: 2
   strafeSpeed: 20
   pitchSpeed: 20
   yawSpeed: 20
   rollSpeed: 50
-  mouseSensitivity: 1
+  mouseSensitivity: 0.6
   moveAction: {fileID: -3732530386356413151, guid: 811d453ab9028f1418eb41ff12792019, type: 3}
   verticalStrafe: {fileID: 8915653419427637869, guid: 811d453ab9028f1418eb41ff12792019, type: 3}
   rollAction: {fileID: 3088411716543573388, guid: 811d453ab9028f1418eb41ff12792019, type: 3}

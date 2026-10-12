@@ -2,6 +2,10 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Local mouse look for the FPS crew. Pitch only moves the owner's camera; yaw is collected here and
+/// consumed by PlayerMovement's simulation tick, so it is predicted and reconciled like movement.
+/// </summary>
 public class PlayerLook : NetworkBehaviour
 {
     [Header("Camera")]
@@ -13,56 +17,36 @@ public class PlayerLook : NetworkBehaviour
 
     private float xRotation = 0f;
 
-    // NetworkVariable to synchronize yaw across clients
-    private NetworkVariable<float> yaw = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // Yaw (degrees) gathered since the last simulation tick
+    public float PendingYawDelta { get; private set; }
 
     public override void OnNetworkSpawn()
     {
-        lookAction.action.Enable();
+        if (IsOwner) lookAction.action.Enable();
     }
 
     public override void OnNetworkDespawn()
     {
-        lookAction.action.Disable();
+        if (IsOwner) lookAction.action.Disable();
+    }
+
+    public float ConsumeYawDelta()
+    {
+        float delta = PendingYawDelta;
+        PendingYawDelta = 0f;
+        return delta;
     }
 
     private void Update()
     {
         if (!Application.isFocused || !IsOwner) return;
 
-        // Read input from the Input System
         Vector2 lookInput = lookAction.action.ReadValue<Vector2>();
 
-        float mouseX = lookInput.x * mouseSensitivity;
-        float mouseY = lookInput.y * mouseSensitivity;
-
-        // Update vertical rotation (pitch)
-        xRotation -= mouseY;
+        xRotation -= lookInput.y * mouseSensitivity;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
         cam.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        // Update horizontal rotation (yaw) locally
-        transform.rotation = Quaternion.Euler(0f, transform.rotation.eulerAngles.y + mouseX, 0f);
-
-        // Send yaw to the server for synchronization
-        UpdateYawServerRpc(transform.rotation.eulerAngles.y);
-    }
-
-    private void FixedUpdate()
-    {
-        // Apply the synchronized yaw on all non-owning clients
-        if (!Application.isFocused || !IsOwner)
-        {
-            transform.rotation = Quaternion.Euler(0f, yaw.Value, 0f);
-        }
-    }
-
-    [ServerRpc]
-    private void UpdateYawServerRpc(float newYaw)
-    {
-        yaw.Value = newYaw;
-
-        // Update the server's rotation
-        transform.rotation = Quaternion.Euler(0f, yaw.Value, 0f);
+        PendingYawDelta += lookInput.x * mouseSensitivity;
     }
 }

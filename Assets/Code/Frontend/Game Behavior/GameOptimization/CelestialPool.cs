@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Netcode;
 
 public class CelestialPool : MonoBehaviour
 {
@@ -55,11 +54,6 @@ public class CelestialPool : MonoBehaviour
         GameObject obj = Instantiate(prefab, transform);
         obj.SetActive(false);
 
-        // Visual objects in the pool must NOT have NetworkObject components,
-        // otherwise NGO will try to register them as scene-placed objects.
-        var netObj = obj.GetComponent<NetworkObject>();
-        if (netObj != null) DestroyImmediate(netObj);
-
         pools[type].Enqueue(obj);
         return obj;
     }
@@ -83,8 +77,6 @@ public class CelestialPool : MonoBehaviour
             if (prefabs.TryGetValue(type, out var prefab))
             {
                 GameObject newObj = Instantiate(prefab, transform);
-                var netObj = newObj.GetComponent<NetworkObject>();
-                if (netObj != null) DestroyImmediate(netObj);
                 newObj.SetActive(true);
                 return newObj;
             }
@@ -111,8 +103,6 @@ public class CelestialPool : MonoBehaviour
         }
         else
         {
-            var netObj = obj.GetComponent<NetworkObject>();
-            if (netObj != null) DestroyImmediate(netObj);
             Destroy(obj);
         }
     }
