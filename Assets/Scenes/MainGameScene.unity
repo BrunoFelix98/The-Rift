@@ -164,7 +164,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DynamicSkyboxManager
   skyboxRadius: 90000
-  starSize: 500
+  starSize: 200
+  farSystemDistance: 120000
   visualizer: {fileID: 1709085249}
   updateInterval: 2
 --- !u!1 &1709085247
@@ -234,7 +235,7 @@ MonoBehaviour:
   localViewDistance: 100000
   skyboxStarDistance: 90000
   settings:
-    orbitRadiusMultiplier: 1
+    orbitRadiusMultiplier: 4
     systemRadiusMultiplier: 1
     orbitSpeedMultiplier: 1
     modelScaleMultiplier: 1
@@ -244,19 +245,14 @@ MonoBehaviour:
     asteroidScale: 40
     stationScale: 40
     gateScale: 40
-    nebulaScale: 5000
-    systemRadius: 2000
+    nebulaScale: 20000
+    systemRadius: 10000
     starViewDistance: 100000
     showCenterMarkers: 1
     universeCenterScale: 1000
     galaxyCenterScale: 500
-  universeMap:
-    galaxies: []
-  currentSystemId:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
+  spawnStationDistance: 600
+  spawnStarFallbackDistance: 12000
 --- !u!114 &1709085251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,6 +347,7 @@ MonoBehaviour:
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}
   ambientMode: 3
   ambientColor: {r: 0.008, g: 0.008, b: 0.01, a: 1}
+  cameraCheckInterval: 0.5
 --- !u!114 &1709085257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -379,6 +376,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpManager
   ShowTopMostFoldoutHeaderGroup: 1
+  maxGateUseDistance: 3000
 --- !u!114 &1709085259
 MonoBehaviour:
   m_ObjectHideFlags: 0
